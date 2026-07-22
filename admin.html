@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#08090c">
+  <title>Админ-панель — ПРЕДЛОЖКА CR7</title>
+  <style>
+    :root {
+      --bg: #08090c;
+      --panel: #121419;
+      --text: #f7f7f8;
+      --muted: #a5a8b1;
+      --red: #ff303d;
+      --red-dark: #a40012;
+      --green: #58d68d;
+      --blue: #6f8cff;
+      --border: rgba(255,255,255,.1);
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(255,48,61,.17), transparent 28%),
+        linear-gradient(180deg, #090a0d, #07080a);
+    }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    [hidden] { display: none !important; }
+    .shell { width: min(1180px, calc(100% - 30px)); margin: 0 auto; }
+    header { border-bottom: 1px solid var(--border); background: rgba(8,9,12,.78); backdrop-filter: blur(16px); }
+    .nav { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 950; }
+    .brand-mark { width: 43px; height: 43px; display: grid; place-items: center; border-radius: 14px; background: linear-gradient(135deg, var(--red), var(--red-dark)); }
+    .brand small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; letter-spacing: .15em; }
+    .session { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; }
+    main { padding: 42px 0 70px; }
+    .intro { margin-bottom: 24px; }
+    .intro h1 { margin: 0 0 10px; font-size: clamp(35px, 5vw, 58px); letter-spacing: -.05em; }
+    .intro p { max-width: 800px; margin: 0; color: var(--muted); line-height: 1.65; }
+    .panel { border: 1px solid var(--border); border-radius: var(--radius); background: rgba(18,20,25,.88); box-shadow: 0 22px 70px rgba(0,0,0,.35); }
+    .panel-head { padding: 20px 22px; border-bottom: 1px solid var(--border); }
+    .panel-head h2 { margin: 0; font-size: 24px; letter-spacing: -.03em; }
+    .panel-head p { margin: 7px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .panel-body { padding: 22px; }
+    .login-panel { width: min(520px, 100%); margin: 34px auto 0; }
+    .layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 22px; align-items: start; }
+    form { display: grid; gap: 16px; }
+    .field { display: grid; gap: 8px; }
+    label { color: #e7e8eb; font-size: 13px; font-weight: 800; }
+    .required { color: #ff727c; }
+    input, textarea {
+      width: 100%;
+      outline: none;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 13px 14px;
+      color: #fff;
+      background: #0d0f13;
+    }
+    textarea { min-height: 115px; resize: vertical; line-height: 1.55; }
+    input:focus, textarea:focus { border-color: rgba(255,48,61,.55); box-shadow: 0 0 0 4px rgba(255,48,61,.08); }
+    .hint { margin: -2px 0 0; color: #7f838e; font-size: 12px; line-height: 1.45; }
+    .form-actions { display: flex; gap: 10px; flex-wrap: wrap; padding-top: 4px; }
+    .btn {
+      min-height: 44px;
+      padding: 11px 15px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      color: #fff;
+      background: rgba(255,255,255,.065);
+      font-weight: 850;
+      transition: transform .18s ease, filter .18s ease, border-color .18s ease;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.08); }
+    .btn:disabled { opacity: .55; cursor: wait; }
+    .btn-primary { border: 0; background: linear-gradient(135deg, var(--red), var(--red-dark)); }
+    .btn-green { border-color: rgba(88,214,141,.3); background: rgba(88,214,141,.11); color: #abf3c9; }
+    .btn-danger { color: #ffafb5; border-color: rgba(255,48,61,.22); background: rgba(255,48,61,.08); }
+    .catalog-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .count { color: #ff9ba2; font-size: 13px; font-weight: 850; }
+    .game-list { display: grid; gap: 13px; }
+    .admin-game { padding: 17px; border: 1px solid var(--border); border-radius: 16px; background: rgba(255,255,255,.035); }
+    .admin-game-top { display: flex; align-items: start; justify-content: space-between; gap: 14px; }
+    .admin-game h3 { margin: 0 0 7px; font-size: 19px; line-height: 1.2; }
+    .admin-game p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .admin-game-actions { display: flex; gap: 7px; flex-shrink: 0; }
+    .icon-btn { padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; color: #fff; background: rgba(255,255,255,.05); font-weight: 800; }
+    .icon-btn.delete { color: #ff9da4; }
+    .empty { padding: 34px 18px; text-align: center; color: var(--muted); border: 1px dashed rgba(255,255,255,.13); border-radius: 16px; line-height: 1.6; }
+    .notice { display: none; margin-bottom: 18px; padding: 13px 15px; border-radius: 13px; font-size: 14px; line-height: 1.5; }
+    .notice.show { display: block; }
+    .notice.success { color: #baf5d2; border: 1px solid rgba(88,214,141,.26); background: rgba(88,214,141,.09); }
+    .notice.error { color: #ffc0c5; border: 1px solid rgba(255,48,61,.26); background: rgba(255,48,61,.09); }
+    .notice.info { color: #c9d8ff; border: 1px solid rgba(92,126,255,.25); background: rgba(92,126,255,.09); }
+    .connection-card { margin-bottom: 20px; padding: 14px 16px; border: 1px solid rgba(111,140,255,.25); border-radius: 14px; color: #ccd6ff; background: rgba(111,140,255,.08); font-size: 13px; line-height: 1.55; }
+    .toggle { display: flex; align-items: center; gap: 10px; }
+    .toggle input { width: auto; accent-color: var(--red); }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) {
+      .shell { width: min(100% - 20px, 1180px); }
+      main { padding-top: 28px; }
+      .session span { display: none; }
+      .admin-game-top { flex-direction: column; }
+      .admin-game-actions { width: 100%; }
+      .admin-game-actions .icon-btn { flex: 1; }
+      .form-actions .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell nav">
+      <div class="brand">
+        <span class="brand-mark">CR7</span>
+        <span>АДМИН-ПАНЕЛЬ<small>ПРЕДЛОЖКА CR7</small></span>
+      </div>
+      <div class="session">
+        <span id="sessionEmail">Не выполнен вход</span>
+        <button id="logoutButton" class="btn btn-danger" type="button" hidden>Выйти</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="intro">
+      <h1>Управление каталогом</h1>
+      <p>Игры сохраняются прямо в Supabase и сразу появляются на публичном сайте. Изменения разрешены только аккаунту, добавленному в список администраторов.</p>
+    </section>
+
+    <div id="notice" class="notice" role="status"></div>
+
+    <section id="configError" class="panel login-panel" hidden>
+      <div class="panel-head"><h2>Supabase не настроен</h2></div>
+      <div class="panel-body">Открой <strong>config.js</strong> и вставь Project URL и публичный publishable/anon key.</div>
+    </section>
+
+    <section id="loginSection" class="panel login-panel" hidden>
+      <div class="panel-head">
+        <h2>Вход владельца</h2>
+        <p>Используй email и пароль пользователя, которого ты создал в Supabase Auth.</p>
+      </div>
+      <div class="panel-body">
+        <form id="loginForm">
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" type="email" autocomplete="username" required placeholder="you@example.com">
+          </div>
+          <div class="field">
+            <label for="password">Пароль</label>
+            <input id="password" type="password" autocomplete="current-password" required minlength="6" placeholder="••••••••">
+          </div>
+          <button id="loginButton" class="btn btn-primary" type="submit">Войти</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="adminSection" hidden>
+      <div class="connection-card">Публикации отправляются напрямую в базу. Перезагружать GitHub Pages после добавления игры больше не нужно.</div>
+      <div class="layout">
+        <article class="panel">
+          <div class="panel-head">
+            <h2 id="formTitle">Добавить игру</h2>
+            <p>Заполни карточку. Обязательные поля отмечены звёздочкой.</p>
+          </div>
+          <div class="panel-body">
+            <form id="gameForm" novalidate>
+              <div class="field">
+                <label for="title">Название игры <span class="required">*</span></label>
+                <input id="title" maxlength="120" required placeholder="Например: Lethal Company">
+              </div>
+              <div class="field">
+                <label for="steamUrl">Ссылка на Steam <span class="required">*</span></label>
+                <input id="steamUrl" type="url" maxlength="500" required placeholder="https://store.steampowered.com/app/...">
+              </div>
+              <div class="field">
+                <label for="coverUrl">Ссылка на обложку</label>
+                <input id="coverUrl" type="url" maxlength="1000" placeholder="https://.../cover.jpg">
+                <p class="hint">Можно оставить пустым — тогда карточка покажет название игры вместо картинки.</p>
+              </div>
+              <div class="field">
+                <label for="description">Описание игры <span class="required">*</span></label>
+                <textarea id="description" maxlength="2000" required placeholder="О чём игра, какой у неё жанр и что в ней нужно делать?"></textarea>
+              </div>
+              <div class="field">
+                <label for="authorComment">Комментарий автора <span class="required">*</span></label>
+                <textarea id="authorComment" maxlength="1200" required placeholder="Почему эту игру стоит показать на стриме?"></textarea>
+              </div>
+              <div class="field">
+                <label for="displayOrder">Позиция в каталоге</label>
+                <input id="displayOrder" type="number" min="0" max="9999" value="0">
+                <p class="hint">Меньшее число располагается выше. При одинаковом числе новая игра показывается первой.</p>
+              </div>
+              <label class="toggle" for="published">
+                <input id="published" type="checkbox" checked>
+                <span>Опубликовано на сайте</span>
+              </label>
+              <div class="form-actions">
+                <button class="btn btn-primary" id="saveButton" type="submit">Опубликовать игру</button>
+                <button class="btn" id="cancelEditButton" type="button" hidden>Отменить редактирование</button>
+              </div>
+            </form>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head catalog-head">
+            <div>
+              <h2>Текущий каталог</h2>
+              <p>Редактирование и удаление применяются сразу.</p>
+            </div>
+            <span class="count" id="countLabel">0 игр</span>
+          </div>
+          <div class="panel-body"><div class="game-list" id="gameList"></div></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    'use strict';
+
+    const elements = {
+      configError: document.getElementById('configError'),
+      loginSection: document.getElementById('loginSection'),
+      adminSection: document.getElementById('adminSection'),
+      loginForm: document.getElementById('loginForm'),
+      loginButton: document.getElementById('loginButton'),
+      email: document.getElementById('email'),
+      password: document.getElementById('password'),
+      logoutButton: document.getElementById('logoutButton'),
+      sessionEmail: document.getElementById('sessionEmail'),
+      notice: document.getElementById('notice'),
+      gameForm: document.getElementById('gameForm'),
+      formTitle: document.getElementById('formTitle'),
+      title: document.getElementById('title'),
+      steamUrl: document.getElementById('steamUrl'),
+      coverUrl: document.getElementById('coverUrl'),
+      description: document.getElementById('description'),
+      authorComment: document.getElementById('authorComment'),
+      displayOrder: document.getElementById('displayOrder'),
+      published: document.getElementById('published'),
+      saveButton: document.getElementById('saveButton'),
+      cancelEditButton: document.getElementById('cancelEditButton'),
+      gameList: document.getElementById('gameList'),
+      countLabel: document.getElementById('countLabel')
+    };
+
+    const state = { client: null, games: [], editingId: null, channel: null, noticeTimer: null };
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      })[char]);
+    }
+
+    function showNotice(message, type = 'info', sticky = false) {
+      clearTimeout(state.noticeTimer);
+      elements.notice.className = `notice show ${type}`;
+      elements.notice.textContent = message;
+      if (!sticky) {
+        state.noticeTimer = setTimeout(() => { elements.notice.className = 'notice'; }, 5000);
+      }
+    }
+
+    function setBusy(button, busy, busyText) {
+      if (!button.dataset.defaultText) button.dataset.defaultText = button.textContent;
+      button.disabled = busy;
+      button.textContent = busy ? busyText : button.dataset.defaultText;
+    }
+
+    function getConfiguredClient() {
+      const config = window.CR7_CONFIG || {};
+      const url = String(config.supabaseUrl || '');
+      const key = String(config.supabasePublishableKey || '');
+      const configured = url.startsWith('https://') && !url.includes('YOUR-PROJECT') && key && !key.includes('YOUR-PUBLISHABLE');
+      if (!configured) return null;
+      return window.supabase.createClient(url, key, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+      });
+    }
+
+    function normalizeUrl(value, steamOnly = false) {
+      const text = String(value || '').trim();
+      if (!text) return '';
+      let url;
+      try { url = new URL(text); } catch { throw new Error('Проверь формат ссылки.'); }
+      if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Разрешены только ссылки http/https.');
+      if (steamOnly && !['store.steampowered.com', 'steamcommunity.com'].some(host => url.hostname === host || url.hostname.endsWith(`.${host}`))) {
+        throw new Error('Укажи ссылку на Steam.');
+      }
+      return url.href;
+    }
+
+    function renderGames() {
+      elements.countLabel.textContent = `${state.games.length} ${state.games.length === 1 ? 'игра' : state.games.length < 5 ? 'игры' : 'игр'}`;
+      if (!state.games.length) {
+        elements.gameList.innerHTML = '<div class="empty">Каталог пока пуст. Добавь первую игру через форму слева.</div>';
+        return;
+      }
+      elements.gameList.innerHTML = state.games.map(game => `
+        <article class="admin-game">
+          <div class="admin-game-top">
+            <div>
+              <h3>${escapeHtml(game.title)} ${game.published ? '' : '<small style="color:#ff9ba2">[черновик]</small>'}</h3>
+              <p>${escapeHtml(game.description).slice(0, 180)}${String(game.description || '').length > 180 ? '…' : ''}</p>
+              <p style="margin-top:7px">Позиция: ${Number(game.display_order) || 0}</p>
+            </div>
+            <div class="admin-game-actions">
+              <button class="icon-btn" type="button" data-action="edit" data-id="${game.id}">Изменить</button>
+              <button class="icon-btn delete" type="button" data-action="delete" data-id="${game.id}">Удалить</button>
+            </div>
+          </div>
+        </article>`).join('');
+    }
+
+    async function loadGames() {
+      const { data, error } = await state.client
+        .from('games')
+        .select('id,title,steam_url,cover_url,description,author_comment,created_at,display_order,published')
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      state.games = Array.isArray(data) ? data : [];
+      renderGames();
+    }
+
+    async function verifyAdmin() {
+      const { data, error } = await state.client.rpc('is_site_admin');
+      if (error) throw error;
+      return data === true;
+    }
+
+    function resetForm() {
+      state.editingId = null;
+      elements.gameForm.reset();
+      elements.displayOrder.value = '0';
+      elements.published.checked = true;
+      elements.formTitle.textContent = 'Добавить игру';
+      elements.saveButton.textContent = 'Опубликовать игру';
+      elements.saveButton.dataset.defaultText = 'Опубликовать игру';
+      elements.cancelEditButton.hidden = true;
+    }
+
+    function editGame(id) {
+      const game = state.games.find(item => String(item.id) === String(id));
+      if (!game) return;
+      state.editingId = game.id;
+      elements.title.value = game.title || '';
+      elements.steamUrl.value = game.steam_url || '';
+      elements.coverUrl.value = game.cover_url || '';
+      elements.description.value = game.description || '';
+      elements.authorComment.value = game.author_comment || '';
+      elements.displayOrder.value = Number(game.display_order) || 0;
+      elements.published.checked = Boolean(game.published);
+      elements.formTitle.textContent = 'Редактировать игру';
+      elements.saveButton.textContent = 'Сохранить изменения';
+      elements.saveButton.dataset.defaultText = 'Сохранить изменения';
+      elements.cancelEditButton.hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function deleteGame(id) {
+      const game = state.games.find(item => String(item.id) === String(id));
+      if (!game || !confirm(`Удалить «${game.title}»?`)) return;
+      const { error } = await state.client.from('games').delete().eq('id', game.id);
+      if (error) throw error;
+      if (String(state.editingId) === String(game.id)) resetForm();
+      await loadGames();
+      showNotice('Игра удалена.', 'success');
+    }
+
+    async function showLoggedOut() {
+      elements.loginSection.hidden = false;
+      elements.adminSection.hidden = true;
+      elements.logoutButton.hidden = true;
+      elements.sessionEmail.textContent = 'Не выполнен вход';
+      if (state.channel) {
+        await state.client.removeChannel(state.channel);
+        state.channel = null;
+      }
+    }
+
+    async function showLoggedIn(user) {
+      const isAdmin = await verifyAdmin();
+      if (!isAdmin) {
+        await state.client.auth.signOut();
+        await showLoggedOut();
+        showNotice('Этот аккаунт не добавлен в таблицу site_admins.', 'error', true);
+        return;
+      }
+
+      elements.loginSection.hidden = true;
+      elements.adminSection.hidden = false;
+      elements.logoutButton.hidden = false;
+      elements.sessionEmail.textContent = user.email || 'Администратор';
+      await loadGames();
+
+      if (!state.channel) {
+        state.channel = state.client
+          .channel('cr7-games-admin')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'games' }, async () => {
+            try { await loadGames(); } catch (error) { console.error(error); }
+          })
+          .subscribe();
+      }
+    }
+
+    async function boot() {
+      state.client = getConfiguredClient();
+      if (!state.client) {
+        elements.configError.hidden = false;
+        return;
+      }
+
+      const { data, error } = await state.client.auth.getSession();
+      if (error) {
+        showNotice(error.message, 'error', true);
+        await showLoggedOut();
+        return;
+      }
+
+      if (data.session?.user) {
+        try { await showLoggedIn(data.session.user); }
+        catch (err) { console.error(err); showNotice(err.message || 'Ошибка проверки доступа.', 'error', true); }
+      } else {
+        await showLoggedOut();
+      }
+    }
+
+    elements.loginForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      setBusy(elements.loginButton, true, 'Вход…');
+      try {
+        const { data, error } = await state.client.auth.signInWithPassword({
+          email: elements.email.value.trim(),
+          password: elements.password.value
+        });
+        if (error) throw error;
+        await showLoggedIn(data.user);
+        elements.loginForm.reset();
+        showNotice('Вход выполнен.', 'success');
+      } catch (error) {
+        console.error(error);
+        showNotice(error.message || 'Не удалось войти.', 'error', true);
+      } finally {
+        setBusy(elements.loginButton, false, 'Вход…');
+      }
+    });
+
+    elements.logoutButton.addEventListener('click', async () => {
+      await state.client.auth.signOut();
+      resetForm();
+      await showLoggedOut();
+    });
+
+    elements.gameForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      setBusy(elements.saveButton, true, 'Сохранение…');
+      try {
+        const payload = {
+          title: elements.title.value.trim(),
+          steam_url: normalizeUrl(elements.steamUrl.value, true),
+          cover_url: normalizeUrl(elements.coverUrl.value),
+          description: elements.description.value.trim(),
+          author_comment: elements.authorComment.value.trim(),
+          display_order: Number.parseInt(elements.displayOrder.value, 10) || 0,
+          published: elements.published.checked
+        };
+
+        if (!payload.title || !payload.description || !payload.author_comment) {
+          throw new Error('Заполни название, описание и комментарий автора.');
+        }
+
+        if (state.editingId) {
+          const { error } = await state.client.from('games').update(payload).eq('id', state.editingId);
+          if (error) throw error;
+          showNotice('Изменения сохранены и уже доступны на сайте.', 'success');
+        } else {
+          const { error } = await state.client.from('games').insert(payload);
+          if (error) throw error;
+          showNotice('Игра опубликована и уже доступна на сайте.', 'success');
+        }
+
+        resetForm();
+        await loadGames();
+      } catch (error) {
+        console.error(error);
+        showNotice(error.message || 'Не удалось сохранить игру.', 'error', true);
+      } finally {
+        setBusy(elements.saveButton, false, 'Сохранение…');
+      }
+    });
+
+    elements.cancelEditButton.addEventListener('click', resetForm);
+
+    elements.gameList.addEventListener('click', async event => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+      try {
+        if (button.dataset.action === 'edit') editGame(button.dataset.id);
+        if (button.dataset.action === 'delete') await deleteGame(button.dataset.id);
+      } catch (error) {
+        console.error(error);
+        showNotice(error.message || 'Операция не выполнена.', 'error', true);
+      }
+    });
+
+    boot();
+  </script>
+</body>
+</html>

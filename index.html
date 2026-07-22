@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#08090c">
+  <meta name="description" content="ПРЕДЛОЖКА CR7 — каталог игр для будущих стримов.">
+  <title>ПРЕДЛОЖКА CR7</title>
+  <style>
+    :root {
+      --bg: #07080a;
+      --panel: rgba(20, 22, 27, .8);
+      --text: #f7f7f8;
+      --muted: #a5a8b1;
+      --red: #ff303d;
+      --red-dark: #9d0010;
+      --border: rgba(255,255,255,.09);
+      --shadow: 0 24px 80px rgba(0,0,0,.48);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(255,48,61,.19), transparent 28%),
+        radial-gradient(circle at 92% 18%, rgba(72,91,255,.11), transparent 24%),
+        linear-gradient(180deg, #08090b 0%, #0c0d11 52%, #060709 100%);
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: .12;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(to bottom, #000, transparent 88%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+    .shell { width: min(1180px, calc(100% - 34px)); margin: 0 auto; }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,9,12,.76);
+      backdrop-filter: blur(18px);
+    }
+    .nav {
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 950; letter-spacing: -.025em; }
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--red), var(--red-dark));
+      box-shadow: 0 0 36px rgba(255,48,61,.28);
+    }
+    .brand small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; letter-spacing: .18em; }
+    .status { display: inline-flex; align-items: center; gap: 8px; color: #c6c7cc; font-size: 13px; font-weight: 800; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #69707d; }
+    .status-dot.online { background: #47d988; box-shadow: 0 0 16px rgba(71,217,136,.65); }
+    .status-dot.error { background: var(--red); }
+
+    .hero {
+      padding: 78px 0 48px;
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 38px;
+      align-items: center;
+    }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,48,61,.3);
+      background: rgba(255,48,61,.08);
+      color: #ff949b;
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 18px var(--red); }
+    h1 {
+      margin: 20px 0 18px;
+      font-size: clamp(54px, 8vw, 104px);
+      line-height: .9;
+      letter-spacing: -.075em;
+    }
+    h1 span { color: var(--red); text-shadow: 0 0 42px rgba(255,48,61,.25); }
+    .hero-copy { max-width: 700px; margin: 0; color: #b8bbc3; font-size: 18px; line-height: 1.68; }
+    .hero-card {
+      min-height: 380px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 30px;
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,.76), rgba(0,0,0,.05)),
+        radial-gradient(circle at 75% 20%, rgba(255,255,255,.15), transparent 20%),
+        linear-gradient(145deg, #66101d, #171b26 55%, #2a3042);
+      box-shadow: var(--shadow);
+    }
+    .hero-card::after {
+      content: "CR7";
+      position: absolute;
+      right: -10px;
+      bottom: 0;
+      color: rgba(255,255,255,.045);
+      font-size: 124px;
+      font-weight: 1000;
+      letter-spacing: -.09em;
+      transform: rotate(-9deg);
+    }
+    .hero-card-tag {
+      position: relative;
+      z-index: 1;
+      width: fit-content;
+      padding: 8px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .hero-card h2 { position: relative; z-index: 1; max-width: 440px; margin: 0 0 12px; font-size: 38px; line-height: 1; letter-spacing: -.04em; }
+    .hero-card p { position: relative; z-index: 1; max-width: 420px; margin: 0; color: #d5d6db; line-height: 1.6; }
+
+    .section { padding: 34px 0 82px; }
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .section-head h2 { margin: 0; font-size: clamp(30px, 4vw, 48px); letter-spacing: -.045em; }
+    .section-head p { margin: 8px 0 0; color: var(--muted); }
+    .search-wrap { min-width: min(100%, 330px); }
+    .search {
+      width: 100%;
+      padding: 14px 16px;
+      color: #fff;
+      outline: none;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: rgba(255,255,255,.055);
+    }
+    .search:focus { border-color: rgba(255,48,61,.55); box-shadow: 0 0 0 4px rgba(255,48,61,.08); }
+
+    .game-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    .game-card {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: linear-gradient(155deg, rgba(255,255,255,.07), rgba(255,255,255,.025));
+      box-shadow: 0 16px 46px rgba(0,0,0,.28);
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+    .game-card:hover { transform: translateY(-6px); border-color: rgba(255,48,61,.35); box-shadow: 0 24px 60px rgba(0,0,0,.4); }
+    .cover { position: relative; aspect-ratio: 460 / 215; overflow: hidden; background: linear-gradient(135deg, #292d38, #101216); }
+    .cover img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .45s ease; }
+    .game-card:hover .cover img { transform: scale(1.035); }
+    .cover-fallback { width: 100%; height: 100%; display: grid; place-items: center; padding: 20px; color: rgba(255,255,255,.22); font-size: 30px; text-align: center; font-weight: 1000; }
+    .game-body { padding: 22px; }
+    .game-body h3 { margin: 0 0 12px; font-size: 25px; line-height: 1.12; letter-spacing: -.03em; }
+    .description { margin: 0; color: #c1c3ca; line-height: 1.6; white-space: pre-line; }
+    .author-comment {
+      margin: 18px 0 0;
+      padding: 15px;
+      border-left: 3px solid var(--red);
+      border-radius: 0 13px 13px 0;
+      background: rgba(255,48,61,.07);
+      color: #e7e7ea;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+    .author-comment strong { display: block; margin-bottom: 6px; color: #ff9ca3; font-size: 11px; letter-spacing: .11em; text-transform: uppercase; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; }
+    .date { color: #858995; font-size: 12px; }
+    .steam-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 43px;
+      padding: 10px 15px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--red), var(--red-dark));
+      font-size: 13px;
+      font-weight: 900;
+      transition: transform .18s ease, filter .18s ease;
+    }
+    .steam-button:hover { transform: translateY(-2px); filter: brightness(1.08); }
+
+    .message {
+      grid-column: 1 / -1;
+      padding: 42px 22px;
+      border: 1px dashed rgba(255,255,255,.14);
+      border-radius: var(--radius);
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.65;
+      background: rgba(255,255,255,.025);
+    }
+    .message strong { display: block; margin-bottom: 7px; color: #fff; font-size: 20px; }
+    .message.error { border-color: rgba(255,48,61,.3); color: #ffc0c5; }
+    footer { padding: 22px 0 42px; border-top: 1px solid var(--border); color: #777b86; font-size: 13px; text-align: center; }
+
+    @media (max-width: 960px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-card { min-height: 300px; }
+      .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .shell { width: min(100% - 20px, 1180px); }
+      .status span:last-child { display: none; }
+      .hero { padding-top: 48px; }
+      h1 { font-size: clamp(50px, 18vw, 76px); }
+      .hero-card { padding: 23px; }
+      .hero-card h2 { font-size: 31px; }
+      .section-head { align-items: stretch; flex-direction: column; }
+      .search-wrap { min-width: 100%; }
+      .game-grid { grid-template-columns: 1fr; }
+      .card-footer { align-items: stretch; flex-direction: column; }
+      .steam-button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell nav">
+      <a class="brand" href="#top" aria-label="ПРЕДЛОЖКА CR7">
+        <span class="brand-mark">CR7</span>
+        <span>ПРЕДЛОЖКА<small>ИГРЫ ДЛЯ СТРИМА</small></span>
+      </a>
+      <div class="status" title="Подключение к каталогу">
+        <span id="statusDot" class="status-dot"></span>
+        <span id="statusText">Подключение…</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="shell hero">
+      <div>
+        <span class="kicker"><span class="live-dot"></span>КАТАЛОГ ДЛЯ БУДУЩИХ СТРИМОВ</span>
+        <h1>ПРЕДЛОЖКА <span>CR7</span></h1>
+        <p class="hero-copy">Здесь собраны игры, которые могут появиться на следующих стримах. Открывай карточку, читай описание и переходи на страницу игры в Steam.</p>
+      </div>
+      <aside class="hero-card">
+        <span class="hero-card-tag">ОБНОВЛЯЕТСЯ АВТОМАТИЧЕСКИ</span>
+        <div>
+          <h2>Во что играем дальше?</h2>
+          <p>Новые публикации появляются здесь сразу после добавления владельцем сайта — без повторной загрузки файлов на GitHub.</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="shell section" id="catalog">
+      <div class="section-head">
+        <div>
+          <h2>Предложенные игры</h2>
+          <p id="catalogSubtitle">Загрузка каталога…</p>
+        </div>
+        <div class="search-wrap">
+          <input id="searchInput" class="search" type="search" placeholder="Найти игру…" autocomplete="off">
+        </div>
+      </div>
+      <div id="gameGrid" class="game-grid" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer>ПРЕДЛОЖКА CR7 · Каталог синхронизируется через Supabase</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    'use strict';
+
+    const elements = {
+      grid: document.getElementById('gameGrid'),
+      search: document.getElementById('searchInput'),
+      subtitle: document.getElementById('catalogSubtitle'),
+      statusDot: document.getElementById('statusDot'),
+      statusText: document.getElementById('statusText')
+    };
+
+    const state = { games: [], query: '', channel: null };
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      })[char]);
+    }
+
+    function safeExternalUrl(value, allowedHosts = []) {
+      try {
+        const url = new URL(String(value || '').trim());
+        if (!['http:', 'https:'].includes(url.protocol)) return '';
+        if (allowedHosts.length && !allowedHosts.some(host => url.hostname === host || url.hostname.endsWith(`.${host}`))) return '';
+        return url.href;
+      } catch {
+        return '';
+      }
+    }
+
+    function formatDate(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+    }
+
+    function setConnection(status, text) {
+      elements.statusDot.className = `status-dot ${status}`.trim();
+      elements.statusText.textContent = text;
+    }
+
+    function render() {
+      const query = state.query.trim().toLocaleLowerCase('ru');
+      const games = state.games.filter(game => {
+        if (!query) return true;
+        return [game.title, game.description, game.author_comment]
+          .some(value => String(value || '').toLocaleLowerCase('ru').includes(query));
+      });
+
+      elements.subtitle.textContent = state.games.length
+        ? `${state.games.length} ${state.games.length === 1 ? 'игра' : state.games.length < 5 ? 'игры' : 'игр'} в каталоге`
+        : 'Каталог пока пуст';
+
+      if (!games.length) {
+        elements.grid.innerHTML = query
+          ? '<div class="message"><strong>Ничего не найдено</strong>Попробуй изменить запрос.</div>'
+          : '<div class="message"><strong>Пока нет опубликованных игр</strong>Первая карточка появится после публикации из админ-панели.</div>';
+        return;
+      }
+
+      elements.grid.innerHTML = games.map(game => {
+        const steamUrl = safeExternalUrl(game.steam_url, ['steampowered.com', 'steamcommunity.com']);
+        const coverUrl = safeExternalUrl(game.cover_url);
+        const cover = coverUrl
+          ? `<img src="${escapeHtml(coverUrl)}" alt="Обложка ${escapeHtml(game.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML='<div class=&quot;cover-fallback&quot;>CR7</div>'">`
+          : `<div class="cover-fallback">${escapeHtml(game.title)}</div>`;
+
+        return `
+          <article class="game-card">
+            <div class="cover">${cover}</div>
+            <div class="game-body">
+              <h3>${escapeHtml(game.title)}</h3>
+              <p class="description">${escapeHtml(game.description)}</p>
+              <div class="author-comment">
+                <strong>Комментарий автора</strong>
+                ${escapeHtml(game.author_comment)}
+              </div>
+              <div class="card-footer">
+                <span class="date">${escapeHtml(formatDate(game.created_at))}</span>
+                ${steamUrl ? `<a class="steam-button" href="${escapeHtml(steamUrl)}" target="_blank" rel="noopener noreferrer">Открыть в Steam ↗</a>` : ''}
+              </div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    function showFatal(title, details) {
+      setConnection('error', 'Ошибка подключения');
+      elements.subtitle.textContent = 'Каталог недоступен';
+      elements.grid.innerHTML = `<div class="message error"><strong>${escapeHtml(title)}</strong>${escapeHtml(details)}</div>`;
+    }
+
+    function getConfiguredClient() {
+      const config = window.CR7_CONFIG || {};
+      const url = String(config.supabaseUrl || '');
+      const key = String(config.supabasePublishableKey || '');
+      const configured = url.startsWith('https://') && !url.includes('YOUR-PROJECT') && key && !key.includes('YOUR-PUBLISHABLE');
+      if (!configured) return null;
+      return window.supabase.createClient(url, key, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+      });
+    }
+
+    async function loadGames(client) {
+      const { data, error } = await client
+        .from('games')
+        .select('id,title,steam_url,cover_url,description,author_comment,created_at,display_order')
+        .eq('published', true)
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      state.games = Array.isArray(data) ? data : [];
+      render();
+    }
+
+    async function start() {
+      const client = getConfiguredClient();
+      if (!client) {
+        showFatal('Supabase ещё не настроен', 'Открой config.js и вставь Project URL и публичный publishable/anon key.');
+        return;
+      }
+
+      try {
+        await loadGames(client);
+        setConnection('online', 'Каталог подключён');
+
+        state.channel = client
+          .channel('cr7-games-public')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'games' }, async () => {
+            try { await loadGames(client); } catch (error) { console.error(error); }
+          })
+          .subscribe(status => {
+            if (status === 'SUBSCRIBED') setConnection('online', 'Обновляется онлайн');
+            if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') setConnection('error', 'Связь потеряна');
+          });
+      } catch (error) {
+        console.error(error);
+        showFatal('Не удалось загрузить игры', error.message || 'Проверь настройки Supabase и SQL-политики.');
+      }
+    }
+
+    elements.search.addEventListener('input', event => {
+      state.query = event.target.value;
+      render();
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (state.channel) state.channel.unsubscribe();
+    });
+
+    start();
+  </script>
+</body>
+</html>
