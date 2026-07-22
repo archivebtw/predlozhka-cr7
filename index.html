@@ -3,20 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#08090c">
-  <meta name="description" content="ПРЕДЛОЖКА CR7 — каталог игр для будущих стримов.">
+  <meta name="theme-color" content="#090711">
+  <meta name="description" content="ПРЕДЛОЖКА CR7 — игры для будущих стримов с датами выхода из Steam.">
   <title>ПРЕДЛОЖКА CR7</title>
   <style>
     :root {
-      --bg: #07080a;
-      --panel: rgba(20, 22, 27, .8);
-      --text: #f7f7f8;
-      --muted: #a5a8b1;
-      --red: #ff303d;
-      --red-dark: #9d0010;
-      --border: rgba(255,255,255,.09);
-      --shadow: 0 24px 80px rgba(0,0,0,.48);
-      --radius: 24px;
+      --bg: #07060b;
+      --bg-soft: #0d0b14;
+      --surface: rgba(17, 15, 25, .78);
+      --surface-strong: rgba(22, 19, 31, .94);
+      --text: #f7f4ff;
+      --muted: #aaa4b8;
+      --red: #ff365c;
+      --red-2: #ff6b35;
+      --purple: #8a5cff;
+      --cyan: #4eddf0;
+      --green: #55e09d;
+      --line: rgba(255,255,255,.09);
+      --shadow: 0 28px 90px rgba(0,0,0,.48);
+      --radius-xl: 32px;
+      --radius-lg: 24px;
+      --radius-md: 16px;
     }
 
     * { box-sizing: border-box; }
@@ -24,183 +31,386 @@
     body {
       margin: 0;
       min-height: 100vh;
+      overflow-x: hidden;
       color: var(--text);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 8% 0%, rgba(255,48,61,.19), transparent 28%),
-        radial-gradient(circle at 92% 18%, rgba(72,91,255,.11), transparent 24%),
-        linear-gradient(180deg, #08090b 0%, #0c0d11 52%, #060709 100%);
+        radial-gradient(circle at 12% -4%, rgba(255,54,92,.24), transparent 32%),
+        radial-gradient(circle at 88% 14%, rgba(138,92,255,.17), transparent 28%),
+        linear-gradient(180deg, #08070d 0%, #0a0811 48%, #050508 100%);
     }
     body::before {
       content: "";
       position: fixed;
       inset: 0;
-      z-index: -1;
-      opacity: .12;
+      z-index: -2;
       pointer-events: none;
+      opacity: .18;
       background-image:
-        linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
-      background-size: 48px 48px;
-      mask-image: linear-gradient(to bottom, #000, transparent 88%);
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 54px 54px;
+      mask-image: linear-gradient(to bottom, #000 0%, transparent 88%);
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      width: 420px;
+      height: 420px;
+      right: -120px;
+      bottom: -160px;
+      z-index: -1;
+      border-radius: 50%;
+      background: rgba(78,221,240,.08);
+      filter: blur(70px);
+      pointer-events: none;
     }
 
     a { color: inherit; text-decoration: none; }
     button, input { font: inherit; }
-    .shell { width: min(1180px, calc(100% - 34px)); margin: 0 auto; }
+    button { cursor: pointer; }
+    .shell { width: min(1240px, calc(100% - 34px)); margin: 0 auto; }
 
     header {
       position: sticky;
       top: 0;
-      z-index: 20;
-      border-bottom: 1px solid var(--border);
-      background: rgba(8,9,12,.76);
-      backdrop-filter: blur(18px);
+      z-index: 50;
+      border-bottom: 1px solid var(--line);
+      background: rgba(7,6,11,.72);
+      backdrop-filter: blur(22px) saturate(135%);
     }
     .nav {
-      min-height: 74px;
+      min-height: 76px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 18px;
+      gap: 20px;
     }
-    .brand { display: flex; align-items: center; gap: 12px; font-weight: 950; letter-spacing: -.025em; }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      font-weight: 950;
+      letter-spacing: -.03em;
+    }
     .brand-mark {
-      width: 44px;
-      height: 44px;
+      width: 46px;
+      height: 46px;
       display: grid;
       place-items: center;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--red), var(--red-dark));
-      box-shadow: 0 0 36px rgba(255,48,61,.28);
+      border-radius: 15px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--red), var(--red-2));
+      box-shadow: 0 0 34px rgba(255,54,92,.35), inset 0 1px rgba(255,255,255,.25);
+      transform: rotate(-3deg);
     }
-    .brand small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; letter-spacing: .18em; }
-    .status { display: inline-flex; align-items: center; gap: 8px; color: #c6c7cc; font-size: 13px; font-weight: 800; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #69707d; }
-    .status-dot.online { background: #47d988; box-shadow: 0 0 16px rgba(71,217,136,.65); }
-    .status-dot.error { background: var(--red); }
-
-    .hero {
-      padding: 78px 0 48px;
-      display: grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 38px;
-      align-items: center;
+    .brand small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: .19em;
     }
-    .kicker {
+    .status {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
+      gap: 9px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
       border-radius: 999px;
-      border: 1px solid rgba(255,48,61,.3);
-      background: rgba(255,48,61,.08);
-      color: #ff949b;
-      font-size: 13px;
+      color: #d6d1df;
+      background: rgba(255,255,255,.035);
+      font-size: 12px;
       font-weight: 850;
     }
-    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 18px var(--red); }
-    h1 {
-      margin: 20px 0 18px;
-      font-size: clamp(54px, 8vw, 104px);
-      line-height: .9;
-      letter-spacing: -.075em;
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #6d6875;
     }
-    h1 span { color: var(--red); text-shadow: 0 0 42px rgba(255,48,61,.25); }
-    .hero-copy { max-width: 700px; margin: 0; color: #b8bbc3; font-size: 18px; line-height: 1.68; }
-    .hero-card {
-      min-height: 380px;
+    .status-dot.online { background: var(--green); box-shadow: 0 0 14px rgba(85,224,157,.75); }
+    .status-dot.error { background: var(--red); box-shadow: 0 0 14px rgba(255,54,92,.55); }
+
+    .hero {
+      position: relative;
+      padding: 74px 0 46px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(360px, .85fr);
+      gap: 34px;
+      align-items: stretch;
+    }
+    .hero-copy-wrap {
+      padding: 26px 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .eyebrow {
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 13px;
+      border: 1px solid rgba(255,54,92,.27);
+      border-radius: 999px;
+      color: #ff9daf;
+      background: rgba(255,54,92,.08);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .06em;
+    }
+    .eyebrow i {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 18px var(--red);
+    }
+    h1 {
+      margin: 22px 0 18px;
+      max-width: 850px;
+      font-size: clamp(54px, 8vw, 108px);
+      line-height: .88;
+      letter-spacing: -.078em;
+    }
+    h1 span {
+      display: inline-block;
+      color: transparent;
+      background: linear-gradient(115deg, #fff 0%, #ff7a91 35%, #ff365c 72%, #ff8249 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow: 0 0 48px rgba(255,54,92,.2);
+    }
+    .hero-copy {
+      max-width: 760px;
+      margin: 0;
+      color: #c0bacb;
+      font-size: 18px;
+      line-height: 1.72;
+    }
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 11px;
+      margin-top: 27px;
+    }
+    .stat-chip {
+      min-width: 150px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.035);
+    }
+    .stat-chip strong { display: block; font-size: 20px; letter-spacing: -.04em; }
+    .stat-chip span { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; }
+
+    .next-release {
+      position: relative;
+      min-height: 440px;
+      overflow: hidden;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(to top, rgba(5,5,8,.96) 0%, rgba(5,5,8,.25) 56%, rgba(5,5,8,.05) 100%),
+        radial-gradient(circle at 82% 8%, rgba(255,255,255,.18), transparent 18%),
+        linear-gradient(145deg, #4d1426 0%, #1a1225 48%, #121b2b 100%);
+      box-shadow: var(--shadow);
+      isolation: isolate;
+    }
+    .next-release::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      opacity: .52;
+      background: var(--next-cover, none) center / cover no-repeat;
+      filter: saturate(.88) contrast(1.05);
+      transform: scale(1.03);
+    }
+    .next-release::after {
+      content: "NEXT";
+      position: absolute;
+      right: -12px;
+      bottom: -18px;
+      z-index: -1;
+      color: rgba(255,255,255,.045);
+      font-size: 118px;
+      font-weight: 1000;
+      letter-spacing: -.09em;
+      transform: rotate(-8deg);
+    }
+    .next-label {
+      width: fit-content;
+      padding: 8px 11px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 999px;
+      background: rgba(8,7,12,.48);
+      backdrop-filter: blur(10px);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .08em;
+    }
+    .next-content h2 {
+      margin: 0 0 12px;
+      font-size: clamp(31px, 4vw, 48px);
+      line-height: .98;
+      letter-spacing: -.05em;
+    }
+    .next-content p { margin: 0; color: #d4cfda; line-height: 1.55; }
+    .next-countdown {
+      margin-top: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 13px;
+      border-radius: 14px;
+      color: #fff;
+      background: linear-gradient(135deg, rgba(255,54,92,.95), rgba(255,107,53,.88));
+      font-weight: 950;
+      box-shadow: 0 14px 34px rgba(255,54,92,.22);
+    }
+
+    .catalog-section { padding: 24px 0 88px; }
+    .catalog-toolbar {
+      position: sticky;
+      top: 92px;
+      z-index: 20;
+      margin-bottom: 24px;
+      padding: 17px;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(12,10,17,.75);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 18px 55px rgba(0,0,0,.22);
+    }
+    .toolbar-title h2 { margin: 0; font-size: clamp(29px, 4vw, 43px); letter-spacing: -.048em; }
+    .toolbar-title p { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .search {
+      width: min(320px, 100%);
+      min-height: 44px;
+      padding: 11px 14px;
+      outline: none;
+      color: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.045);
+    }
+    .search:focus { border-color: rgba(255,54,92,.56); box-shadow: 0 0 0 4px rgba(255,54,92,.08); }
+    .filters { display: flex; gap: 7px; flex-wrap: wrap; }
+    .filter-btn {
+      min-height: 42px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      color: #c9c3d1;
+      background: rgba(255,255,255,.035);
+      font-size: 12px;
+      font-weight: 900;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .filter-btn:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.18); }
+    .filter-btn.active { color: #fff; border-color: rgba(255,54,92,.38); background: rgba(255,54,92,.13); }
+
+    .game-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 20px; }
+    .game-card {
+      grid-column: span 4;
       position: relative;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      padding: 30px;
-      border: 1px solid var(--border);
-      border-radius: 32px;
-      background:
-        linear-gradient(to top, rgba(0,0,0,.76), rgba(0,0,0,.05)),
-        radial-gradient(circle at 75% 20%, rgba(255,255,255,.15), transparent 20%),
-        linear-gradient(145deg, #66101d, #171b26 55%, #2a3042);
-      box-shadow: var(--shadow);
+      min-height: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(155deg, rgba(255,255,255,.07), rgba(255,255,255,.022));
+      box-shadow: 0 18px 54px rgba(0,0,0,.28);
+      transition: transform .24s ease, border-color .24s ease, box-shadow .24s ease;
     }
-    .hero-card::after {
-      content: "CR7";
-      position: absolute;
-      right: -10px;
-      bottom: 0;
-      color: rgba(255,255,255,.045);
-      font-size: 124px;
-      font-weight: 1000;
-      letter-spacing: -.09em;
-      transform: rotate(-9deg);
-    }
-    .hero-card-tag {
+    .game-card:hover { transform: translateY(-7px); border-color: rgba(255,54,92,.32); box-shadow: 0 28px 72px rgba(0,0,0,.42); }
+    .game-card.priority { grid-column: span 8; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(330px, .95fr); }
+    .cover {
       position: relative;
-      z-index: 1;
-      width: fit-content;
-      padding: 8px 11px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.08);
-      font-size: 12px;
-      font-weight: 850;
-    }
-    .hero-card h2 { position: relative; z-index: 1; max-width: 440px; margin: 0 0 12px; font-size: 38px; line-height: 1; letter-spacing: -.04em; }
-    .hero-card p { position: relative; z-index: 1; max-width: 420px; margin: 0; color: #d5d6db; line-height: 1.6; }
-
-    .section { padding: 34px 0 82px; }
-    .section-head {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-    .section-head h2 { margin: 0; font-size: clamp(30px, 4vw, 48px); letter-spacing: -.045em; }
-    .section-head p { margin: 8px 0 0; color: var(--muted); }
-    .search-wrap { min-width: min(100%, 330px); }
-    .search {
-      width: 100%;
-      padding: 14px 16px;
-      color: #fff;
-      outline: none;
-      border: 1px solid var(--border);
-      border-radius: 15px;
-      background: rgba(255,255,255,.055);
-    }
-    .search:focus { border-color: rgba(255,48,61,.55); box-shadow: 0 0 0 4px rgba(255,48,61,.08); }
-
-    .game-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-    .game-card {
       overflow: hidden;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: linear-gradient(155deg, rgba(255,255,255,.07), rgba(255,255,255,.025));
-      box-shadow: 0 16px 46px rgba(0,0,0,.28);
-      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+      aspect-ratio: 460 / 215;
+      background: linear-gradient(135deg, #2b2134, #101018);
     }
-    .game-card:hover { transform: translateY(-6px); border-color: rgba(255,48,61,.35); box-shadow: 0 24px 60px rgba(0,0,0,.4); }
-    .cover { position: relative; aspect-ratio: 460 / 215; overflow: hidden; background: linear-gradient(135deg, #292d38, #101216); }
-    .cover img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .45s ease; }
-    .game-card:hover .cover img { transform: scale(1.035); }
-    .cover-fallback { width: 100%; height: 100%; display: grid; place-items: center; padding: 20px; color: rgba(255,255,255,.22); font-size: 30px; text-align: center; font-weight: 1000; }
-    .game-body { padding: 22px; }
-    .game-body h3 { margin: 0 0 12px; font-size: 25px; line-height: 1.12; letter-spacing: -.03em; }
-    .description { margin: 0; color: #c1c3ca; line-height: 1.6; white-space: pre-line; }
+    .priority .cover { aspect-ratio: auto; min-height: 100%; }
+    .cover img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .48s ease; }
+    .game-card:hover .cover img { transform: scale(1.045); }
+    .cover::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 42%;
+      background: linear-gradient(to top, rgba(7,6,11,.78), transparent);
+      pointer-events: none;
+    }
+    .cover-fallback { width: 100%; height: 100%; min-height: 220px; display: grid; place-items: center; padding: 22px; color: rgba(255,255,255,.2); font-size: 34px; font-weight: 1000; text-align: center; }
+    .release-badge {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      z-index: 3;
+      max-width: calc(100% - 28px);
+      padding: 9px 11px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 13px;
+      color: #fff;
+      background: rgba(8,7,12,.72);
+      backdrop-filter: blur(12px);
+      font-size: 11px;
+      font-weight: 950;
+      box-shadow: 0 12px 28px rgba(0,0,0,.28);
+    }
+    .release-badge.soon { background: linear-gradient(135deg, rgba(255,54,92,.93), rgba(255,107,53,.88)); border-color: transparent; }
+    .release-badge.released { color: #c8ffe1; background: rgba(24,102,70,.78); }
+    .release-badge.unknown { color: #d6d0e2; }
+    .game-body { display: flex; flex-direction: column; flex: 1; padding: 22px; }
+    .priority .game-body { padding: 28px; }
+    .release-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      color: #9f98ad;
+      font-size: 11px;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .release-line strong { color: #ff9fb0; }
+    .game-body h3 { margin: 0 0 12px; font-size: 25px; line-height: 1.08; letter-spacing: -.04em; }
+    .priority .game-body h3 { font-size: 38px; }
+    .description { margin: 0; color: #c7c1cf; line-height: 1.62; white-space: pre-line; }
     .author-comment {
       margin: 18px 0 0;
-      padding: 15px;
-      border-left: 3px solid var(--red);
-      border-radius: 0 13px 13px 0;
-      background: rgba(255,48,61,.07);
-      color: #e7e7ea;
+      padding: 15px 16px;
+      border: 1px solid rgba(255,54,92,.13);
+      border-radius: 15px;
+      background: linear-gradient(135deg, rgba(255,54,92,.09), rgba(138,92,255,.055));
+      color: #ede9f2;
       line-height: 1.55;
       white-space: pre-line;
     }
-    .author-comment strong { display: block; margin-bottom: 6px; color: #ff9ca3; font-size: 11px; letter-spacing: .11em; text-transform: uppercase; }
-    .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; }
-    .date { color: #858995; font-size: 12px; }
+    .author-comment strong { display: block; margin-bottom: 7px; color: #ff9cac; font-size: 10px; letter-spacing: .13em; text-transform: uppercase; }
+    .card-footer { margin-top: auto; padding-top: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .added-date { color: #777181; font-size: 11px; }
     .steam-button {
       display: inline-flex;
       align-items: center;
@@ -209,42 +419,54 @@
       min-height: 43px;
       padding: 10px 15px;
       border-radius: 13px;
-      background: linear-gradient(135deg, var(--red), var(--red-dark));
-      font-size: 13px;
-      font-weight: 900;
+      color: #fff;
+      background: linear-gradient(135deg, var(--red), #bd1740);
+      font-size: 12px;
+      font-weight: 950;
+      box-shadow: 0 10px 28px rgba(255,54,92,.18);
       transition: transform .18s ease, filter .18s ease;
     }
     .steam-button:hover { transform: translateY(-2px); filter: brightness(1.08); }
 
     .message {
       grid-column: 1 / -1;
-      padding: 42px 22px;
+      padding: 48px 24px;
       border: 1px dashed rgba(255,255,255,.14);
-      border-radius: var(--radius);
+      border-radius: var(--radius-lg);
       color: var(--muted);
       text-align: center;
       line-height: 1.65;
       background: rgba(255,255,255,.025);
     }
-    .message strong { display: block; margin-bottom: 7px; color: #fff; font-size: 20px; }
-    .message.error { border-color: rgba(255,48,61,.3); color: #ffc0c5; }
-    footer { padding: 22px 0 42px; border-top: 1px solid var(--border); color: #777b86; font-size: 13px; text-align: center; }
+    .message strong { display: block; margin-bottom: 7px; color: #fff; font-size: 21px; }
+    .message.error { border-color: rgba(255,54,92,.33); color: #ffc0cb; }
+    footer { padding: 26px 0 44px; border-top: 1px solid var(--line); color: #777181; font-size: 12px; text-align: center; }
 
-    @media (max-width: 960px) {
+    @media (max-width: 1040px) {
       .hero { grid-template-columns: 1fr; }
-      .hero-card { min-height: 300px; }
-      .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .next-release { min-height: 340px; }
+      .game-card { grid-column: span 6; }
+      .game-card.priority { grid-column: 1 / -1; }
+      .catalog-toolbar { grid-template-columns: 1fr; }
+      .controls { justify-content: flex-start; }
     }
-    @media (max-width: 640px) {
-      .shell { width: min(100% - 20px, 1180px); }
+    @media (max-width: 720px) {
+      .shell { width: min(100% - 20px, 1240px); }
+      .nav { min-height: 68px; }
       .status span:last-child { display: none; }
-      .hero { padding-top: 48px; }
-      h1 { font-size: clamp(50px, 18vw, 76px); }
-      .hero-card { padding: 23px; }
-      .hero-card h2 { font-size: 31px; }
-      .section-head { align-items: stretch; flex-direction: column; }
-      .search-wrap { min-width: 100%; }
-      .game-grid { grid-template-columns: 1fr; }
+      .hero { padding-top: 42px; }
+      .hero-copy-wrap { padding-top: 0; }
+      h1 { font-size: clamp(52px, 18vw, 78px); }
+      .hero-copy { font-size: 16px; }
+      .next-release { min-height: 330px; padding: 23px; }
+      .catalog-toolbar { top: 80px; padding: 14px; }
+      .controls, .filters { width: 100%; }
+      .search { width: 100%; }
+      .filter-btn { flex: 1; }
+      .game-card, .game-card.priority { grid-column: 1 / -1; display: flex; }
+      .priority .cover { aspect-ratio: 460 / 215; min-height: 0; }
+      .priority .game-body { padding: 22px; }
+      .priority .game-body h3 { font-size: 28px; }
       .card-footer { align-items: stretch; flex-direction: column; }
       .steam-button { width: 100%; }
     }
@@ -255,7 +477,7 @@
     <div class="shell nav">
       <a class="brand" href="#top" aria-label="ПРЕДЛОЖКА CR7">
         <span class="brand-mark">CR7</span>
-        <span>ПРЕДЛОЖКА<small>ИГРЫ ДЛЯ СТРИМА</small></span>
+        <span>ПРЕДЛОЖКА<small>ИГРЫ ДЛЯ СТРИМОВ</small></span>
       </a>
       <div class="status" title="Подключение к каталогу">
         <span id="statusDot" class="status-dot"></span>
@@ -266,35 +488,48 @@
 
   <main id="top">
     <section class="shell hero">
-      <div>
-        <span class="kicker"><span class="live-dot"></span>КАТАЛОГ ДЛЯ БУДУЩИХ СТРИМОВ</span>
+      <div class="hero-copy-wrap">
+        <span class="eyebrow"><i></i> STEAM-РЕЛИЗЫ И ПРЕДЛОЖЕННЫЕ ИГРЫ</span>
         <h1>ПРЕДЛОЖКА <span>CR7</span></h1>
-        <p class="hero-copy">Здесь собраны игры, которые могут появиться на следующих стримах. Открывай карточку, читай описание и переходи на страницу игры в Steam.</p>
+        <p class="hero-copy">Каталог сам поднимает вверх игры, которые выходят раньше остальных. Даты берутся из Steam, а карточки обновляются через Supabase без повторной загрузки сайта.</p>
+        <div class="hero-stats">
+          <div class="stat-chip"><strong id="totalCount">0</strong><span>игр в каталоге</span></div>
+          <div class="stat-chip"><strong id="upcomingCount">0</strong><span>ожидают релиз</span></div>
+          <div class="stat-chip"><strong id="nearestDate">—</strong><span>ближайший выход</span></div>
+        </div>
       </div>
-      <aside class="hero-card">
-        <span class="hero-card-tag">ОБНОВЛЯЕТСЯ АВТОМАТИЧЕСКИ</span>
-        <div>
-          <h2>Во что играем дальше?</h2>
-          <p>Новые публикации появляются здесь сразу после добавления владельцем сайта — без повторной загрузки файлов на GitHub.</p>
+
+      <aside id="nextRelease" class="next-release">
+        <span class="next-label">БЛИЖАЙШИЙ РЕЛИЗ</span>
+        <div class="next-content">
+          <h2 id="nextTitle">Загрузка каталога…</h2>
+          <p id="nextDateText">Проверяем даты игр в Steam.</p>
+          <div id="nextCountdown" class="next-countdown">Синхронизация…</div>
         </div>
       </aside>
     </section>
 
-    <section class="shell section" id="catalog">
-      <div class="section-head">
-        <div>
-          <h2>Предложенные игры</h2>
+    <section class="shell catalog-section" id="catalog">
+      <div class="catalog-toolbar">
+        <div class="toolbar-title">
+          <h2>Лента предложений</h2>
           <p id="catalogSubtitle">Загрузка каталога…</p>
         </div>
-        <div class="search-wrap">
+        <div class="controls">
           <input id="searchInput" class="search" type="search" placeholder="Найти игру…" autocomplete="off">
+          <div class="filters" role="group" aria-label="Фильтр игр">
+            <button class="filter-btn active" type="button" data-filter="all">Все</button>
+            <button class="filter-btn" type="button" data-filter="upcoming">Скоро</button>
+            <button class="filter-btn" type="button" data-filter="released">Вышли</button>
+            <button class="filter-btn" type="button" data-filter="unknown">Без даты</button>
+          </div>
         </div>
       </div>
       <div id="gameGrid" class="game-grid" aria-live="polite"></div>
     </section>
   </main>
 
-  <footer>ПРЕДЛОЖКА CR7 · Каталог синхронизируется через Supabase</footer>
+  <footer>ПРЕДЛОЖКА CR7 · Даты релизов синхронизируются через Steam и Supabase</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
@@ -306,10 +541,18 @@
       search: document.getElementById('searchInput'),
       subtitle: document.getElementById('catalogSubtitle'),
       statusDot: document.getElementById('statusDot'),
-      statusText: document.getElementById('statusText')
+      statusText: document.getElementById('statusText'),
+      totalCount: document.getElementById('totalCount'),
+      upcomingCount: document.getElementById('upcomingCount'),
+      nearestDate: document.getElementById('nearestDate'),
+      nextRelease: document.getElementById('nextRelease'),
+      nextTitle: document.getElementById('nextTitle'),
+      nextDateText: document.getElementById('nextDateText'),
+      nextCountdown: document.getElementById('nextCountdown'),
+      filters: [...document.querySelectorAll('[data-filter]')]
     };
 
-    const state = { games: [], query: '', channel: null };
+    const state = { games: [], query: '', filter: 'all', channel: null };
 
     function escapeHtml(value) {
       return String(value ?? '').replace(/[&<>'"]/g, char => ({
@@ -328,11 +571,76 @@
       }
     }
 
-    function formatDate(value) {
-      if (!value) return '';
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '';
-      return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+    function parseDate(value) {
+      if (!value) return null;
+      const date = new Date(`${value}T12:00:00`);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function formatDate(value, options = {}) {
+      const date = value instanceof Date ? value : parseDate(value) || new Date(value);
+      if (!date || Number.isNaN(date.getTime())) return '';
+      return new Intl.DateTimeFormat('ru-RU', {
+        day: options.short ? 'numeric' : 'numeric',
+        month: options.short ? 'short' : 'long',
+        year: 'numeric'
+      }).format(date);
+    }
+
+    function daysUntil(value) {
+      const date = parseDate(value);
+      if (!date) return null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      date.setHours(0, 0, 0, 0);
+      return Math.ceil((date - today) / 86400000);
+    }
+
+    function pluralDays(number) {
+      const abs = Math.abs(number) % 100;
+      const last = abs % 10;
+      if (abs > 10 && abs < 20) return 'дней';
+      if (last === 1) return 'день';
+      if (last >= 2 && last <= 4) return 'дня';
+      return 'дней';
+    }
+
+    function getReleaseMeta(game) {
+      const date = parseDate(game.release_date);
+      const days = daysUntil(game.release_date);
+      const raw = String(game.release_date_text || '').trim();
+      const comingSoon = Boolean(game.coming_soon);
+
+      if (comingSoon && date) {
+        if (days === 0) return { group: 'upcoming', badge: 'РЕЛИЗ СЕГОДНЯ', badgeClass: 'soon', countdown: 'Сегодня', line: raw || formatDate(date), timestamp: date.getTime() };
+        if (days === 1) return { group: 'upcoming', badge: 'ВЫХОДИТ ЗАВТРА', badgeClass: 'soon', countdown: 'Завтра', line: raw || formatDate(date), timestamp: date.getTime() };
+        if (days > 1) return { group: 'upcoming', badge: `ЧЕРЕЗ ${days} ${pluralDays(days)}`, badgeClass: 'soon', countdown: `Через ${days} ${pluralDays(days)}`, line: raw || formatDate(date), timestamp: date.getTime() };
+        return { group: 'upcoming', badge: 'ДАТА МОГЛА ИЗМЕНИТЬСЯ', badgeClass: 'soon', countdown: 'Проверь Steam', line: raw || formatDate(date), timestamp: date.getTime() };
+      }
+
+      if (comingSoon) {
+        return { group: 'unknown', badge: 'ДАТА УТОЧНЯЕТСЯ', badgeClass: 'unknown', countdown: 'Ожидается', line: raw || 'Steam пока не назвал точную дату', timestamp: Number.MAX_SAFE_INTEGER - 1 };
+      }
+
+      if (date) {
+        return { group: 'released', badge: 'УЖЕ ВЫШЛА', badgeClass: 'released', countdown: 'Доступна в Steam', line: raw || formatDate(date), timestamp: Number.MAX_SAFE_INTEGER + date.getTime() };
+      }
+
+      return { group: 'unknown', badge: 'БЕЗ ДАТЫ', badgeClass: 'unknown', countdown: 'Дата неизвестна', line: raw || 'Информация о релизе не указана', timestamp: Number.MAX_SAFE_INTEGER };
+    }
+
+    function sortGames(games) {
+      return [...games].sort((a, b) => {
+        const aMeta = getReleaseMeta(a);
+        const bMeta = getReleaseMeta(b);
+        const groupRank = { upcoming: 0, unknown: 1, released: 2 };
+        const rankDiff = groupRank[aMeta.group] - groupRank[bMeta.group];
+        if (rankDiff) return rankDiff;
+        if (aMeta.group === 'upcoming') return aMeta.timestamp - bMeta.timestamp;
+        const orderDiff = (Number(a.display_order) || 0) - (Number(b.display_order) || 0);
+        if (orderDiff) return orderDiff;
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      });
     }
 
     function setConnection(status, text) {
@@ -340,36 +648,72 @@
       elements.statusText.textContent = text;
     }
 
+    function renderHero(sortedGames) {
+      const upcoming = sortedGames.filter(game => getReleaseMeta(game).group === 'upcoming');
+      const nearest = upcoming[0] || null;
+      elements.totalCount.textContent = String(state.games.length);
+      elements.upcomingCount.textContent = String(upcoming.length);
+      elements.nearestDate.textContent = nearest ? formatDate(nearest.release_date, { short: true }) : '—';
+
+      if (!nearest) {
+        elements.nextRelease.style.removeProperty('--next-cover');
+        elements.nextTitle.textContent = state.games.length ? 'Точных дат пока нет' : 'Каталог пока пуст';
+        elements.nextDateText.textContent = state.games.length ? 'Как только Steam укажет будущий релиз, он появится здесь.' : 'Добавь первую игру через админ-панель.';
+        elements.nextCountdown.textContent = state.games.length ? 'Ждём анонс' : 'Нет игр';
+        return;
+      }
+
+      const cover = safeExternalUrl(nearest.cover_url);
+      if (cover) elements.nextRelease.style.setProperty('--next-cover', `url("${cover.replace(/"/g, '%22')}")`);
+      else elements.nextRelease.style.removeProperty('--next-cover');
+      const meta = getReleaseMeta(nearest);
+      elements.nextTitle.textContent = nearest.title;
+      elements.nextDateText.textContent = `Запланированная дата: ${meta.line}`;
+      elements.nextCountdown.textContent = meta.countdown;
+    }
+
     function render() {
+      const sorted = sortGames(state.games);
+      renderHero(sorted);
+
       const query = state.query.trim().toLocaleLowerCase('ru');
-      const games = state.games.filter(game => {
+      const games = sorted.filter(game => {
+        const meta = getReleaseMeta(game);
+        const matchesFilter = state.filter === 'all' || meta.group === state.filter;
+        if (!matchesFilter) return false;
         if (!query) return true;
-        return [game.title, game.description, game.author_comment]
+        return [game.title, game.description, game.author_comment, game.release_date_text]
           .some(value => String(value || '').toLocaleLowerCase('ru').includes(query));
       });
 
       elements.subtitle.textContent = state.games.length
-        ? `${state.games.length} ${state.games.length === 1 ? 'игра' : state.games.length < 5 ? 'игры' : 'игр'} в каталоге`
+        ? `${state.games.length} ${state.games.length === 1 ? 'игра' : state.games.length < 5 ? 'игры' : 'игр'} · сначала ближайшие релизы`
         : 'Каталог пока пуст';
 
       if (!games.length) {
-        elements.grid.innerHTML = query
-          ? '<div class="message"><strong>Ничего не найдено</strong>Попробуй изменить запрос.</div>'
+        elements.grid.innerHTML = query || state.filter !== 'all'
+          ? '<div class="message"><strong>Ничего не найдено</strong>Измени запрос или выбери другой фильтр.</div>'
           : '<div class="message"><strong>Пока нет опубликованных игр</strong>Первая карточка появится после публикации из админ-панели.</div>';
         return;
       }
 
-      elements.grid.innerHTML = games.map(game => {
+      elements.grid.innerHTML = games.map((game, index) => {
         const steamUrl = safeExternalUrl(game.steam_url, ['steampowered.com', 'steamcommunity.com']);
         const coverUrl = safeExternalUrl(game.cover_url);
         const cover = coverUrl
           ? `<img src="${escapeHtml(coverUrl)}" alt="Обложка ${escapeHtml(game.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML='<div class=&quot;cover-fallback&quot;>CR7</div>'">`
           : `<div class="cover-fallback">${escapeHtml(game.title)}</div>`;
+        const meta = getReleaseMeta(game);
+        const priorityClass = index === 0 && meta.group === 'upcoming' ? ' priority' : '';
 
         return `
-          <article class="game-card">
-            <div class="cover">${cover}</div>
+          <article class="game-card${priorityClass}">
+            <div class="cover">
+              ${cover}
+              <span class="release-badge ${meta.badgeClass}">${escapeHtml(meta.badge)}</span>
+            </div>
             <div class="game-body">
+              <div class="release-line"><span>Дата выхода</span><strong>${escapeHtml(meta.line)}</strong></div>
               <h3>${escapeHtml(game.title)}</h3>
               <p class="description">${escapeHtml(game.description)}</p>
               <div class="author-comment">
@@ -377,7 +721,7 @@
                 ${escapeHtml(game.author_comment)}
               </div>
               <div class="card-footer">
-                <span class="date">${escapeHtml(formatDate(game.created_at))}</span>
+                <span class="added-date">Добавлено: ${escapeHtml(formatDate(game.created_at))}</span>
                 ${steamUrl ? `<a class="steam-button" href="${escapeHtml(steamUrl)}" target="_blank" rel="noopener noreferrer">Открыть в Steam ↗</a>` : ''}
               </div>
             </div>
@@ -405,10 +749,8 @@
     async function loadGames(client) {
       const { data, error } = await client
         .from('games')
-        .select('id,title,steam_url,cover_url,description,author_comment,created_at,display_order')
-        .eq('published', true)
-        .order('display_order', { ascending: true })
-        .order('created_at', { ascending: false });
+        .select('id,title,steam_url,cover_url,description,author_comment,created_at,display_order,steam_app_id,release_date,release_date_text,coming_soon,steam_synced_at')
+        .eq('published', true);
 
       if (error) throw error;
       state.games = Array.isArray(data) ? data : [];
@@ -427,7 +769,7 @@
         setConnection('online', 'Каталог подключён');
 
         state.channel = client
-          .channel('cr7-games-public')
+          .channel('cr7-games-public-v2')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'games' }, async () => {
             try { await loadGames(client); } catch (error) { console.error(error); }
           })
@@ -437,7 +779,7 @@
           });
       } catch (error) {
         console.error(error);
-        showFatal('Не удалось загрузить игры', error.message || 'Проверь настройки Supabase и SQL-политики.');
+        showFatal('Не удалось загрузить игры', error.message || 'Проверь обновление таблицы и настройки Supabase.');
       }
     }
 
@@ -445,6 +787,12 @@
       state.query = event.target.value;
       render();
     });
+
+    elements.filters.forEach(button => button.addEventListener('click', () => {
+      state.filter = button.dataset.filter;
+      elements.filters.forEach(item => item.classList.toggle('active', item === button));
+      render();
+    }));
 
     window.addEventListener('beforeunload', () => {
       if (state.channel) state.channel.unsubscribe();
