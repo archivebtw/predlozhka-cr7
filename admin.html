@@ -203,7 +203,7 @@
     <section class="intro">
       <div>
         <h1>Управление каталогом</h1>
-        <p>Вставь ссылку Steam и нажми «Загрузить из Steam». Название, обложка, описание и дата релиза заполнятся автоматически. Комментарий автора остаётся твоим.</p>
+        <p>Вставь ссылку Steam — название, обложка, описание и дата релиза загрузятся автоматически. Тебе останется только добавить комментарий автора.</p>
       </div>
       <a class="site-link" href="index.html" target="_blank" rel="noopener">Открыть сайт ↗</a>
     </section>
@@ -241,7 +241,7 @@
         <article class="panel">
           <div class="panel-head">
             <h2 id="formTitle">Добавить игру</h2>
-            <p>Сначала вставь ссылку Steam, затем импортируй данные и добавь свой комментарий.</p>
+            <p>Вставь ссылку Steam. Импорт запустится автоматически; комментарий автора заполняется вручную.</p>
           </div>
           <div class="panel-body">
             <form id="gameForm" novalidate>
@@ -249,9 +249,9 @@
                 <label for="steamUrl">Ссылка на Steam <span class="required">*</span></label>
                 <div class="steam-row">
                   <input id="steamUrl" type="url" maxlength="500" required placeholder="https://store.steampowered.com/app/...">
-                  <button class="btn btn-steam" id="steamImportButton" type="button">Загрузить из Steam</button>
+                  <button class="btn btn-steam" id="steamImportButton" type="button">Обновить из Steam</button>
                 </div>
-                <p class="hint">Сайт извлечёт App ID из ссылки и запросит данные игры на сервере.</p>
+                <p class="hint">После вставки корректной ссылки Steam данные загрузятся автоматически. Кнопка справа нужна только для повторного обновления.</p>
               </div>
 
               <div id="steamPreview" class="steam-preview" aria-live="polite">
@@ -377,7 +377,16 @@
       countLabel: document.getElementById('countLabel')
     };
 
-    const state = { client: null, games: [], editingId: null, channel: null, noticeTimer: null };
+    const state = {
+      client: null,
+      games: [],
+      editingId: null,
+      channel: null,
+      noticeTimer: null,
+      steamImportTimer: null,
+      steamImportPromise: null,
+      lastImportedSteamUrl: ''
+    };
 
     function escapeHtml(value) {
       return String(value ?? '').replace(/[&<>'"]/g, char => ({
@@ -561,6 +570,55 @@
       setSteamPreview(data);
     }
 
+    function hasSteamAppUrl(value) {
+      try {
+        const url = new URL(String(value || '').trim());
+        return /\/app\/\d+(?:\/|$)/.test(url.pathname);
+      } catch {
+        return false;
+      }
+    }
+
+    async function importSteamFromCurrentUrl({ overwrite = true, notify = true, force = false } = {}) {
+      const normalized = normalizeUrl(elements.steamUrl.value, true);
+      if (!hasSteamAppUrl(normalized)) throw new Error('Вставь полную ссылку Steam вида store.steampowered.com/app/123456/...');
+
+      if (!force && state.lastImportedSteamUrl === normalized && elements.title.value.trim() && elements.description.value.trim()) {
+        return null;
+      }
+
+      if (state.steamImportPromise) return state.steamImportPromise;
+
+      state.steamImportPromise = (async () => {
+        const data = await fetchSteamData(normalized);
+        applySteamData(data, overwrite);
+        state.lastImportedSteamUrl = normalized;
+        if (notify) showNotice('Название, описание, обложка и дата автоматически загружены из Steam. Добавь комментарий автора.', 'success');
+        return data;
+      })();
+
+      try {
+        return await state.steamImportPromise;
+      } finally {
+        state.steamImportPromise = null;
+      }
+    }
+
+    function scheduleSteamAutoImport(delay = 650) {
+      clearTimeout(state.steamImportTimer);
+      const value = elements.steamUrl.value.trim();
+      if (!hasSteamAppUrl(value)) return;
+
+      state.steamImportTimer = setTimeout(async () => {
+        try {
+          await importSteamFromCurrentUrl({ overwrite: true, notify: true });
+        } catch (error) {
+          console.error(error);
+          showNotice(error.message || 'Не удалось автоматически загрузить данные Steam.', 'error', true);
+        }
+      }, delay);
+    }
+
     function resetForm() {
       state.editingId = null;
       elements.gameForm.reset();
@@ -571,6 +629,8 @@
       elements.saveButton.dataset.defaultText = 'Опубликовать игру';
       elements.cancelEditButton.hidden = true;
       setSteamPreview(null);
+      state.lastImportedSteamUrl = '';
+      clearTimeout(state.steamImportTimer);
     }
 
     function editGame(id) {
@@ -713,11 +773,21 @@
       await showLoggedOut();
     });
 
+    elements.steamUrl.addEventListener('input', () => {
+      state.lastImportedSteamUrl = '';
+      scheduleSteamAutoImport();
+    });
+
+    elements.steamUrl.addEventListener('paste', () => {
+      state.lastImportedSteamUrl = '';
+      setTimeout(() => scheduleSteamAutoImport(120), 0);
+    });
+
+    elements.steamUrl.addEventListener('change', () => scheduleSteamAutoImport(0));
+
     elements.steamImportButton.addEventListener('click', async () => {
       try {
-        const data = await fetchSteamData(elements.steamUrl.value);
-        applySteamData(data, true);
-        showNotice('Steam-данные загружены. Проверь текст и добавь комментарий автора.', 'success');
+        await importSteamFromCurrentUrl({ overwrite: true, notify: true, force: true });
       } catch (error) {
         console.error(error);
         showNotice(error.message || 'Не удалось загрузить данные Steam.', 'error', true);
@@ -728,9 +798,16 @@
       event.preventDefault();
       setBusy(elements.saveButton, true, 'Сохранение…');
       try {
+        const normalizedSteamUrl = normalizeUrl(elements.steamUrl.value, true);
+
+        if ((!elements.title.value.trim() || !elements.description.value.trim() || !elements.steamAppId.value) && normalizedSteamUrl) {
+          showNotice('Получаем название и описание из Steam…', 'info', true);
+          await importSteamFromCurrentUrl({ overwrite: true, notify: false, force: true });
+        }
+
         const payload = {
           title: elements.title.value.trim(),
-          steam_url: normalizeUrl(elements.steamUrl.value, true),
+          steam_url: normalizedSteamUrl,
           cover_url: normalizeUrl(elements.coverUrl.value),
           description: elements.description.value.trim(),
           author_comment: elements.authorComment.value.trim(),
@@ -743,8 +820,11 @@
           steam_synced_at: elements.steamAppId.value ? new Date().toISOString() : null
         };
 
-        if (!payload.title || !payload.description || !payload.author_comment) {
-          throw new Error('Заполни название, описание и комментарий автора.');
+        if (!payload.title || !payload.description) {
+          throw new Error('Steam не заполнил название или описание. Нажми «Обновить из Steam» и проверь ссылку.');
+        }
+        if (!payload.author_comment) {
+          throw new Error('Добавь только комментарий автора — название и описание уже берутся из Steam автоматически.');
         }
 
         if (state.editingId) {
