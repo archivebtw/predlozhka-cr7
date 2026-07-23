@@ -117,6 +117,15 @@
     .btn-danger { color: #ffb0bd; border-color: rgba(255,54,92,.22); background: rgba(255,54,92,.08); }
     .toggle { display: flex; align-items: center; gap: 10px; padding: 12px 13px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.028); }
     .toggle input { width: auto; accent-color: var(--red); }
+    .release-status-auto { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.028); transition: border-color .2s ease, background .2s ease; }
+    .release-status-auto strong { display: block; font-size: 13px; }
+    .release-status-auto small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .release-status-badge { flex: 0 0 auto; padding: 7px 10px; border-radius: 999px; font-size: 10px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+    .release-status-auto.upcoming { border-color: rgba(255,54,92,.34); background: rgba(255,54,92,.07); }
+    .release-status-auto.upcoming .release-status-badge { color: #fff; background: linear-gradient(135deg, var(--red), var(--orange)); }
+    .release-status-auto.released { border-color: rgba(85,224,157,.3); background: rgba(85,224,157,.06); }
+    .release-status-auto.released .release-status-badge { color: #072818; background: var(--green); }
+    .release-status-auto.unknown .release-status-badge { color: #d7d1e0; background: rgba(255,255,255,.1); }
     .steam-preview {
       display: none;
       overflow: hidden;
@@ -305,10 +314,13 @@
                 </div>
               </div>
 
-              <label class="toggle" for="comingSoon">
-                <input id="comingSoon" type="checkbox">
-                <span>Игра ещё не вышла</span>
-              </label>
+              <div class="release-status-auto unknown" id="releaseStatusAuto" aria-live="polite">
+                <div>
+                  <strong>Статус релиза определяется автоматически</strong>
+                  <small id="releaseStatusHint">Добавь Steam-ссылку или дату релиза.</small>
+                </div>
+                <span class="release-status-badge" id="releaseStatusBadge">Без даты</span>
+              </div>
               <label class="toggle" for="published">
                 <input id="published" type="checkbox" checked>
                 <span>Опубликовано на сайте</span>
@@ -369,7 +381,9 @@
       releaseDateText: document.getElementById('releaseDateText'),
       displayOrder: document.getElementById('displayOrder'),
       steamAppId: document.getElementById('steamAppId'),
-      comingSoon: document.getElementById('comingSoon'),
+      releaseStatusAuto: document.getElementById('releaseStatusAuto'),
+      releaseStatusBadge: document.getElementById('releaseStatusBadge'),
+      releaseStatusHint: document.getElementById('releaseStatusHint'),
       published: document.getElementById('published'),
       saveButton: document.getElementById('saveButton'),
       cancelEditButton: document.getElementById('cancelEditButton'),
@@ -385,7 +399,8 @@
       noticeTimer: null,
       steamImportTimer: null,
       steamImportPromise: null,
-      lastImportedSteamUrl: ''
+      lastImportedSteamUrl: '',
+      steamComingSoonFallback: false
     };
 
     function escapeHtml(value) {
@@ -445,23 +460,59 @@
       return Math.ceil((date - today) / 86400000);
     }
 
+    function isUpcomingByLocalDate(releaseDate, steamFallback = false) {
+      const date = parseDate(releaseDate);
+      if (!date) return Boolean(steamFallback);
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return date.getTime() > today.getTime();
+    }
+
+    function updateAutomaticReleaseStatus() {
+      const releaseDate = elements.releaseDate.value;
+      const hasDate = Boolean(parseDate(releaseDate));
+      const upcoming = isUpcomingByLocalDate(releaseDate, state.steamComingSoonFallback);
+      const days = hasDate ? daysUntil(releaseDate) : null;
+
+      elements.releaseStatusAuto.classList.remove('upcoming', 'released', 'unknown');
+      if (hasDate && upcoming) {
+        elements.releaseStatusAuto.classList.add('upcoming');
+        elements.releaseStatusBadge.textContent = days === 1 ? 'Завтра' : `Через ${days} дн.`;
+        elements.releaseStatusHint.textContent = 'Будущая дата определена по локальному времени этого устройства.';
+      } else if (hasDate) {
+        elements.releaseStatusAuto.classList.add('released');
+        elements.releaseStatusBadge.textContent = days === 0 ? 'Сегодня' : 'Вышла';
+        elements.releaseStatusHint.textContent = 'Дата релиза наступила по локальному времени этого устройства.';
+      } else if (state.steamComingSoonFallback) {
+        elements.releaseStatusAuto.classList.add('upcoming');
+        elements.releaseStatusBadge.textContent = 'Скоро';
+        elements.releaseStatusHint.textContent = 'Точной даты нет — временно используется статус Steam.';
+      } else {
+        elements.releaseStatusAuto.classList.add('unknown');
+        elements.releaseStatusBadge.textContent = 'Без даты';
+        elements.releaseStatusHint.textContent = 'Добавь Steam-ссылку или дату релиза.';
+      }
+      return upcoming;
+    }
+
     function releaseLabel(game) {
-      if (game.coming_soon && game.release_date) {
+      const upcoming = isUpcomingByLocalDate(game.release_date, game.coming_soon);
+      if (upcoming && game.release_date) {
         const days = daysUntil(game.release_date);
         if (days === 0) return 'Релиз сегодня';
         if (days === 1) return 'Релиз завтра';
         if (days > 1) return `Через ${days} дн.`;
         return 'Проверь дату';
       }
-      if (game.coming_soon) return 'Дата уточняется';
+      if (upcoming) return 'Дата уточняется';
       if (game.release_date) return 'Уже вышла';
       return 'Без даты';
     }
 
     function sortGames(games) {
       return [...games].sort((a, b) => {
-        const aUpcoming = Boolean(a.coming_soon);
-        const bUpcoming = Boolean(b.coming_soon);
+        const aUpcoming = isUpcomingByLocalDate(a.release_date, a.coming_soon);
+        const bUpcoming = isUpcomingByLocalDate(b.release_date, b.coming_soon);
         if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1;
         const aDate = parseDate(a.release_date)?.getTime() ?? Number.MAX_SAFE_INTEGER;
         const bDate = parseDate(b.release_date)?.getTime() ?? Number.MAX_SAFE_INTEGER;
@@ -500,7 +551,7 @@
                 </div>
               </div>
               <div class="admin-meta">
-                <span class="meta-pill ${game.coming_soon ? 'soon' : ''}">${escapeHtml(releaseLabel(game))}</span>
+                <span class="meta-pill ${isUpcomingByLocalDate(game.release_date, game.coming_soon) ? 'soon' : ''}">${escapeHtml(releaseLabel(game))}</span>
                 <span class="meta-pill">${escapeHtml(game.release_date_text || game.release_date || 'Дата не указана')}</span>
                 ${game.published ? '' : '<span class="meta-pill draft">Черновик</span>'}
               </div>
@@ -566,7 +617,8 @@
       elements.description.value = overwrite || !elements.description.value ? (data.description || elements.description.value) : elements.description.value;
       elements.releaseDate.value = data.releaseDate || '';
       elements.releaseDateText.value = data.releaseDateText || '';
-      elements.comingSoon.checked = Boolean(data.comingSoon);
+      state.steamComingSoonFallback = Boolean(data.comingSoon);
+      updateAutomaticReleaseStatus();
       setSteamPreview(data);
     }
 
@@ -630,6 +682,8 @@
       elements.cancelEditButton.hidden = true;
       setSteamPreview(null);
       state.lastImportedSteamUrl = '';
+      state.steamComingSoonFallback = false;
+      updateAutomaticReleaseStatus();
       clearTimeout(state.steamImportTimer);
     }
 
@@ -646,7 +700,8 @@
       elements.releaseDateText.value = game.release_date_text || '';
       elements.displayOrder.value = Number(game.display_order) || 0;
       elements.steamAppId.value = game.steam_app_id || '';
-      elements.comingSoon.checked = Boolean(game.coming_soon);
+      state.steamComingSoonFallback = Boolean(game.coming_soon);
+      updateAutomaticReleaseStatus();
       elements.published.checked = Boolean(game.published);
       elements.formTitle.textContent = 'Редактировать игру';
       elements.saveButton.textContent = 'Сохранить изменения';
@@ -674,7 +729,7 @@
         description: data.description || game.description,
         release_date: data.releaseDate || null,
         release_date_text: data.releaseDateText || '',
-        coming_soon: Boolean(data.comingSoon),
+        coming_soon: isUpcomingByLocalDate(data.releaseDate, data.comingSoon),
         steam_synced_at: new Date().toISOString()
       };
       const { error } = await state.client.from('games').update(payload).eq('id', game.id);
@@ -773,6 +828,10 @@
       await showLoggedOut();
     });
 
+    elements.releaseDate.addEventListener('input', updateAutomaticReleaseStatus);
+    elements.releaseDate.addEventListener('change', updateAutomaticReleaseStatus);
+    setInterval(updateAutomaticReleaseStatus, 60000);
+
     elements.steamUrl.addEventListener('input', () => {
       state.lastImportedSteamUrl = '';
       scheduleSteamAutoImport();
@@ -816,7 +875,7 @@
           steam_app_id: elements.steamAppId.value ? Number(elements.steamAppId.value) : null,
           release_date: elements.releaseDate.value || null,
           release_date_text: elements.releaseDateText.value.trim(),
-          coming_soon: elements.comingSoon.checked,
+          coming_soon: updateAutomaticReleaseStatus(),
           steam_synced_at: elements.steamAppId.value ? new Date().toISOString() : null
         };
 
