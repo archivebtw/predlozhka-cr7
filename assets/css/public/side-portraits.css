@@ -10,7 +10,7 @@
   position: absolute;
   top: 82px;
   width: var(--gutter-size);
-  height: 760px;
+  height: 860px;
   z-index: 2;
   overflow: visible;
   pointer-events: none;
@@ -44,7 +44,7 @@ header,
   --depth: 24px;
   --enter-x: 0px;
   --image-x: 0px;
-  --image-y: 0px;
+  --image-y: 8px;
   --light-x: 50%;
   --light-y: 24%;
   position: absolute;
@@ -79,7 +79,6 @@ header,
     scale(1);
 }
 
-/* The frame is deliberately smaller than the photo for a premium poster feel. */
 .side-portrait-card::before {
   content: "";
   position: absolute;
@@ -115,12 +114,12 @@ header,
   left: 50%;
   top: 50%;
   z-index: 2;
-  width: 114%;
+  width: 106%;
   height: auto;
   aspect-ratio: 3 / 4;
   display: block;
   object-fit: contain;
-  object-position: center;
+  object-position: center top;
   border-radius: 27px;
   filter:
     saturate(.96)
@@ -133,7 +132,7 @@ header,
       calc(-50% + var(--image-y)),
       38px
     )
-    scale(1.02);
+    scale(1.01);
   transition:
     filter .42s ease,
     transform .22s ease-out;
@@ -149,49 +148,47 @@ header,
 
 .side-portrait-label { display: none !important; }
 
-/* Entrance only. Once visible, cards remain stable in a staggered gallery layout. */
 .side-portraits--left .side-portrait-card { --enter-x: -125%; }
 .side-portraits--right .side-portrait-card { --enter-x: 125%; }
 
-/* Staggered columns with enough vertical air so faces remain fully visible. */
+/* More vertical air between cards and slightly larger asymmetry. */
 .side-portraits--left .side-portrait-card--slot-1 {
-  top: 4px;
+  top: 8px;
   left: clamp(8px, 4.5%, 20px);
   --depth: 26px;
   z-index: 3;
 }
 
 .side-portraits--left .side-portrait-card--slot-3 {
-  top: 244px;
-  left: clamp(42px, 15%, 62px);
+  top: 286px;
+  left: clamp(40px, 14%, 58px);
   --depth: 18px;
   z-index: 2;
 }
 
 .side-portraits--left .side-portrait-card--slot-5 {
-  top: 492px;
-  left: clamp(12px, 6%, 26px);
+  top: 586px;
+  left: clamp(10px, 5.5%, 24px);
   --depth: 22px;
   z-index: 1;
 }
 
-/* Right side keeps the same rhythm with a small intentional offset. */
 .side-portraits--right .side-portrait-card--slot-2 {
-  top: 10px;
+  top: 8px;
   right: clamp(8px, 4.5%, 20px);
   --depth: 26px;
   z-index: 3;
 }
 
 .side-portraits--right .side-portrait-card--slot-4 {
-  top: 256px;
-  right: clamp(40px, 14.5%, 60px);
+  top: 286px;
+  right: clamp(40px, 14%, 58px);
   --depth: 18px;
   z-index: 2;
 }
 
 .side-portraits--right .side-portrait-card--slot-6 {
-  top: 500px;
+  top: 586px;
   right: clamp(10px, 5.5%, 24px);
   --depth: 22px;
   z-index: 1;
@@ -208,28 +205,29 @@ body.modal-open .side-portraits {
 
 @media (min-width: 1580px) and (max-width: 1750px) {
   .side-portraits {
-    height: 734px;
+    height: 790px;
   }
 
   .side-portrait-card {
     --card-width: clamp(124px, calc(var(--gutter-size) * .64), 158px);
+    --image-y: 6px;
   }
 
   .side-portraits--left .side-portrait-card--slot-1,
-  .side-portraits--right .side-portrait-card--slot-2 { top: 14px; }
+  .side-portraits--right .side-portrait-card--slot-2 { top: 12px; }
 
   .side-portraits--left .side-portrait-card--slot-3 {
-    top: 226px;
-    left: clamp(32px, 12%, 48px);
+    top: 256px;
+    left: clamp(30px, 11.5%, 44px);
   }
 
   .side-portraits--right .side-portrait-card--slot-4 {
-    top: 238px;
-    right: clamp(30px, 12%, 46px);
+    top: 256px;
+    right: clamp(30px, 11.5%, 44px);
   }
 
-  .side-portraits--left .side-portrait-card--slot-5 { top: 444px; }
-  .side-portraits--right .side-portrait-card--slot-6 { top: 452px; }
+  .side-portraits--left .side-portrait-card--slot-5 { top: 518px; }
+  .side-portraits--right .side-portrait-card--slot-6 { top: 518px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
