@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#090711">
-  <meta name="description" content="ПРЕДЛОЖКА CR7 — игры для будущих стримов с датами выхода из Steam.">
-  <title>ПРЕДЛОЖКА CR7</title>
+  <meta name="theme-color" content="#0e0e10">
+  <meta name="description" content="ПРЕДЛОЖКА ТАНКЗОРА — игры для будущих стримов Twitch-канала Tankzor с данными из Steam.">
+  <title>ПРЕДЛОЖКА ТАНКЗОРА</title>
   <style>
     :root {
-      --bg: #05040a;
-      --bg-2: #0b0712;
-      --surface: rgba(15, 12, 24, .72);
-      --surface-strong: rgba(20, 16, 31, .94);
-      --text: #faf8ff;
-      --muted: #a9a2b8;
-      --red: #ff3158;
-      --orange: #ff793f;
-      --purple: #9b63ff;
-      --cyan: #4fe4ff;
+      --bg: #0e0e10;
+      --bg-2: #141218;
+      --surface: rgba(24, 24, 27, .78);
+      --surface-strong: rgba(31, 31, 35, .96);
+      --text: #f7f7f8;
+      --muted: #adadb8;
+      --red: #9147ff;
+      --orange: #bf94ff;
+      --purple: #772ce8;
+      --cyan: #00f5d4;
       --green: #5de5a5;
       --line: rgba(255,255,255,.09);
       --shadow: 0 34px 100px rgba(0,0,0,.55);
@@ -44,10 +44,10 @@
       z-index: -5;
       pointer-events: none;
       background:
-        radial-gradient(circle at 15% 8%, rgba(255,49,88,.27), transparent 28%),
+        radial-gradient(circle at 15% 8%, rgba(145,71,255,.27), transparent 28%),
         radial-gradient(circle at 86% 12%, rgba(155,99,255,.21), transparent 28%),
         radial-gradient(circle at 64% 86%, rgba(79,228,255,.12), transparent 32%),
-        linear-gradient(145deg, #05040a 10%, #0d0715 48%, #04050a 100%);
+        linear-gradient(145deg, #0e0e10 8%, #18121f 48%, #0b0b0d 100%);
       animation: aurora 18s ease-in-out infinite alternate;
     }
     body::after {
@@ -90,7 +90,7 @@
       pointer-events: none;
       border-radius: 50%;
       opacity: 0;
-      background: radial-gradient(circle, rgba(255,49,88,.16), rgba(155,99,255,.08) 36%, transparent 70%);
+      background: radial-gradient(circle, rgba(145,71,255,.16), rgba(155,99,255,.08) 36%, transparent 70%);
       filter: blur(10px);
       transform: translate3d(-50%, -50%, 0);
       transition: opacity .4s ease;
@@ -107,7 +107,7 @@
       top: 0;
       z-index: 50;
       border-bottom: 1px solid rgba(255,255,255,.075);
-      background: rgba(5,4,10,.62);
+      background: rgba(14,14,16,.72);
       backdrop-filter: blur(28px) saturate(145%);
       transform: translateY(-100%);
       opacity: 0;
@@ -138,7 +138,7 @@
       border-radius: 16px;
       color: #fff;
       background: linear-gradient(135deg, var(--red), var(--orange));
-      box-shadow: 0 0 38px rgba(255,49,88,.35), inset 0 1px rgba(255,255,255,.3);
+      box-shadow: 0 0 38px rgba(145,71,255,.35), inset 0 1px rgba(255,255,255,.3);
       transform: rotate(-4deg);
       transition: transform .45s var(--ease);
     }
@@ -183,7 +183,7 @@
     }
     .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #6d6875; }
     .status-dot.online { background: var(--green); box-shadow: 0 0 16px rgba(93,229,165,.85); animation: pulseDot 2s ease infinite; }
-    .status-dot.error { background: var(--red); box-shadow: 0 0 14px rgba(255,49,88,.55); }
+    .status-dot.error { background: var(--red); box-shadow: 0 0 14px rgba(145,71,255,.55); }
     @keyframes pulseDot { 50% { transform: scale(.72); opacity: .6; } }
 
     .hero {
@@ -196,7 +196,7 @@
       align-items: center;
     }
     .hero::before {
-      content: "CR7";
+      content: "TZ";
       position: absolute;
       left: -8vw;
       top: 40%;
@@ -222,10 +222,10 @@
       align-items: center;
       gap: 9px;
       padding: 10px 14px;
-      border: 1px solid rgba(255,49,88,.3);
+      border: 1px solid rgba(145,71,255,.3);
       border-radius: 999px;
-      color: #ff9caf;
-      background: rgba(255,49,88,.08);
+      color: #c9a7ff;
+      background: rgba(145,71,255,.08);
       box-shadow: inset 0 1px rgba(255,255,255,.04);
       font-size: 11px;
       font-weight: 900;
@@ -257,11 +257,11 @@
     body.is-ready h1 .word { opacity: 1; transform: translateY(0) rotateX(0); }
     h1 .accent {
       color: transparent;
-      background: linear-gradient(105deg, #fff 4%, #ffb2c0 22%, #ff3158 53%, #ff8a4d 76%, #fff 100%);
+      background: linear-gradient(105deg, #fff 4%, #ddd0ff 22%, #9147ff 53%, #a970ff 76%, #fff 100%);
       background-size: 220% auto;
       -webkit-background-clip: text;
       background-clip: text;
-      text-shadow: 0 0 60px rgba(255,49,88,.22);
+      text-shadow: 0 0 60px rgba(145,71,255,.22);
       animation: titleFlow 6s linear infinite;
     }
     @keyframes titleFlow { to { background-position: 220% center; } }
@@ -295,8 +295,8 @@
       min-height: 50px;
       padding: 12px 18px;
       border-radius: 15px;
-      background: linear-gradient(135deg, var(--red), #c90e43);
-      box-shadow: 0 16px 38px rgba(255,49,88,.23);
+      background: linear-gradient(135deg, var(--red), #772ce8);
+      box-shadow: 0 16px 38px rgba(145,71,255,.23);
       font-size: 12px;
       font-weight: 950;
       letter-spacing: .03em;
@@ -343,10 +343,10 @@
       right: -30px;
       bottom: -35px;
       border-radius: 50%;
-      background: rgba(255,49,88,.14);
+      background: rgba(145,71,255,.14);
       filter: blur(10px);
     }
-    .stat-chip:hover { transform: translateY(-5px); border-color: rgba(255,49,88,.28); background: rgba(255,255,255,.055); }
+    .stat-chip:hover { transform: translateY(-5px); border-color: rgba(145,71,255,.28); background: rgba(255,255,255,.055); }
     .stat-chip strong { display: block; font-size: 21px; letter-spacing: -.045em; }
     .stat-chip span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; font-weight: 850; text-transform: uppercase; letter-spacing: .12em; }
 
@@ -399,7 +399,7 @@
       cursor: pointer;
       outline: none;
     }
-    .next-release:focus-visible { box-shadow: 0 0 0 4px rgba(255,49,88,.24), var(--shadow), inset 0 1px rgba(255,255,255,.08); }
+    .next-release:focus-visible { box-shadow: 0 0 0 4px rgba(145,71,255,.24), var(--shadow), inset 0 1px rgba(255,255,255,.08); }
     .next-release[aria-disabled="true"] { cursor: default; }
     @keyframes cardFloat { 50% { transform: translateY(-9px); } }
     .next-release::before {
@@ -457,9 +457,9 @@
       padding: 12px 14px;
       border-radius: 15px;
       color: #fff;
-      background: linear-gradient(135deg, rgba(255,49,88,.96), rgba(255,121,63,.9));
+      background: linear-gradient(135deg, rgba(145,71,255,.96), rgba(191,148,255,.9));
       font-weight: 950;
-      box-shadow: 0 14px 36px rgba(255,49,88,.24);
+      box-shadow: 0 14px 36px rgba(145,71,255,.24);
       animation: countdownPulse 2.5s ease-in-out infinite;
     }
 
@@ -479,7 +479,7 @@
       font-size: 11px;
       font-weight: 900;
     }
-    @keyframes countdownPulse { 50% { box-shadow: 0 18px 46px rgba(255,49,88,.36); transform: translateY(-2px); } }
+    @keyframes countdownPulse { 50% { box-shadow: 0 18px 46px rgba(145,71,255,.36); transform: translateY(-2px); } }
 
 
     .hero-highlights {
@@ -520,18 +520,18 @@
       width: 100px;
       height: 100px;
       border-radius: 50%;
-      background: rgba(255,49,88,.12);
+      background: rgba(145,71,255,.12);
       filter: blur(18px);
       pointer-events: none;
     }
     .quick-game-card:not(:disabled):hover,
     .quick-game-card:not(:disabled):focus-visible {
       transform: translateY(-5px);
-      border-color: rgba(255,49,88,.34);
-      background: linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,49,88,.045));
+      border-color: rgba(145,71,255,.34);
+      background: linear-gradient(135deg, rgba(255,255,255,.075), rgba(145,71,255,.045));
       box-shadow: 0 18px 42px rgba(0,0,0,.25), inset 0 1px rgba(255,255,255,.06);
     }
-    .quick-game-card:focus-visible { outline: 3px solid rgba(255,49,88,.22); outline-offset: 2px; }
+    .quick-game-card:focus-visible { outline: 3px solid rgba(145,71,255,.22); outline-offset: 2px; }
     .quick-game-card:disabled { cursor: default; opacity: .58; }
     .quick-cover {
       width: 70px;
@@ -542,7 +542,7 @@
       border: 1px solid rgba(255,255,255,.1);
       border-radius: 16px;
       color: rgba(255,255,255,.42);
-      background: linear-gradient(135deg, rgba(255,49,88,.24), rgba(155,99,255,.14));
+      background: linear-gradient(135deg, rgba(145,71,255,.24), rgba(155,99,255,.14));
       font-size: 13px;
       font-weight: 1000;
       letter-spacing: -.03em;
@@ -552,7 +552,7 @@
     .quick-kicker {
       display: block;
       margin-bottom: 6px;
-      color: #ff91a7;
+      color: #c7a8ff;
       font-size: 9px;
       font-weight: 950;
       letter-spacing: .13em;
@@ -593,7 +593,7 @@
       font-size: 15px;
       transition: transform .3s var(--ease), background .3s ease;
     }
-    .quick-game-card:not(:disabled):hover .quick-arrow { transform: translateX(3px); background: rgba(255,49,88,.16); }
+    .quick-game-card:not(:disabled):hover .quick-arrow { transform: translateX(3px); background: rgba(145,71,255,.16); }
 
     .ticker-wrap {
       overflow: hidden;
@@ -669,7 +669,7 @@
       background: rgba(255,255,255,.045);
       transition: border-color .25s ease, box-shadow .25s ease, background .25s ease;
     }
-    .search:focus { border-color: rgba(255,49,88,.6); box-shadow: 0 0 0 5px rgba(255,49,88,.08); background: rgba(255,255,255,.06); }
+    .search:focus { border-color: rgba(145,71,255,.6); box-shadow: 0 0 0 5px rgba(145,71,255,.08); background: rgba(255,255,255,.06); }
     .filters { display: flex; gap: 7px; flex-wrap: wrap; }
     .filter-btn {
       min-height: 44px;
@@ -683,7 +683,7 @@
       transition: transform .22s var(--ease), border-color .22s ease, background .22s ease, color .22s ease;
     }
     .filter-btn:hover { transform: translateY(-3px); border-color: rgba(255,255,255,.2); color: #fff; }
-    .filter-btn.active { color: #fff; border-color: rgba(255,49,88,.4); background: linear-gradient(135deg, rgba(255,49,88,.18), rgba(155,99,255,.1)); box-shadow: inset 0 1px rgba(255,255,255,.05); }
+    .filter-btn.active { color: #fff; border-color: rgba(145,71,255,.4); background: linear-gradient(135deg, rgba(145,71,255,.18), rgba(155,99,255,.1)); box-shadow: inset 0 1px rgba(255,255,255,.05); }
 
     .catalog-stream { display: grid; gap: 52px; }
     .catalog-group { display: grid; gap: 18px; }
@@ -699,7 +699,7 @@
       align-items: center;
       gap: 9px;
       margin-bottom: 8px;
-      color: #ff91a7;
+      color: #c7a8ff;
       font-size: 10px;
       font-weight: 950;
       letter-spacing: .17em;
@@ -711,7 +711,7 @@
       height: 2px;
       border-radius: 999px;
       background: linear-gradient(90deg, var(--red), var(--orange));
-      box-shadow: 0 0 14px rgba(255,49,88,.55);
+      box-shadow: 0 0 14px rgba(145,71,255,.55);
     }
     .catalog-group[data-group="released"] .group-kicker { color: #8ff4bd; }
     .catalog-group[data-group="released"] .group-kicker::before { background: var(--green); box-shadow: 0 0 14px rgba(93,229,165,.4); }
@@ -773,10 +773,10 @@
     .game-card:hover,
     .game-card:focus-visible {
       --lift: -9px;
-      border-color: rgba(255,49,88,.38);
-      box-shadow: 0 34px 88px rgba(0,0,0,.52), 0 0 0 1px rgba(255,49,88,.065);
+      border-color: rgba(145,71,255,.38);
+      box-shadow: 0 34px 88px rgba(0,0,0,.52), 0 0 0 1px rgba(145,71,255,.065);
     }
-    .game-card:focus-visible { box-shadow: 0 0 0 4px rgba(255,49,88,.22), 0 34px 88px rgba(0,0,0,.52); }
+    .game-card:focus-visible { box-shadow: 0 0 0 4px rgba(145,71,255,.22), 0 34px 88px rgba(0,0,0,.52); }
     .game-card::before {
       content: "";
       position: absolute;
@@ -801,7 +801,7 @@
       pointer-events: none;
       background:
         linear-gradient(to top, rgba(4,3,8,.98) 0%, rgba(4,3,8,.82) 34%, rgba(4,3,8,.1) 76%),
-        linear-gradient(135deg, rgba(255,49,88,.16), transparent 42%);
+        linear-gradient(135deg, rgba(145,71,255,.16), transparent 42%);
     }
     .card-top {
       position: absolute;
@@ -838,10 +838,10 @@
       letter-spacing: .04em;
       box-shadow: 0 12px 28px rgba(0,0,0,.3);
     }
-    .release-badge.soon { background: linear-gradient(135deg, rgba(255,49,88,.96), rgba(255,121,63,.9)); border-color: transparent; animation: badgeGlow 2.8s ease-in-out infinite; }
+    .release-badge.soon { background: linear-gradient(135deg, rgba(145,71,255,.96), rgba(191,148,255,.9)); border-color: transparent; animation: badgeGlow 2.8s ease-in-out infinite; }
     .release-badge.released { color: #c8ffe1; background: rgba(24,102,70,.84); }
     .release-badge.unknown { color: #d6d0e2; }
-    @keyframes badgeGlow { 50% { box-shadow: 0 12px 34px rgba(255,49,88,.34); } }
+    @keyframes badgeGlow { 50% { box-shadow: 0 12px 34px rgba(145,71,255,.34); } }
     .card-bottom {
       position: absolute;
       inset: auto 0 0;
@@ -903,7 +903,7 @@
       font-weight: 950;
       transition: transform .22s var(--ease), opacity .22s ease, background .22s ease;
     }
-    .card-open-hint { color: #fff; background: linear-gradient(135deg, var(--red), #bd1740); box-shadow: 0 12px 28px rgba(255,49,88,.2); }
+    .card-open-hint { color: #fff; background: linear-gradient(135deg, var(--red), #5c16c5); box-shadow: 0 12px 28px rgba(145,71,255,.2); }
     .steam-button {
       color: #e8e3ee;
       border: 1px solid rgba(255,255,255,.16);
@@ -968,7 +968,7 @@
       line-height: 1;
       transition: transform .2s ease, background .2s ease;
     }
-    .modal-close:hover { transform: rotate(5deg) scale(1.05); background: rgba(255,49,88,.75); }
+    .modal-close:hover { transform: rotate(5deg) scale(1.05); background: rgba(145,71,255,.75); }
     .modal-media { position: sticky; top: 0; min-height: 100%; background: #17101f; overflow: hidden; }
     .modal-media img { width: 100%; height: 100%; min-height: 560px; display: block; object-fit: cover; }
     .modal-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,7,15,.7), transparent 55%); pointer-events: none; }
@@ -976,15 +976,15 @@
     .modal-content { padding: 52px 42px 40px; }
     .modal-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
     .modal-title { margin: 0; font-size: clamp(38px, 5vw, 68px); line-height: .92; letter-spacing: -.065em; text-wrap: balance; }
-    .modal-release { margin: 18px 0 0; color: #ff9caf; font-weight: 850; }
+    .modal-release { margin: 18px 0 0; color: #c9a7ff; font-weight: 850; }
     .modal-section { margin-top: 28px; }
-    .modal-section h3 { margin: 0 0 9px; color: #ff9caf; font-size: 10px; letter-spacing: .15em; text-transform: uppercase; }
+    .modal-section h3 { margin: 0 0 9px; color: #c9a7ff; font-size: 10px; letter-spacing: .15em; text-transform: uppercase; }
     .modal-section p { margin: 0; color: #d3cdd9; line-height: 1.72; white-space: pre-line; }
     .modal-comment {
       padding: 18px 19px;
-      border: 1px solid rgba(255,49,88,.18);
+      border: 1px solid rgba(145,71,255,.18);
       border-radius: 18px;
-      background: linear-gradient(135deg, rgba(255,49,88,.1), rgba(155,99,255,.065));
+      background: linear-gradient(135deg, rgba(145,71,255,.1), rgba(155,99,255,.065));
       color: #f0ebf4 !important;
     }
     .modal-footer { margin-top: 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -998,7 +998,7 @@
       border-radius: 14px;
       color: #fff;
       background: linear-gradient(135deg, var(--red), var(--orange));
-      box-shadow: 0 14px 34px rgba(255,49,88,.22);
+      box-shadow: 0 14px 34px rgba(145,71,255,.22);
       font-size: 12px;
       font-weight: 950;
       transition: transform .22s var(--ease), filter .22s ease;
@@ -1009,7 +1009,7 @@
     .message { grid-column: 1 / -1; padding: 54px 24px; border: 1px dashed rgba(255,255,255,.14); border-radius: var(--radius-lg); color: var(--muted); text-align: center; line-height: 1.65; background: rgba(255,255,255,.025); animation: messageIn .65s var(--ease); }
     @keyframes messageIn { from { opacity: 0; transform: translateY(22px); } }
     .message strong { display: block; margin-bottom: 7px; color: #fff; font-size: 22px; }
-    .message.error { border-color: rgba(255,49,88,.33); color: #ffc0cb; }
+    .message.error { border-color: rgba(145,71,255,.33); color: #e6dcff; }
 
     footer { position: relative; overflow: hidden; padding: 36px 0 52px; border-top: 1px solid var(--line); color: #777181; font-size: 11px; text-align: center; letter-spacing: .08em; text-transform: uppercase; }
     footer::before { content: ""; position: absolute; left: 50%; top: -1px; width: 180px; height: 1px; transform: translateX(-50%); background: linear-gradient(90deg, transparent, var(--red), transparent); box-shadow: 0 0 16px var(--red); }
@@ -1075,6 +1075,131 @@
       *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
       .game-card, .reveal, header, .eyebrow, h1 .word, .hero-copy, .hero-actions, .hero-stats, .hero-highlights, .next-release-wrap, .modal-panel, .modal-backdrop { opacity: 1 !important; transform: none !important; }
     }
+
+
+    /* Twitch-inspired Tankzor theme — visual layer only */
+    .brand-mark {
+      border-radius: 12px 12px 12px 4px;
+      background: linear-gradient(145deg, #a970ff, #772ce8 56%, #5c16c5);
+      box-shadow: 0 0 34px rgba(145,71,255,.38), inset 0 1px rgba(255,255,255,.28);
+      clip-path: polygon(0 0, 100% 0, 100% 78%, 78% 78%, 68% 100%, 68% 78%, 0 78%);
+      padding-bottom: 7px;
+    }
+    .brand-mark::before {
+      content: "";
+      position: absolute;
+      inset: 9px 10px 16px;
+      border: 2px solid rgba(255,255,255,.2);
+      pointer-events: none;
+    }
+    .brand > span:last-child { max-width: 230px; line-height: 1.05; }
+    .twitch-nav, .channel-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid rgba(191,148,255,.32);
+      color: #efe7ff;
+      background: rgba(145,71,255,.12);
+      font-size: 12px;
+      font-weight: 900;
+      transition: transform .25s var(--ease), background .25s ease, border-color .25s ease;
+    }
+    .twitch-nav { min-height: 38px; padding: 8px 12px; border-radius: 10px; }
+    .channel-cta { min-height: 50px; padding: 12px 17px; border-radius: 15px; }
+    .twitch-nav:hover, .channel-cta:hover {
+      transform: translateY(-3px);
+      border-color: rgba(191,148,255,.58);
+      background: rgba(145,71,255,.22);
+    }
+    .channel-icon { font-size: 17px; color: #bf94ff; }
+    .hero::before {
+      content: "TZ";
+      left: -3vw;
+      top: 43%;
+      color: rgba(145,71,255,.018);
+      -webkit-text-stroke: 1px rgba(191,148,255,.055);
+      letter-spacing: -.16em;
+      transform: translateY(-50%) rotate(-5deg);
+    }
+    h1 .accent {
+      font-size: .72em;
+      letter-spacing: -.075em;
+      background: linear-gradient(105deg, #fff 2%, #ddd0ff 24%, #a970ff 52%, #9147ff 76%, #fff 100%);
+      background-size: 220% auto;
+      text-shadow: 0 0 64px rgba(145,71,255,.28);
+    }
+    .eyebrow {
+      border-radius: 8px 8px 8px 2px;
+      border-color: rgba(145,71,255,.35);
+      color: #d9c5ff;
+      background: rgba(145,71,255,.11);
+    }
+    .hero-cta {
+      border-radius: 10px 10px 10px 3px;
+      background: linear-gradient(135deg, #9147ff, #772ce8 62%, #5c16c5);
+      box-shadow: 0 16px 40px rgba(145,71,255,.28);
+    }
+    .stat-chip, .quick-game-card, .catalog-toolbar, .game-card, .next-release, .modal-panel {
+      border-color: rgba(191,148,255,.13);
+      background-color: rgba(24,24,27,.72);
+    }
+    .next-release, .game-card, .quick-game-card {
+      box-shadow: 0 28px 80px rgba(0,0,0,.46), 0 0 0 1px rgba(145,71,255,.04);
+    }
+    .next-label, .release-badge, .badge, .card-badge {
+      border-radius: 7px 7px 7px 2px !important;
+    }
+    .filter-btn.active {
+      border-color: rgba(145,71,255,.52);
+      background: linear-gradient(135deg, rgba(145,71,255,.28), rgba(119,44,232,.15));
+      box-shadow: 0 0 0 1px rgba(145,71,255,.08), inset 0 1px rgba(255,255,255,.05);
+    }
+    .ticker-wrap {
+      border-color: rgba(145,71,255,.2);
+      background: linear-gradient(90deg, rgba(14,14,16,.96), rgba(40,22,58,.92), rgba(14,14,16,.96));
+    }
+    .ticker b { color: #a970ff; text-shadow: 0 0 16px rgba(145,71,255,.7); }
+    .chat-decor {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .chat-line {
+      position: absolute;
+      max-width: 300px;
+      padding: 9px 12px;
+      border-left: 3px solid rgba(145,71,255,.5);
+      border-radius: 3px 10px 10px 3px;
+      color: rgba(239,231,255,.34);
+      background: rgba(24,24,27,.22);
+      backdrop-filter: blur(8px);
+      font-size: 11px;
+      font-weight: 700;
+      opacity: 0;
+      animation: chatFloat 9s var(--ease) infinite;
+    }
+    .chat-line b { color: rgba(191,148,255,.54); }
+    .chat-line-1 { left: 4%; top: 18%; animation-delay: .4s; }
+    .chat-line-2 { right: 4%; top: 12%; animation-delay: 2.2s; }
+    .chat-line-3 { left: 44%; bottom: 12%; animation-delay: 4s; }
+    .chat-line-4 { right: 9%; bottom: 7%; animation-delay: 5.8s; }
+    @keyframes chatFloat {
+      0%, 12% { opacity: 0; transform: translateY(14px); }
+      22%, 72% { opacity: 1; transform: translateY(0); }
+      88%, 100% { opacity: 0; transform: translateY(-12px); }
+    }
+    footer a { color: #bf94ff; font-weight: 850; }
+    footer a:hover { color: #fff; }
+    @media (max-width: 760px) {
+      .twitch-nav { display: none; }
+      .brand > span:last-child { max-width: 180px; font-size: 14px; }
+      h1 .accent { font-size: .69em; }
+      .chat-decor { display: none; }
+    }
+
   </style>
 </head>
 <body>
@@ -1082,11 +1207,12 @@
   <div id="cursorGlow" class="cursor-glow" aria-hidden="true"></div>
   <header>
     <div class="shell nav">
-      <a class="brand" href="#top" aria-label="ПРЕДЛОЖКА CR7">
-        <span class="brand-mark">CR7</span>
-        <span>ПРЕДЛОЖКА<small>ИГРЫ ДЛЯ СТРИМОВ</small></span>
+      <a class="brand" href="#top" aria-label="ПРЕДЛОЖКА ТАНКЗОРА">
+        <span class="brand-mark">TZ</span>
+        <span>ПРЕДЛОЖКА ТАНКЗОРА<small>TWITCH · STEAM · СТРИМЫ</small></span>
       </a>
       <div class="nav-right">
+        <a class="twitch-nav" href="https://www.twitch.tv/tankzor" target="_blank" rel="noopener noreferrer"><span>◈</span> Tankzor</a>
         <a class="nav-link" href="#catalog">Каталог</a>
         <div class="status" title="Подключение к каталогу">
           <span id="statusDot" class="status-dot"></span>
@@ -1098,13 +1224,20 @@
 
   <main id="top">
     <section class="shell hero">
+      <div class="chat-decor" aria-hidden="true">
+        <span class="chat-line chat-line-1"><b>tankzor_chat:</b> во что играем дальше?</span>
+        <span class="chat-line chat-line-2"><b>viewer_7:</b> +КООП</span>
+        <span class="chat-line chat-line-3"><b>steam_hunter:</b> новая игра в предложке</span>
+        <span class="chat-line chat-line-4"><b>chat:</b> EZ ◆ EZ ◆ EZ</span>
+      </div>
       <div class="hero-copy-wrap">
-        <span class="eyebrow"><i></i> STEAM-РЕЛИЗЫ И ПРЕДЛОЖЕННЫЕ ИГРЫ</span>
-        <h1><span class="word">ПРЕДЛОЖКА</span><span class="word accent">CR7</span></h1>
-        <p class="hero-copy">Каталог сам поднимает вверх игры, которые выходят раньше остальных. Даты берутся из Steam, а карточки обновляются через Supabase без повторной загрузки сайта.</p>
+        <span class="eyebrow"><i></i> TWITCH-КАНАЛ TANKZOR · ИГРЫ ИЗ STEAM</span>
+        <h1><span class="word">ПРЕДЛОЖКА</span><span class="word accent">ТАНКЗОРА</span></h1>
+        <p class="hero-copy">Игровая предложка для стримов Танкзора: ближайшие релизы поднимаются вверх автоматически, данные подтягиваются из Steam, а каталог обновляется через Supabase в реальном времени.</p>
         <div class="hero-actions">
-          <a class="hero-cta" href="#catalog">Смотреть игры <span>↓</span></a>
-          <span class="hero-note">Ближайшие релизы всегда первыми</span>
+          <a class="hero-cta" href="#catalog">Открыть предложку <span>↓</span></a>
+          <a class="channel-cta" href="https://www.twitch.tv/tankzor" target="_blank" rel="noopener noreferrer"><span class="channel-icon">◈</span> Канал Tankzor</a>
+          <span class="hero-note">Игры для следующих стримов</span>
         </div>
         <div class="hero-stats">
           <div class="stat-chip"><strong id="totalCount">0</strong><span>игр в каталоге</span></div>
@@ -1129,17 +1262,17 @@
 
       <div id="heroHighlights" class="hero-highlights" aria-label="Быстрый обзор каталога">
         <button id="quickLatest" class="quick-game-card" type="button" disabled>
-          <span class="quick-cover">CR7</span>
+          <span class="quick-cover">TZ</span>
           <span class="quick-copy"><span class="quick-kicker">ПОСЛЕДНЯЯ ДОБАВЛЕННАЯ</span><span class="quick-title">Загрузка…</span><span class="quick-meta">Проверяем каталог</span></span>
           <span class="quick-arrow" aria-hidden="true">→</span>
         </button>
         <button id="quickNearest" class="quick-game-card" type="button" disabled>
-          <span class="quick-cover">CR7</span>
+          <span class="quick-cover">TZ</span>
           <span class="quick-copy"><span class="quick-kicker">БЛИЖАЙШИЙ РЕЛИЗ</span><span class="quick-title">Загрузка…</span><span class="quick-meta">Проверяем даты</span></span>
           <span class="quick-arrow" aria-hidden="true">→</span>
         </button>
         <button id="quickCoop" class="quick-game-card" type="button" disabled>
-          <span class="quick-cover">CR7</span>
+          <span class="quick-cover">TZ</span>
           <span class="quick-copy"><span class="quick-kicker">ЛУЧШИЙ КООП</span><span class="quick-title">Загрузка…</span><span class="quick-meta">Ищем игру для компании</span></span>
           <span class="quick-arrow" aria-hidden="true">→</span>
         </button>
@@ -1149,10 +1282,10 @@
     <div class="ticker-wrap" aria-hidden="true">
       <div id="infiniteTicker" class="ticker">
         <div class="ticker-group" data-ticker-group>
-          <span class="ticker-item">ПРЕДЛОЖКА CR7 <b>✦</b> STEAM RELEASES <b>✦</b> NEXT STREAM <b>✦</b> ИГРЫ ДЛЯ СТРИМА <b>✦</b></span>
+          <span class="ticker-item">ПРЕДЛОЖКА ТАНКЗОРА <b>◆</b> TWITCH CHAT <b>◆</b> STEAM RELEASES <b>◆</b> NEXT STREAM <b>◆</b> КООП ДЛЯ СТРИМА <b>◆</b></span>
         </div>
         <div class="ticker-group" data-ticker-clone aria-hidden="true">
-          <span class="ticker-item">ПРЕДЛОЖКА CR7 <b>✦</b> STEAM RELEASES <b>✦</b> NEXT STREAM <b>✦</b> ИГРЫ ДЛЯ СТРИМА <b>✦</b></span>
+          <span class="ticker-item">ПРЕДЛОЖКА ТАНКЗОРА <b>◆</b> TWITCH CHAT <b>◆</b> STEAM RELEASES <b>◆</b> NEXT STREAM <b>◆</b> КООП ДЛЯ СТРИМА <b>◆</b></span>
         </div>
       </div>
     </div>
@@ -1203,7 +1336,7 @@
     </div>
   </div>
 
-  <footer>ПРЕДЛОЖКА CR7 · Steam × Supabase · каталог будущих стримов</footer>
+  <footer>ПРЕДЛОЖКА ТАНКЗОРА · <a href="https://www.twitch.tv/tankzor" target="_blank" rel="noopener noreferrer">twitch.tv/tankzor</a> · Steam × Supabase</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
@@ -1436,7 +1569,7 @@
         button.disabled = true;
         button.removeAttribute('data-game-id');
         button.innerHTML = `
-          <span class="quick-cover">CR7</span>
+          <span class="quick-cover">TZ</span>
           <span class="quick-copy">
             <span class="quick-kicker">${escapeHtml(kicker)}</span>
             <span class="quick-title">${escapeHtml(emptyTitle)}</span>
@@ -1448,8 +1581,8 @@
 
       const coverUrl = safeExternalUrl(game.cover_url);
       const cover = coverUrl
-        ? `<span class="quick-cover"><img src="${escapeHtml(coverUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentElement.textContent='CR7'"></span>`
-        : '<span class="quick-cover">CR7</span>';
+        ? `<span class="quick-cover"><img src="${escapeHtml(coverUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentElement.textContent='TZ'"></span>`
+        : '<span class="quick-cover">TZ</span>';
 
       button.disabled = false;
       button.dataset.gameId = String(game.id);
@@ -1572,7 +1705,7 @@
       const steamUrl = safeExternalUrl(game.steam_url, ['steampowered.com', 'steamcommunity.com']);
       const coverUrl = safeExternalUrl(game.cover_url);
       const cover = coverUrl
-        ? `<img src="${escapeHtml(coverUrl)}" alt="Обложка ${escapeHtml(game.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML='<div class=&quot;cover-fallback&quot;>CR7</div>'">`
+        ? `<img src="${escapeHtml(coverUrl)}" alt="Обложка ${escapeHtml(game.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML='<div class=&quot;cover-fallback&quot;>TZ</div>'">`
         : `<div class="cover-fallback">${escapeHtml(game.title)}</div>`;
       const meta = getReleaseMeta(game);
       const coop = coopLabel(game);
@@ -1663,7 +1796,7 @@
       state.activeGameId = String(game.id);
       lastFocusedElement = document.activeElement;
       elements.modalMedia.innerHTML = coverUrl
-        ? `<img src="${escapeHtml(coverUrl)}" alt="Обложка ${escapeHtml(game.title)}" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML='<div class=&quot;cover-fallback&quot;>CR7</div>'">`
+        ? `<img src="${escapeHtml(coverUrl)}" alt="Обложка ${escapeHtml(game.title)}" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML='<div class=&quot;cover-fallback&quot;>TZ</div>'">`
         : `<div class="cover-fallback">${escapeHtml(game.title)}</div>`;
       elements.modalBadges.innerHTML = `
         <span class="release-badge ${meta.badgeClass}">${escapeHtml(meta.badge)}</span>
