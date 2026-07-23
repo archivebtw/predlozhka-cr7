@@ -153,29 +153,29 @@ header,
 .side-portraits--left .side-portrait-card { --enter-x: -125%; }
 .side-portraits--right .side-portrait-card { --enter-x: 125%; }
 
-/* Staggered left column */
+/* Staggered columns with enough vertical air so faces remain fully visible. */
 .side-portraits--left .side-portrait-card--slot-1 {
-  top: 6px;
+  top: 4px;
   left: clamp(8px, 4.5%, 20px);
   --depth: 26px;
   z-index: 3;
 }
 
 .side-portraits--left .side-portrait-card--slot-3 {
-  top: 188px;
-  left: clamp(44px, 16%, 66px);
+  top: 244px;
+  left: clamp(42px, 15%, 62px);
   --depth: 18px;
   z-index: 2;
 }
 
 .side-portraits--left .side-portrait-card--slot-5 {
-  top: 422px;
+  top: 492px;
   left: clamp(12px, 6%, 26px);
   --depth: 22px;
   z-index: 1;
 }
 
-/* Staggered right column — mirrored but not mathematically identical */
+/* Right side keeps the same rhythm with a small intentional offset. */
 .side-portraits--right .side-portrait-card--slot-2 {
   top: 10px;
   right: clamp(8px, 4.5%, 20px);
@@ -184,14 +184,14 @@ header,
 }
 
 .side-portraits--right .side-portrait-card--slot-4 {
-  top: 228px;
-  right: clamp(42px, 15%, 64px);
+  top: 256px;
+  right: clamp(40px, 14.5%, 60px);
   --depth: 18px;
   z-index: 2;
 }
 
 .side-portraits--right .side-portrait-card--slot-6 {
-  top: 430px;
+  top: 500px;
   right: clamp(10px, 5.5%, 24px);
   --depth: 22px;
   z-index: 1;
@@ -216,20 +216,20 @@ body.modal-open .side-portraits {
   }
 
   .side-portraits--left .side-portrait-card--slot-1,
-  .side-portraits--right .side-portrait-card--slot-2 { top: 16px; }
+  .side-portraits--right .side-portrait-card--slot-2 { top: 14px; }
 
   .side-portraits--left .side-portrait-card--slot-3 {
-    top: 190px;
-    left: clamp(34px, 13%, 52px);
+    top: 226px;
+    left: clamp(32px, 12%, 48px);
   }
 
   .side-portraits--right .side-portrait-card--slot-4 {
-    top: 218px;
-    right: clamp(32px, 13%, 50px);
+    top: 238px;
+    right: clamp(30px, 12%, 46px);
   }
 
-  .side-portraits--left .side-portrait-card--slot-5,
-  .side-portraits--right .side-portrait-card--slot-6 { top: 398px; }
+  .side-portraits--left .side-portrait-card--slot-5 { top: 444px; }
+  .side-portraits--right .side-portrait-card--slot-6 { top: 452px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
