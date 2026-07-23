@@ -101,12 +101,11 @@ header,
   pointer-events: none;
   border-radius: 30px;
   background:
-    radial-gradient(circle at var(--light-x) var(--light-y), rgba(255,255,255,.20), transparent 22%),
-    linear-gradient(180deg, rgba(255,255,255,.10), transparent 22%),
+    linear-gradient(180deg, rgba(255,255,255,.075), transparent 24%),
     linear-gradient(0deg, rgba(16,10,25,.18), transparent 34%);
   box-shadow: 0 0 0 1px rgba(255,255,255,.055) inset;
   mix-blend-mode: screen;
-  opacity: .78;
+  opacity: .52;
 }
 
 .side-portrait-card img {
