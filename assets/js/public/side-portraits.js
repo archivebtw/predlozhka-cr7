@@ -1,18 +1,19 @@
 'use strict';
 
-(function setupTankzorSidePortraits() {
+(function setupTankzorSidePortraitsV2() {
   const leftRail = document.getElementById('sidePortraitsLeft');
   const rightRail = document.getElementById('sidePortraitsRight');
-  if (!leftRail || !rightRail) return;
+  const hero = document.querySelector('.hero');
+  if (!leftRail || !rightRail || !hero) return;
 
-  const portraitDefinitions = [
-    { key: 'witcher', label: 'Witcher mode', names: ['tankzor-witcher'] },
-    { key: 'cyberpunk', label: 'Cyberpunk mode', names: ['tankzor-cyberpunk'] },
-    { key: 'mafia', label: 'Mafia mode', names: ['tankzor-mafia-2', 'tankzor-mafia2'] },
-    { key: 'rdr', label: 'Wild West mode', names: ['tankzor-rdr-2', 'tankzor-rdr2'] },
-    { key: 'survivor', label: 'Survivor mode', names: ['tankzor-last-of-us', 'tankzor-lastofus'] },
-    { key: 'warzone', label: 'Tactical mode', names: ['tankzor-warzone', 'tankzor-cod'] },
-    { key: 'elden', label: 'Dark fantasy mode', names: ['tankzor-elden-ring', 'tankzor-eldenring'] }
+  const portraits = [
+    { slot: 1, side: 'left', key: 'witcher', label: 'Ведьмак 3', names: ['tankzor-witcher'] },
+    { slot: 2, side: 'right', key: 'cyberpunk', label: 'Cyberpunk 2077', names: ['tankzor-cyberpunk'] },
+    { slot: 3, side: 'left', key: 'mafia', label: 'Mafia 2', names: ['tankzor-mafia-2', 'tankzor-mafia2'] },
+    { slot: 4, side: 'right', key: 'rdr', label: 'Red Dead Redemption 2', names: ['tankzor-rdr-2', 'tankzor-rdr2'] },
+    { slot: 5, side: 'left', key: 'survivor', label: 'The Last of Us', names: ['tankzor-last-of-us', 'tankzor-lastofus'] },
+    { slot: 6, side: 'right', key: 'warzone', label: 'Call of Duty', names: ['tankzor-warzone', 'tankzor-cod'] },
+    { slot: 7, side: 'left', key: 'elden', label: 'Elden Ring', names: ['tankzor-elden-ring', 'tankzor-eldenring'] }
   ];
 
   const directories = [
@@ -20,43 +21,12 @@
     './assets/images/portraits/'
   ];
   const extensions = ['png', 'webp', 'jpg', 'jpeg'];
-
+  const desktopQuery = window.matchMedia('(min-width: 1480px) and (min-height: 651px)');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const desktopQuery = window.matchMedia('(min-width: 1360px) and (min-height: 620px)');
-  let loadedPortraits = [];
-  let currentStep = -1;
-  let previousScrollY = window.scrollY;
-  let scrollTicking = false;
-  let pointerTicking = false;
 
-  function createCard(className) {
-    const figure = document.createElement('figure');
-    figure.className = `side-portrait-card ${className}`;
-
-    const image = document.createElement('img');
-    image.alt = '';
-    image.decoding = 'async';
-    image.draggable = false;
-
-    const caption = document.createElement('figcaption');
-    caption.className = 'side-portrait-caption';
-
-    figure.append(image, caption);
-    return { figure, image, caption };
-  }
-
-  function buildRail(rail) {
-    const stage = document.createElement('div');
-    stage.className = 'side-portrait-stage';
-    const back = createCard('side-portrait-card--back');
-    const front = createCard('side-portrait-card--front');
-    stage.append(back.figure, front.figure);
-    rail.replaceChildren(stage);
-    return { rail, stage, front, back, index: -1, timer: 0 };
-  }
-
-  const left = buildRail(leftRail);
-  const right = buildRail(rightRail);
+  let scrollQueued = false;
+  let pointerQueued = false;
+  let ready = false;
 
   function testImage(url) {
     return new Promise(resolve => {
@@ -67,136 +37,152 @@
     });
   }
 
-  async function findPortrait(definition) {
+  async function findImage(definition) {
     for (const directory of directories) {
       for (const name of definition.names) {
         for (const extension of extensions) {
-          const src = `${directory}${name}.${extension}`;
-          const found = await testImage(src);
-          if (found) return { ...definition, src: found };
+          const url = `${directory}${name}.${extension}`;
+          const result = await testImage(url);
+          if (result) return { ...definition, src: result };
         }
       }
     }
     return null;
   }
 
-  function applyPortrait(card, portrait) {
-    if (!portrait) return;
-    card.image.src = portrait.src;
-    card.caption.textContent = portrait.label;
+  function createPortraitCard(definition) {
+    const figure = document.createElement('figure');
+    figure.className = `side-portrait-card side-portrait-card--slot-${definition.slot}`;
+    figure.dataset.slot = String(definition.slot);
+    figure.dataset.side = definition.side;
+    figure.setAttribute('aria-hidden', 'true');
+
+    const image = document.createElement('img');
+    image.alt = '';
+    image.src = definition.src;
+    image.decoding = 'async';
+    image.loading = 'eager';
+    image.draggable = false;
+    image.addEventListener('load', () => figure.classList.add('is-loaded'), { once: true });
+
+    const label = document.createElement('figcaption');
+    label.className = 'side-portrait-label';
+    label.textContent = definition.label;
+
+    figure.append(image, label);
+    return figure;
   }
 
-  function setRailPortrait(railState, index, immediate = false) {
-    if (!loadedPortraits.length) return;
-    const normalized = ((index % loadedPortraits.length) + loadedPortraits.length) % loadedPortraits.length;
-    if (normalized === railState.index && !immediate) return;
-
-    const nextPortrait = loadedPortraits[normalized];
-    const backPortrait = loadedPortraits[(normalized + Math.min(2, loadedPortraits.length - 1)) % loadedPortraits.length];
-    window.clearTimeout(railState.timer);
-
-    if (immediate || reducedMotion.matches) {
-      applyPortrait(railState.front, nextPortrait);
-      applyPortrait(railState.back, backPortrait);
-      railState.index = normalized;
-      railState.rail.classList.add('is-ready');
-      return;
-    }
-
-    railState.rail.classList.add('is-switching');
-    railState.timer = window.setTimeout(() => {
-      applyPortrait(railState.front, nextPortrait);
-      applyPortrait(railState.back, backPortrait);
-      railState.index = normalized;
-      requestAnimationFrame(() => railState.rail.classList.remove('is-switching'));
-    }, 260);
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
   }
 
-  function updatePortraitsFromScroll(force = false) {
-    if (!desktopQuery.matches || !loadedPortraits.length) return;
-    const distance = Math.max(420, window.innerHeight * .55);
-    const step = Math.floor(window.scrollY / distance);
-    if (!force && step === currentStep) return;
-
-    const movingDown = window.scrollY >= previousScrollY;
-    previousScrollY = window.scrollY;
-    currentStep = step;
-    const base = ((step * 2) % loadedPortraits.length + loadedPortraits.length) % loadedPortraits.length;
-    setRailPortrait(left, movingDown ? base : base + 1, force);
-    setRailPortrait(right, movingDown ? base + 1 : base, force);
+  function smoothstep(min, max, value) {
+    const x = clamp((value - min) / (max - min), 0, 1);
+    return x * x * (3 - 2 * x);
   }
 
-  function updateScrollParallax() {
-    const scroll = window.scrollY;
-    const float = Math.sin(scroll / 380) * 7;
-    const roll = Math.sin(scroll / 720) * .9;
-    leftRail.style.setProperty('--float-y', `${float}px`);
-    rightRail.style.setProperty('--float-y', `${-float}px`);
-    leftRail.style.setProperty('--scroll-roll', `${roll}deg`);
-    rightRail.style.setProperty('--scroll-roll', `${roll}deg`);
+  function updateFromScroll() {
+    if (!ready || !desktopQuery.matches) return;
+
+    const heroTop = hero.offsetTop;
+    const heroHeight = Math.max(hero.offsetHeight, window.innerHeight * .62);
+    const localScroll = window.scrollY - heroTop;
+    const progress = clamp(localScroll / heroHeight, 0, 1.15);
+    const fade = 1 - smoothstep(.63, .96, progress);
+
+    leftRail.style.setProperty('--hero-fade', fade.toFixed(3));
+    rightRail.style.setProperty('--hero-fade', fade.toFixed(3));
+
+    const cards = document.querySelectorAll('.side-portrait-card');
+    cards.forEach(card => {
+      const slot = Number(card.dataset.slot || 1);
+      const direction = slot % 2 === 0 ? -1 : 1;
+      const depthFactor = 1 + (slot % 3) * .18;
+      const shift = (progress * 18 * direction * depthFactor).toFixed(2);
+      const rotation = (progress * .9 * direction).toFixed(2);
+      card.style.setProperty('--scroll-y', `${shift}px`);
+      card.style.setProperty('--scroll-z', `${rotation}deg`);
+    });
   }
 
   function onScroll() {
-    if (scrollTicking) return;
-    scrollTicking = true;
+    if (scrollQueued) return;
+    scrollQueued = true;
     requestAnimationFrame(() => {
-      updatePortraitsFromScroll();
-      if (!reducedMotion.matches) updateScrollParallax();
-      scrollTicking = false;
+      updateFromScroll();
+      scrollQueued = false;
+    });
+  }
+
+  function updatePointerTilt(event) {
+    if (!ready || !desktopQuery.matches || reducedMotion.matches) return;
+    const x = clamp(event.clientX / window.innerWidth - .5, -.5, .5);
+    const y = clamp(event.clientY / window.innerHeight - .5, -.5, .5);
+
+    document.querySelectorAll('.side-portrait-card').forEach(card => {
+      const slot = Number(card.dataset.slot || 1);
+      const depth = .55 + (slot % 4) * .16;
+      const side = card.dataset.side === 'left' ? 1 : -1;
+      card.style.setProperty('--pointer-x', `${(x * 8 * depth * side).toFixed(2)}deg`);
+      card.style.setProperty('--pointer-y', `${(y * -6 * depth).toFixed(2)}deg`);
     });
   }
 
   function onPointerMove(event) {
-    if (!desktopQuery.matches || reducedMotion.matches || pointerTicking) return;
-    pointerTicking = true;
+    if (pointerQueued) return;
+    pointerQueued = true;
     requestAnimationFrame(() => {
-      const x = (event.clientX / window.innerWidth) - .5;
-      const y = (event.clientY / window.innerHeight) - .5;
-      const tiltX = `${y * -5.5}deg`;
-      const tiltY = `${x * 5.5}deg`;
-      for (const rail of [leftRail, rightRail]) {
-        rail.style.setProperty('--tilt-x', tiltX);
-        rail.style.setProperty('--tilt-y', tiltY);
-      }
-      pointerTicking = false;
+      updatePointerTilt(event);
+      pointerQueued = false;
     });
   }
 
   function resetPointerTilt() {
-    for (const rail of [leftRail, rightRail]) {
-      rail.style.setProperty('--tilt-x', '0deg');
-      rail.style.setProperty('--tilt-y', '0deg');
-    }
+    document.querySelectorAll('.side-portrait-card').forEach(card => {
+      card.style.setProperty('--pointer-x', '0deg');
+      card.style.setProperty('--pointer-y', '0deg');
+    });
   }
 
-  function handleViewportChange() {
-    const canShow = desktopQuery.matches && loadedPortraits.length > 0;
-    leftRail.classList.toggle('is-ready', canShow);
-    rightRail.classList.toggle('is-ready', canShow);
-    if (canShow) updatePortraitsFromScroll(true);
+  function updateVisibility() {
+    const show = ready && desktopQuery.matches;
+    leftRail.classList.toggle('is-ready', show);
+    rightRail.classList.toggle('is-ready', show);
+    if (show) updateFromScroll();
   }
 
   async function init() {
-    const results = await Promise.all(portraitDefinitions.map(findPortrait));
-    loadedPortraits = results.filter(Boolean);
-
-    if (!loadedPortraits.length) {
-      console.warn('[Tankzor cards] Images were not found. Check assets/images/tankzor-games/ and file names.');
+    const found = (await Promise.all(portraits.map(findImage))).filter(Boolean);
+    if (!found.length) {
+      console.warn('[Tankzor portraits] Images not found in assets/images/tankzor-games/.');
       return;
     }
 
-    applyPortrait(left.front, loadedPortraits[0]);
-    applyPortrait(left.back, loadedPortraits[Math.min(2, loadedPortraits.length - 1)]);
-    applyPortrait(right.front, loadedPortraits[1 % loadedPortraits.length]);
-    applyPortrait(right.back, loadedPortraits[Math.min(3, loadedPortraits.length - 1)]);
+    const leftFragment = document.createDocumentFragment();
+    const rightFragment = document.createDocumentFragment();
 
-    handleViewportChange();
+    found.forEach(definition => {
+      const card = createPortraitCard(definition);
+      if (definition.side === 'left') leftFragment.append(card);
+      else rightFragment.append(card);
+    });
+
+    leftRail.replaceChildren(leftFragment);
+    rightRail.replaceChildren(rightFragment);
+    ready = true;
+
+    requestAnimationFrame(() => {
+      updateVisibility();
+      updateFromScroll();
+    });
+
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('pointermove', onPointerMove, { passive: true });
     document.addEventListener('mouseleave', resetPointerTilt);
-    desktopQuery.addEventListener('change', handleViewportChange);
-    reducedMotion.addEventListener('change', handleViewportChange);
+    desktopQuery.addEventListener('change', updateVisibility);
+    reducedMotion.addEventListener('change', resetPointerTilt);
   }
 
-  init().catch(error => console.warn('[Tankzor cards] Disabled:', error));
+  init().catch(error => console.warn('[Tankzor portraits] Disabled:', error));
 })();

@@ -1,78 +1,85 @@
-/* Decorative Tankzor game portraits. Hidden until the image files are available. */
+/*
+ * Tankzor game portraits — side composition v2.
+ * Seven fixed decorative cards live only in the free gutters around the hero.
+ * They never participate in page layout and fade away before the catalog.
+ */
 .side-portraits {
-  --portrait-width: 148px;
-  --portrait-height: 198px;
-  --rail-x: 0px;
-  --rail-y: 0px;
-  --tilt-x: 0deg;
-  --tilt-y: 0deg;
-  --scroll-roll: 0deg;
+  --gutter-size: max(0px, calc((100vw - 1180px) / 2));
+  --pointer-x: 0deg;
+  --pointer-y: 0deg;
+  --hero-fade: 1;
+  --rail-drift: 0px;
   position: fixed;
-  z-index: 8;
-  width: var(--portrait-width);
-  height: calc(var(--portrait-height) + 26px);
+  top: 70px;
+  bottom: auto;
+  width: var(--gutter-size);
+  height: min(690px, calc(100vh - 104px));
+  z-index: 5;
   pointer-events: none;
-  perspective: 1100px;
-  opacity: 0;
+  perspective: 1200px;
+  opacity: var(--hero-fade);
   visibility: hidden;
-  transition: opacity .85s var(--ease), visibility .85s linear;
-  contain: layout style;
+  transition: opacity .45s ease, visibility .45s linear;
+  contain: layout style paint;
 }
 
-.side-portraits--left {
-  left: max(6px, calc((100vw - 1180px) / 2 - 122px));
-  top: clamp(118px, 18vh, 188px);
-}
-
-.side-portraits--right {
-  right: max(6px, calc((100vw - 1180px) / 2 - 122px));
-  top: clamp(390px, 51vh, 610px);
-}
+.side-portraits--left { left: 0; }
+.side-portraits--right { right: 0; }
 
 .side-portraits.is-ready {
-  opacity: .92;
   visibility: visible;
 }
 
-.side-portrait-stage {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-
-.side-portraits--left .side-portrait-stage {
-  transform: translate3d(var(--rail-x), calc(var(--rail-y) + var(--float-y, 0px)), 0)
-    rotateX(var(--tilt-x))
-    rotateY(calc(12deg + var(--tilt-y)))
-    rotateZ(calc(-2.2deg + var(--scroll-roll)));
-}
-
-.side-portraits--right .side-portrait-stage {
-  transform: translate3d(var(--rail-x), calc(var(--rail-y) + var(--float-y, 0px)), 0)
-    rotateX(var(--tilt-x))
-    rotateY(calc(-12deg + var(--tilt-y)))
-    rotateZ(calc(2.2deg - var(--scroll-roll)));
-}
-
 .side-portrait-card {
+  --card-width: clamp(86px, calc(var(--gutter-size) * .42), 126px);
+  --base-rotate-x: 0deg;
+  --base-rotate-y: 0deg;
+  --base-rotate-z: 0deg;
+  --depth: 0px;
+  --scroll-y: 0px;
+  --scroll-z: 0deg;
+  --float-distance: 5px;
+  --enter-x: 0px;
+  --shine-delay: 0s;
   position: absolute;
-  inset: 0 auto auto 0;
-  width: var(--portrait-width);
-  height: var(--portrait-height);
+  width: var(--card-width);
+  aspect-ratio: 3 / 4;
   margin: 0;
   overflow: hidden;
-  border: 1px solid rgba(191,148,255,.38);
-  border-radius: 22px;
-  background: rgba(20,18,24,.86);
+  border: 1px solid rgba(191, 148, 255, .42);
+  border-radius: clamp(14px, 1.15vw, 21px);
+  background: rgba(17, 12, 25, .92);
   box-shadow:
-    0 28px 62px rgba(0,0,0,.52),
-    0 0 0 1px rgba(255,255,255,.04) inset,
-    0 0 42px rgba(145,71,255,.16);
+    0 22px 48px rgba(0, 0, 0, .48),
+    0 0 0 1px rgba(255, 255, 255, .035) inset,
+    0 0 34px rgba(145, 71, 255, .15);
+  opacity: 0;
   transform-style: preserve-3d;
   backface-visibility: hidden;
-  will-change: opacity, transform;
+  will-change: transform, opacity;
+  transform:
+    translate3d(var(--enter-x), calc(var(--scroll-y) + var(--rail-drift)), var(--depth))
+    rotateX(calc(var(--base-rotate-x) + var(--pointer-y)))
+    rotateY(calc(var(--base-rotate-y) + var(--pointer-x)))
+    rotateZ(calc(var(--base-rotate-z) + var(--scroll-z)))
+    scale(.88);
+  transition:
+    opacity .72s ease,
+    transform 1.05s cubic-bezier(.2,.84,.2,1),
+    filter .5s ease,
+    box-shadow .5s ease;
+  animation: sidePortraitIdle 6.8s ease-in-out infinite;
+  animation-delay: var(--shine-delay);
+}
+
+.side-portraits.is-ready .side-portrait-card {
+  opacity: .91;
+  transform:
+    translate3d(0, calc(var(--scroll-y) + var(--rail-drift)), var(--depth))
+    rotateX(calc(var(--base-rotate-x) + var(--pointer-y)))
+    rotateY(calc(var(--base-rotate-y) + var(--pointer-x)))
+    rotateZ(calc(var(--base-rotate-z) + var(--scroll-z)))
+    scale(1);
 }
 
 .side-portrait-card::before {
@@ -82,20 +89,22 @@
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(255,255,255,.08), transparent 22%),
-    linear-gradient(0deg, rgba(7,5,11,.78), transparent 36%);
+    linear-gradient(180deg, rgba(255,255,255,.10), transparent 25%),
+    linear-gradient(0deg, rgba(6,4,10,.82), transparent 35%),
+    radial-gradient(circle at 50% 0%, rgba(145,71,255,.14), transparent 42%);
 }
 
 .side-portrait-card::after {
   content: "";
   position: absolute;
-  inset: -35%;
+  inset: -45%;
   z-index: 3;
   pointer-events: none;
-  opacity: .55;
-  background: linear-gradient(110deg, transparent 41%, rgba(255,255,255,.34) 49%, transparent 57%);
-  transform: translateX(-78%) rotate(9deg);
-  animation: sidePortraitShine 6.8s ease-in-out infinite;
+  opacity: .42;
+  background: linear-gradient(110deg, transparent 43%, rgba(255,255,255,.35) 50%, transparent 57%);
+  transform: translateX(-88%) rotate(10deg);
+  animation: sidePortraitShine 7.8s ease-in-out infinite;
+  animation-delay: var(--shine-delay);
 }
 
 .side-portrait-card img {
@@ -103,146 +112,182 @@
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: 50% 28%;
-  filter: saturate(.93) contrast(1.05) brightness(.88);
-  transform: scale(1.035);
-  transition: filter .7s ease, transform 1.2s var(--ease);
+  object-position: 50% 25%;
+  filter: saturate(.88) contrast(1.06) brightness(.82);
+  transform: scale(1.04) translateZ(8px);
+  transition: filter .55s ease, transform .9s cubic-bezier(.2,.84,.2,1);
 }
 
-.side-portrait-card--front {
-  z-index: 3;
-  transform: translateZ(28px);
-  animation: sidePortraitFloat 6.2s ease-in-out infinite;
-  transition: opacity .42s ease, transform .62s var(--ease), filter .42s ease;
+.side-portrait-card.is-loaded:hover img {
+  filter: saturate(1) contrast(1.07) brightness(.92);
 }
 
-.side-portrait-card--back {
-  z-index: 1;
-  opacity: .28;
-  filter: saturate(.72) blur(.2px);
-  transition: opacity .55s ease, transform .72s var(--ease);
-}
-
-.side-portraits--left .side-portrait-card--back {
-  transform: translate3d(-13px, 20px, -46px) rotateY(-5deg) rotateZ(-5deg) scale(.91);
-}
-
-.side-portraits--right .side-portrait-card--back {
-  transform: translate3d(13px, 20px, -46px) rotateY(5deg) rotateZ(5deg) scale(.91);
-}
-
-.side-portrait-caption {
+.side-portrait-label {
   position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 11px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
   z-index: 4;
   display: flex;
   align-items: center;
-  gap: 7px;
-  color: rgba(255,255,255,.9);
-  font-size: 8px;
+  min-width: 0;
+  gap: 6px;
+  color: rgba(255,255,255,.91);
+  font-size: clamp(5px, .43vw, 8px);
   font-weight: 950;
-  letter-spacing: .12em;
+  line-height: 1.1;
+  letter-spacing: .10em;
   text-transform: uppercase;
-  text-shadow: 0 2px 12px rgba(0,0,0,.7);
+  text-shadow: 0 2px 10px rgba(0,0,0,.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.side-portrait-caption::before {
+.side-portrait-label::before {
   content: "";
-  flex: 0 0 7px;
-  width: 7px;
-  height: 7px;
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
   border-radius: 2px;
   background: #9147ff;
-  box-shadow: 0 0 12px rgba(145,71,255,.9);
+  box-shadow: 0 0 11px rgba(145,71,255,.95);
 }
 
-.side-portraits.is-switching .side-portrait-card--front {
+/* Left gutter: slots 1, 3, 5 and the smaller seventh depth card. */
+.side-portraits--left .side-portrait-card {
+  --enter-x: -130%;
+  --base-rotate-y: 10deg;
+}
+
+.side-portraits--left .side-portrait-card--slot-1 {
+  top: 7%;
+  left: clamp(10px, 8%, 30px);
+  --card-width: clamp(94px, calc(var(--gutter-size) * .44), 128px);
+  --base-rotate-z: -3.4deg;
+  --depth: 28px;
+  --float-distance: 7px;
+  --shine-delay: -.8s;
+}
+
+.side-portraits--left .side-portrait-card--slot-3 {
+  top: 36%;
+  left: clamp(30px, 25%, 82px);
+  --card-width: clamp(88px, calc(var(--gutter-size) * .39), 114px);
+  --base-rotate-y: 13deg;
+  --base-rotate-z: 2.8deg;
+  --depth: 12px;
+  --shine-delay: -2.3s;
+}
+
+.side-portraits--left .side-portrait-card--slot-5 {
+  top: 68%;
+  left: clamp(8px, 7%, 26px);
+  --card-width: clamp(80px, calc(var(--gutter-size) * .35), 104px);
+  --base-rotate-y: 8deg;
+  --base-rotate-z: -4deg;
+  --depth: 4px;
+  --shine-delay: -4.1s;
+}
+
+.side-portraits--left .side-portrait-card--slot-7 {
+  top: 53%;
+  right: clamp(5px, 3%, 16px);
+  --card-width: clamp(70px, calc(var(--gutter-size) * .29), 90px);
+  --base-rotate-y: 18deg;
+  --base-rotate-z: 5.5deg;
+  --depth: -20px;
+  --float-distance: 4px;
+  --shine-delay: -5.2s;
   opacity: 0;
-  filter: blur(3px);
+  filter: saturate(.74) brightness(.78);
 }
 
-.side-portraits--left.is-switching .side-portrait-card--front {
-  transform: translate3d(-62px, 8px, 10px) rotateY(34deg) rotateZ(-8deg) scale(.92);
+.side-portraits.is-ready .side-portrait-card--slot-7 {
+  opacity: .64;
 }
 
-.side-portraits--right.is-switching .side-portrait-card--front {
-  transform: translate3d(62px, 8px, 10px) rotateY(-34deg) rotateZ(8deg) scale(.92);
+/* Right gutter: slots 2, 4 and 6. */
+.side-portraits--right .side-portrait-card {
+  --enter-x: 130%;
+  --base-rotate-y: -10deg;
 }
 
-.side-portraits.is-switching .side-portrait-card--back {
-  opacity: .08;
+.side-portraits--right .side-portrait-card--slot-2 {
+  top: 8%;
+  right: clamp(10px, 8%, 30px);
+  --card-width: clamp(94px, calc(var(--gutter-size) * .44), 128px);
+  --base-rotate-z: 3.2deg;
+  --depth: 26px;
+  --float-distance: 7px;
+  --shine-delay: -1.6s;
+}
+
+.side-portraits--right .side-portrait-card--slot-4 {
+  top: 39%;
+  right: clamp(28px, 24%, 80px);
+  --card-width: clamp(88px, calc(var(--gutter-size) * .39), 114px);
+  --base-rotate-y: -13deg;
+  --base-rotate-z: -2.7deg;
+  --depth: 11px;
+  --shine-delay: -3.2s;
+}
+
+.side-portraits--right .side-portrait-card--slot-6 {
+  top: 69%;
+  right: clamp(8px, 7%, 26px);
+  --card-width: clamp(80px, calc(var(--gutter-size) * .35), 104px);
+  --base-rotate-y: -8deg;
+  --base-rotate-z: 4deg;
+  --depth: 3px;
+  --shine-delay: -4.7s;
 }
 
 body.modal-open .side-portraits {
-  opacity: 0;
-  visibility: hidden;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
-@keyframes sidePortraitFloat {
-  0%, 100% { translate: 0 0; }
-  50% { translate: 0 -7px; }
+@keyframes sidePortraitIdle {
+  0%, 100% { margin-top: 0; }
+  50% { margin-top: calc(var(--float-distance) * -1); }
 }
 
 @keyframes sidePortraitShine {
-  0%, 56% { transform: translateX(-78%) rotate(9deg); }
-  72%, 100% { transform: translateX(78%) rotate(9deg); }
+  0%, 58% { transform: translateX(-88%) rotate(10deg); }
+  74%, 100% { transform: translateX(88%) rotate(10deg); }
 }
 
-/* The cards only appear when the viewport has true side gutters. */
-@media (max-width: 1359px), (max-height: 619px) {
+/* Side cards need real gutters. They are deliberately disabled on laptops/tablets. */
+@media (max-width: 1479px), (max-height: 650px) {
   .side-portraits { display: none !important; }
 }
 
-/* Works at 125% browser zoom too: compact cards stay inside the side gutters. */
-@media (min-width: 1360px) and (max-width: 1599px) {
+@media (min-width: 1480px) and (max-width: 1649px) {
   .side-portraits {
-    --portrait-width: 104px;
-    --portrait-height: 146px;
+    --gutter-size: max(0px, calc((100vw - 1140px) / 2));
+    height: min(625px, calc(100vh - 96px));
   }
 
-  .side-portraits--left {
-    left: max(4px, calc((100vw - 1160px) / 2 - 104px));
-    top: clamp(118px, 17vh, 170px);
-  }
-
-  .side-portraits--right {
-    right: max(4px, calc((100vw - 1160px) / 2 - 104px));
-    top: clamp(360px, 49vh, 560px);
-  }
-
-  .side-portrait-caption {
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
-    font-size: 6px;
-    letter-spacing: .08em;
-  }
+  .side-portrait-label { display: none; }
+  .side-portrait-card { border-radius: 14px; }
 }
 
-@media (min-width: 1600px) and (max-width: 1799px) {
+@media (min-width: 1650px) and (max-width: 1850px) {
   .side-portraits {
-    --portrait-width: 126px;
-    --portrait-height: 174px;
-  }
-
-  .side-portraits--left {
-    left: max(6px, calc((100vw - 1180px) / 2 - 122px));
-  }
-
-  .side-portraits--right {
-    right: max(6px, calc((100vw - 1180px) / 2 - 122px));
+    --gutter-size: max(0px, calc((100vw - 1180px) / 2));
+    height: min(665px, calc(100vh - 100px));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .side-portrait-card,
   .side-portrait-card::after,
-  .side-portrait-stage {
+  .side-portrait-card img {
     animation: none !important;
     transition: none !important;
   }
 
-  .side-portraits.is-ready { opacity: .72; }
+  .side-portraits.is-ready .side-portrait-card { opacity: .78; }
+  .side-portraits.is-ready .side-portrait-card--slot-7 { opacity: .48; }
 }
