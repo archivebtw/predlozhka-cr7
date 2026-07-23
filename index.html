@@ -568,9 +568,14 @@
       transform: translateY(46px) rotateX(var(--rx)) rotateY(var(--ry));
       transform-style: preserve-3d;
       transition: opacity .8s var(--ease), transform .8s var(--ease), border-color .32s ease, box-shadow .32s ease;
-      transition-delay: var(--delay, 0ms);
+      transition-delay: 0ms;
+      will-change: transform, opacity;
     }
     .game-card.is-visible { opacity: 1; transform: translateY(var(--lift)) rotateX(var(--rx)) rotateY(var(--ry)); }
+    .game-card.tilt-ready {
+      transition: opacity .8s var(--ease), transform .14s ease-out, border-color .32s ease, box-shadow .32s ease;
+      transition-delay: 0ms;
+    }
     .game-card:hover { --lift: -10px; border-color: rgba(255,49,88,.34); box-shadow: 0 34px 88px rgba(0,0,0,.48), 0 0 0 1px rgba(255,49,88,.05); }
     .game-card::before {
       content: "";
@@ -1070,10 +1075,21 @@
       if (revealObserver) revealObserver.disconnect();
       revealObserver = new IntersectionObserver(entries => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            revealObserver.unobserve(entry.target);
-          }
+          if (!entry.isIntersecting) return;
+
+          const target = entry.target;
+          const isCard = target.classList.contains('game-card');
+          const delay = isCard
+            ? Math.max(0, Number.parseInt(target.style.getPropertyValue('--delay'), 10) || 0)
+            : 0;
+
+          revealObserver.unobserve(target);
+          window.setTimeout(() => {
+            target.classList.add('is-visible');
+            if (isCard) {
+              window.setTimeout(() => target.classList.add('tilt-ready'), 850);
+            }
+          }, delay);
         });
       }, { threshold: .12, rootMargin: '0px 0px -40px' });
 
