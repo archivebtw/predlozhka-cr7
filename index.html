@@ -604,21 +604,39 @@
       transform: rotate(-1deg) scale(1.015);
     }
     .ticker {
+      --ticker-gap: 34px;
+      --ticker-shift: -50%;
+      --ticker-duration: 24s;
       width: max-content;
       display: flex;
       align-items: center;
-      gap: 34px;
+      gap: 0;
       padding: 13px 0;
       color: #8f889b;
       font-size: 11px;
       font-weight: 950;
       letter-spacing: .18em;
       text-transform: uppercase;
-      animation: tickerMove 24s linear infinite;
+      white-space: nowrap;
+      will-change: transform;
+      backface-visibility: hidden;
+      transform: translate3d(0, 0, 0);
     }
-    .ticker span { display: inline-flex; align-items: center; gap: 34px; }
+    .ticker.is-running { animation: tickerMove var(--ticker-duration) linear infinite; }
+    .ticker-group {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: var(--ticker-gap);
+      min-width: max-content;
+      padding-right: var(--ticker-gap);
+    }
+    .ticker-item { display: inline-flex; flex: 0 0 auto; align-items: center; gap: var(--ticker-gap); }
     .ticker b { color: var(--red); font-size: 15px; }
-    @keyframes tickerMove { to { transform: translateX(-50%); } }
+    @keyframes tickerMove {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(var(--ticker-shift), 0, 0); }
+    }
 
     .catalog-section { padding: 26px 0 98px; }
     .catalog-toolbar {
@@ -1129,9 +1147,13 @@
     </section>
 
     <div class="ticker-wrap" aria-hidden="true">
-      <div class="ticker">
-        <span>ПРЕДЛОЖКА CR7 <b>✦</b> STEAM RELEASES <b>✦</b> NEXT STREAM <b>✦</b> ИГРЫ ДЛЯ СТРИМА <b>✦</b></span>
-        <span>ПРЕДЛОЖКА CR7 <b>✦</b> STEAM RELEASES <b>✦</b> NEXT STREAM <b>✦</b> ИГРЫ ДЛЯ СТРИМА <b>✦</b></span>
+      <div id="infiniteTicker" class="ticker">
+        <div class="ticker-group" data-ticker-group>
+          <span class="ticker-item">ПРЕДЛОЖКА CR7 <b>✦</b> STEAM RELEASES <b>✦</b> NEXT STREAM <b>✦</b> ИГРЫ ДЛЯ СТРИМА <b>✦</b></span>
+        </div>
+        <div class="ticker-group" data-ticker-clone aria-hidden="true">
+          <span class="ticker-item">ПРЕДЛОЖКА CR7 <b>✦</b> STEAM RELEASES <b>✦</b> NEXT STREAM <b>✦</b> ИГРЫ ДЛЯ СТРИМА <b>✦</b></span>
+        </div>
       </div>
     </div>
 
@@ -1223,6 +1245,60 @@
 
     const state = { games: [], query: '', filter: 'all', channel: null, activeGameId: null };
     let lastFocusedElement = null;
+
+    function setupInfiniteTicker() {
+      const ticker = document.getElementById('infiniteTicker');
+      const wrap = ticker?.closest('.ticker-wrap');
+      const sourceGroup = ticker?.querySelector('[data-ticker-group]');
+      const cloneGroup = ticker?.querySelector('[data-ticker-clone]');
+      if (!ticker || !wrap || !sourceGroup || !cloneGroup) return;
+
+      const baseMarkup = sourceGroup.innerHTML;
+      let resizeTimer = 0;
+
+      const rebuild = () => {
+        ticker.classList.remove('is-running');
+        ticker.style.removeProperty('--ticker-shift');
+        ticker.style.removeProperty('--ticker-duration');
+        sourceGroup.innerHTML = baseMarkup;
+        cloneGroup.innerHTML = '';
+
+        const targetWidth = Math.max(wrap.clientWidth * 1.25, wrap.clientWidth + 320);
+        const template = sourceGroup.firstElementChild;
+        if (!template) return;
+
+        let safety = 0;
+        while (sourceGroup.scrollWidth < targetWidth && safety < 20) {
+          sourceGroup.appendChild(template.cloneNode(true));
+          safety += 1;
+        }
+
+        cloneGroup.innerHTML = sourceGroup.innerHTML;
+        const distance = sourceGroup.getBoundingClientRect().width;
+        const pixelsPerSecond = 76;
+        const duration = Math.max(18, distance / pixelsPerSecond);
+
+        ticker.style.setProperty('--ticker-shift', `${-distance}px`);
+        ticker.style.setProperty('--ticker-duration', `${duration.toFixed(2)}s`);
+        void ticker.offsetWidth;
+        ticker.classList.add('is-running');
+      };
+
+      const scheduleRebuild = () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(rebuild, 120);
+      };
+
+      if ('ResizeObserver' in window) {
+        const observer = new ResizeObserver(scheduleRebuild);
+        observer.observe(wrap);
+      } else {
+        window.addEventListener('resize', scheduleRebuild, { passive: true });
+      }
+
+      if (document.fonts?.ready) document.fonts.ready.then(rebuild).catch(rebuild);
+      else rebuild();
+    }
 
     function escapeHtml(value) {
       return String(value ?? '').replace(/[&<>'"]/g, char => ({
@@ -1783,6 +1859,7 @@
     }
 
     requestAnimationFrame(() => document.body.classList.add('is-ready'));
+    setupInfiniteTicker();
     activateDynamicEffects();
     start();
   </script>
