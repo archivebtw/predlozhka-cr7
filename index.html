@@ -458,6 +458,23 @@
       box-shadow: 0 14px 36px rgba(255,49,88,.24);
       animation: countdownPulse 2.5s ease-in-out infinite;
     }
+
+    .next-coop[hidden] { display: none !important; }
+    .next-coop {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      width: fit-content;
+      margin-top: 10px;
+      padding: 8px 10px;
+      border: 1px solid rgba(93,229,165,.26);
+      border-radius: 12px;
+      color: #d4ffe8;
+      background: rgba(8,30,22,.52);
+      backdrop-filter: blur(12px);
+      font-size: 11px;
+      font-weight: 900;
+    }
     @keyframes countdownPulse { 50% { box-shadow: 0 18px 46px rgba(255,49,88,.36); transform: translateY(-2px); } }
 
     .ticker-wrap {
@@ -610,6 +627,24 @@
     .priority .game-body { padding: 30px; }
     .release-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 13px; color: #9f98ad; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; }
     .release-line strong { color: #ff9fb0; text-align: right; }
+    .game-features { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 13px; }
+    .coop-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      width: fit-content;
+      padding: 8px 10px;
+      border: 1px solid rgba(93,229,165,.24);
+      border-radius: 12px;
+      color: #caffe2;
+      background: linear-gradient(135deg, rgba(93,229,165,.11), rgba(79,228,255,.055));
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: .045em;
+      text-transform: uppercase;
+      box-shadow: inset 0 1px rgba(255,255,255,.035);
+    }
+    .coop-badge::before { content: '👥'; font-size: 13px; }
     .game-body h3 { margin: 0 0 13px; font-size: 26px; line-height: 1.07; letter-spacing: -.045em; text-wrap: balance; }
     .priority .game-body h3 { font-size: 40px; }
     .description { margin: 0; color: #c7c1cf; line-height: 1.66; white-space: pre-line; }
@@ -747,6 +782,7 @@
             <h2 id="nextTitle">Загрузка каталога…</h2>
             <p id="nextDateText">Проверяем даты игр в Steam.</p>
             <div id="nextCountdown" class="next-countdown">Синхронизация…</div>
+            <div id="nextCoop" class="next-coop" hidden>👥 Кооператив</div>
           </div>
         </aside>
       </div>
@@ -799,6 +835,7 @@
       nextTitle: document.getElementById('nextTitle'),
       nextDateText: document.getElementById('nextDateText'),
       nextCountdown: document.getElementById('nextCountdown'),
+      nextCoop: document.getElementById('nextCoop'),
       filters: [...document.querySelectorAll('[data-filter]')]
     };
 
@@ -853,6 +890,31 @@
       if (last === 1) return 'день';
       if (last >= 2 && last <= 4) return 'дня';
       return 'дней';
+    }
+
+    function playerWord(number) {
+      const value = Math.abs(Number(number) || 0) % 100;
+      const last = value % 10;
+      if (value > 10 && value < 20) return 'игроков';
+      if (last === 1) return 'игрок';
+      if (last >= 2 && last <= 4) return 'игрока';
+      return 'игроков';
+    }
+
+    function coopLabel(game) {
+      if (!game?.is_coop) return '';
+      const labels = {
+        mixed: 'Онлайн и локальный кооп',
+        online: 'Онлайн-кооп',
+        local: 'Локальный кооп',
+        generic: 'Кооператив'
+      };
+      const prefix = labels[String(game.coop_type || '')] || 'Кооператив';
+      const min = Number(game.coop_min_players) || null;
+      const max = Number(game.coop_max_players) || null;
+      if (min && max && min < max) return `${prefix} · ${min}–${max} ${playerWord(max)}`;
+      if (max) return `${prefix} · до ${max} ${playerWord(max)}`;
+      return prefix;
     }
 
     function getReleaseMeta(game) {
@@ -925,6 +987,7 @@
         elements.nextTitle.textContent = state.games.length ? 'Точных дат пока нет' : 'Каталог пока пуст';
         elements.nextDateText.textContent = state.games.length ? 'Как только Steam укажет будущий релиз, он появится здесь.' : 'Добавь первую игру через админ-панель.';
         elements.nextCountdown.textContent = state.games.length ? 'Ждём анонс' : 'Нет игр';
+        elements.nextCoop.hidden = true;
         return;
       }
 
@@ -935,6 +998,9 @@
       elements.nextTitle.textContent = nearest.title;
       elements.nextDateText.textContent = `Запланированная дата: ${meta.line}`;
       elements.nextCountdown.textContent = meta.countdown;
+      const nextCoopLabel = coopLabel(nearest);
+      elements.nextCoop.hidden = !nextCoopLabel;
+      elements.nextCoop.textContent = nextCoopLabel ? `👥 ${nextCoopLabel}` : '';
     }
 
     function render() {
@@ -947,7 +1013,7 @@
         const matchesFilter = state.filter === 'all' || meta.group === state.filter;
         if (!matchesFilter) return false;
         if (!query) return true;
-        return [game.title, game.description, game.author_comment, game.release_date_text]
+        return [game.title, game.description, game.author_comment, game.release_date_text, coopLabel(game)]
           .some(value => String(value || '').toLocaleLowerCase('ru').includes(query));
       });
 
@@ -980,6 +1046,7 @@
             </div>
             <div class="game-body">
               <div class="release-line"><span>Дата выхода</span><strong>${escapeHtml(meta.line)}</strong></div>
+              ${game.is_coop ? `<div class="game-features"><span class="coop-badge">${escapeHtml(coopLabel(game))}</span></div>` : ''}
               <h3>${escapeHtml(game.title)}</h3>
               <p class="description">${escapeHtml(game.description)}</p>
               <div class="author-comment">
@@ -1050,7 +1117,7 @@
     async function loadGames(client) {
       const { data, error } = await client
         .from('games')
-        .select('id,title,steam_url,cover_url,description,author_comment,created_at,display_order,steam_app_id,release_date,release_date_text,coming_soon,steam_synced_at')
+        .select('id,title,steam_url,cover_url,description,author_comment,created_at,display_order,steam_app_id,release_date,release_date_text,coming_soon,steam_synced_at,is_coop,coop_type,coop_min_players,coop_max_players,coop_source')
         .eq('published', true);
 
       if (error) throw error;
