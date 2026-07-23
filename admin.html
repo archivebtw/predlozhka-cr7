@@ -126,6 +126,85 @@
     .release-status-auto.released { border-color: rgba(85,224,157,.3); background: rgba(85,224,157,.06); }
     .release-status-auto.released .release-status-badge { color: #072818; background: var(--green); }
     .release-status-auto.unknown .release-status-badge { color: #d7d1e0; background: rgba(255,255,255,.1); }
+    .steam-step {
+      max-height: 260px;
+      opacity: 1;
+      transform: translateY(0);
+      overflow: hidden;
+      transition: max-height .58s cubic-bezier(.2,.8,.2,1), opacity .32s ease, transform .45s cubic-bezier(.2,.8,.2,1), margin .45s ease;
+    }
+    .details-stage {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      pointer-events: none;
+      transform: translateY(20px);
+      transition: max-height .72s cubic-bezier(.2,.8,.2,1), opacity .42s ease .08s, transform .55s cubic-bezier(.2,.8,.2,1) .05s;
+    }
+    #gameForm.import-ready .steam-step {
+      max-height: 0;
+      margin: -16px 0 0;
+      opacity: 0;
+      transform: translateY(-16px) scale(.985);
+      pointer-events: none;
+    }
+    #gameForm.import-ready .details-stage {
+      max-height: 980px;
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    #gameForm.importing .steam-step {
+      border-radius: 16px;
+      filter: saturate(1.08);
+    }
+    .import-progress {
+      height: 3px;
+      margin-top: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255,255,255,.055);
+      opacity: 0;
+      transition: opacity .2s ease;
+    }
+    .import-progress::after {
+      content: "";
+      display: block;
+      width: 44%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, transparent, var(--blue), var(--purple), transparent);
+      transform: translateX(-120%);
+    }
+    #gameForm.importing .import-progress { opacity: 1; }
+    #gameForm.importing .import-progress::after { animation: importSweep 1.05s ease-in-out infinite; }
+    @keyframes importSweep { to { transform: translateX(300%); } }
+    .machine-fields { display: none !important; }
+    .comment-focus {
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 18px;
+      border: 1px solid rgba(255,54,92,.18);
+      border-radius: 18px;
+      background: linear-gradient(145deg, rgba(255,54,92,.055), rgba(138,92,255,.035));
+    }
+    .comment-focus label { font-size: 13px; }
+    .comment-focus textarea { min-height: 145px; }
+    .compact-actions { margin-top: 14px; }
+    .change-game-btn {
+      margin-top: 11px;
+      padding: 0;
+      border: 0;
+      color: #aebcf0;
+      background: transparent;
+      font-size: 11px;
+      font-weight: 900;
+      text-decoration: underline;
+      text-decoration-color: rgba(174,188,240,.32);
+      text-underline-offset: 4px;
+    }
+    .change-game-btn:hover { color: #fff; }
     .steam-preview {
       display: none;
       overflow: hidden;
@@ -138,7 +217,7 @@
     .steam-preview-body { padding: 16px; }
     .steam-preview-body span { display: block; margin-bottom: 7px; color: #9fb8ff; font-size: 10px; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
     .steam-preview-body h3 { margin: 0 0 7px; font-size: 21px; letter-spacing: -.03em; }
-    .steam-preview-body p { margin: 0; color: #bdb6c8; font-size: 12px; line-height: 1.5; }
+    .steam-preview-body p { margin: 0; overflow: hidden; color: #bdb6c8; font-size: 12px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
     .release-chip { display: inline-flex !important; width: fit-content; margin-top: 10px; padding: 7px 9px; border-radius: 10px; color: #fff !important; background: linear-gradient(135deg, rgba(255,54,92,.92), rgba(255,107,53,.86)); letter-spacing: 0 !important; }
     .connection-card { margin-bottom: 20px; padding: 14px 16px; border: 1px solid rgba(85,224,157,.22); border-radius: 15px; color: #c9f5dc; background: rgba(85,224,157,.07); font-size: 13px; line-height: 1.55; }
     .notice { display: none; margin-bottom: 18px; padding: 13px 15px; border-radius: 13px; font-size: 13px; line-height: 1.5; }
@@ -175,6 +254,10 @@
     .empty { padding: 35px 18px; text-align: center; color: var(--muted); border: 1px dashed rgba(255,255,255,.13); border-radius: 16px; line-height: 1.6; }
 
     @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) {
+      .steam-step, .details-stage { transition: none !important; }
+      #gameForm.importing .import-progress::after { animation: none !important; }
+    }
     @media (max-width: 650px) {
       .shell { width: min(100% - 20px, 1240px); }
       main { padding-top: 28px; }
@@ -250,85 +333,58 @@
         <article class="panel">
           <div class="panel-head">
             <h2 id="formTitle">Добавить игру</h2>
-            <p>Вставь ссылку Steam. Импорт запустится автоматически; комментарий автора заполняется вручную.</p>
+            <p>Вставь ссылку Steam. После загрузки форма сама свернётся — останется только комментарий и публикация.</p>
           </div>
           <div class="panel-body">
             <form id="gameForm" novalidate>
-              <div class="field">
-                <label for="steamUrl">Ссылка на Steam <span class="required">*</span></label>
-                <div class="steam-row">
-                  <input id="steamUrl" type="url" maxlength="500" required placeholder="https://store.steampowered.com/app/...">
-                  <button class="btn btn-steam" id="steamImportButton" type="button">Обновить из Steam</button>
-                </div>
-                <p class="hint">После вставки корректной ссылки Steam данные загрузятся автоматически. Кнопка справа нужна только для повторного обновления.</p>
-              </div>
-
-              <div id="steamPreview" class="steam-preview" aria-live="polite">
-                <img id="steamPreviewImage" alt="Предпросмотр обложки Steam">
-                <div class="steam-preview-body">
-                  <span>Данные Steam получены</span>
-                  <h3 id="steamPreviewTitle">—</h3>
-                  <p id="steamPreviewText">—</p>
-                  <span id="steamPreviewRelease" class="release-chip">—</span>
-                </div>
-              </div>
-
-              <div class="field">
-                <label for="title">Название игры <span class="required">*</span></label>
-                <input id="title" maxlength="120" required placeholder="Название игры">
-              </div>
-              <div class="field">
-                <label for="coverUrl">Ссылка на обложку</label>
-                <input id="coverUrl" type="url" maxlength="1000" placeholder="Заполнится из Steam">
-              </div>
-              <div class="field">
-                <label for="description">Описание игры <span class="required">*</span></label>
-                <textarea id="description" maxlength="2000" required placeholder="Описание может загрузиться из Steam, после чего его можно отредактировать."></textarea>
-              </div>
-              <div class="field">
-                <label for="authorComment">Комментарий автора <span class="required">*</span></label>
-                <textarea id="authorComment" maxlength="1200" required placeholder="Почему эту игру стоит показать на стриме?"></textarea>
-              </div>
-
-              <div class="form-grid">
+              <div class="steam-step" id="steamStep">
                 <div class="field">
-                  <label for="releaseDate">Дата для сортировки</label>
-                  <input id="releaseDate" type="date">
-                  <p class="hint">Для точной даты — реальный день. Для квартала или года Steam подставит приблизительную дату.</p>
-                </div>
-                <div class="field">
-                  <label for="releaseDateText">Текст даты из Steam</label>
-                  <input id="releaseDateText" maxlength="120" placeholder="Например: 29 июл. 2026 г.">
-                </div>
-              </div>
-
-              <div class="form-grid">
-                <div class="field">
-                  <label for="displayOrder">Ручной приоритет</label>
-                  <input id="displayOrder" type="number" min="0" max="9999" value="0">
-                  <p class="hint">Используется после автоматической сортировки по релизу.</p>
-                </div>
-                <div class="field">
-                  <label for="steamAppId">Steam App ID</label>
-                  <input id="steamAppId" type="number" min="1" readonly placeholder="Заполнится автоматически">
+                  <label for="steamUrl">Ссылка на Steam <span class="required">*</span></label>
+                  <div class="steam-row">
+                    <input id="steamUrl" type="url" maxlength="500" required placeholder="https://store.steampowered.com/app/...">
+                    <button class="btn btn-steam" id="steamImportButton" type="button">Загрузить игру</button>
+                  </div>
+                  <p class="hint">Вставь ссылку — Steam сам заполнит название, описание, обложку и дату.</p>
+                  <div class="import-progress" aria-hidden="true"></div>
                 </div>
               </div>
 
-              <div class="release-status-auto unknown" id="releaseStatusAuto" aria-live="polite">
-                <div>
-                  <strong>Статус релиза определяется автоматически</strong>
-                  <small id="releaseStatusHint">Добавь Steam-ссылку или дату релиза.</small>
+              <div class="details-stage" id="detailsStage" aria-hidden="true">
+                <div id="steamPreview" class="steam-preview" aria-live="polite">
+                  <img id="steamPreviewImage" alt="Предпросмотр обложки Steam">
+                  <div class="steam-preview-body">
+                    <span>Игра готова к публикации</span>
+                    <h3 id="steamPreviewTitle">—</h3>
+                    <p id="steamPreviewText">—</p>
+                    <span id="steamPreviewRelease" class="release-chip">—</span>
+                    <button class="change-game-btn" id="changeGameButton" type="button">Выбрать другую игру</button>
+                  </div>
                 </div>
-                <span class="release-status-badge" id="releaseStatusBadge">Без даты</span>
+
+                <div class="comment-focus">
+                  <label for="authorComment">Комментарий автора <span class="required">*</span></label>
+                  <textarea id="authorComment" maxlength="1200" required placeholder="Почему эту игру стоит показать на стриме?"></textarea>
+                </div>
+
+                <div class="form-actions compact-actions">
+                  <button class="btn btn-primary" id="saveButton" type="submit">Опубликовать игру</button>
+                  <button class="btn" id="cancelEditButton" type="button" hidden>Отменить редактирование</button>
+                </div>
               </div>
-              <label class="toggle" for="published">
+
+              <div class="machine-fields" aria-hidden="true">
+                <input id="title" maxlength="120" required>
+                <input id="coverUrl" type="url" maxlength="1000">
+                <textarea id="description" maxlength="2000" required></textarea>
+                <input id="releaseDate" type="date">
+                <input id="releaseDateText" maxlength="120">
+                <input id="displayOrder" type="number" min="0" max="9999" value="0">
+                <input id="steamAppId" type="number" min="1" readonly>
+                <div class="release-status-auto unknown" id="releaseStatusAuto" aria-live="polite">
+                  <small id="releaseStatusHint">Статус определяется автоматически.</small>
+                  <span class="release-status-badge" id="releaseStatusBadge">Без даты</span>
+                </div>
                 <input id="published" type="checkbox" checked>
-                <span>Опубликовано на сайте</span>
-              </label>
-
-              <div class="form-actions">
-                <button class="btn btn-primary" id="saveButton" type="submit">Опубликовать игру</button>
-                <button class="btn" id="cancelEditButton" type="button" hidden>Отменить редактирование</button>
               </div>
             </form>
           </div>
@@ -365,10 +421,13 @@
       sessionEmail: document.getElementById('sessionEmail'),
       notice: document.getElementById('notice'),
       gameForm: document.getElementById('gameForm'),
+      steamStep: document.getElementById('steamStep'),
+      detailsStage: document.getElementById('detailsStage'),
       formTitle: document.getElementById('formTitle'),
       title: document.getElementById('title'),
       steamUrl: document.getElementById('steamUrl'),
       steamImportButton: document.getElementById('steamImportButton'),
+      changeGameButton: document.getElementById('changeGameButton'),
       steamPreview: document.getElementById('steamPreview'),
       steamPreviewImage: document.getElementById('steamPreviewImage'),
       steamPreviewTitle: document.getElementById('steamPreviewTitle'),
@@ -575,6 +634,18 @@
       return data === true;
     }
 
+    function setImportReady(ready, focusComment = false) {
+      elements.gameForm.classList.toggle('import-ready', ready);
+      elements.detailsStage.setAttribute('aria-hidden', ready ? 'false' : 'true');
+      if (ready && focusComment) {
+        setTimeout(() => elements.authorComment.focus({ preventScroll: true }), 620);
+      }
+    }
+
+    function setImporting(importing) {
+      elements.gameForm.classList.toggle('importing', importing);
+    }
+
     function setSteamPreview(data) {
       if (!data) {
         elements.steamPreview.classList.remove('show');
@@ -620,6 +691,7 @@
       state.steamComingSoonFallback = Boolean(data.comingSoon);
       updateAutomaticReleaseStatus();
       setSteamPreview(data);
+      setImportReady(true, !state.editingId);
     }
 
     function hasSteamAppUrl(value) {
@@ -641,6 +713,7 @@
 
       if (state.steamImportPromise) return state.steamImportPromise;
 
+      setImporting(true);
       state.steamImportPromise = (async () => {
         const data = await fetchSteamData(normalized);
         applySteamData(data, overwrite);
@@ -653,6 +726,7 @@
         return await state.steamImportPromise;
       } finally {
         state.steamImportPromise = null;
+        setImporting(false);
       }
     }
 
@@ -681,6 +755,8 @@
       elements.saveButton.dataset.defaultText = 'Опубликовать игру';
       elements.cancelEditButton.hidden = true;
       setSteamPreview(null);
+      setImportReady(false);
+      setImporting(false);
       state.lastImportedSteamUrl = '';
       state.steamComingSoonFallback = false;
       updateAutomaticReleaseStatus();
@@ -714,6 +790,7 @@
         releaseDateText: game.release_date_text || game.release_date,
         comingSoon: game.coming_soon
       });
+      setImportReady(true, false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -851,6 +928,15 @@
         console.error(error);
         showNotice(error.message || 'Не удалось загрузить данные Steam.', 'error', true);
       }
+    });
+
+    elements.changeGameButton.addEventListener('click', () => {
+      setImportReady(false);
+      state.lastImportedSteamUrl = '';
+      setTimeout(() => {
+        elements.steamUrl.focus();
+        elements.steamUrl.select();
+      }, 380);
     });
 
     elements.gameForm.addEventListener('submit', async event => {
