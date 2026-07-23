@@ -1,20 +1,38 @@
-@media (max-width: 960px) { .layout { grid-template-columns: 1fr; } }@media (prefers-reduced-motion: reduce) {
-      .steam-step, .details-stage { transition: none !important; }
-      #gameForm.importing .import-progress::after { animation: none !important; }
-    }@media (max-width: 650px) {
-      .shell { width: min(100% - 20px, 1240px); }
-      main { padding-top: 28px; }
-      .session span { display: none; }
-      .intro { align-items: stretch; flex-direction: column; }
-      .site-link { text-align: center; }
-      .form-grid { grid-template-columns: 1fr; }
-      .steam-row { grid-template-columns: 1fr; }
-      .steam-preview.show { grid-template-columns: 1fr; }
-      .steam-preview img { max-height: 190px; }
-      .admin-game { grid-template-columns: 1fr; }
-      .admin-cover { min-height: 170px; }
-      .admin-game-top { flex-direction: column; }
-      .admin-game-actions { width: 100%; justify-content: stretch; }
-      .admin-game-actions .icon-btn { flex: 1; }
-      .form-actions .btn { width: 100%; }
-    }
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; }
+  main::before { right: -180px; opacity: .018; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  .steam-step,
+  .details-stage {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  #gameForm.importing .import-progress::after { animation: none !important; }
+}
+
+@media (max-width: 650px) {
+  .shell { width: min(100% - 20px, 1280px); }
+  main { padding-top: 32px; }
+  main::before { display: none; }
+  .nav { min-height: 68px; }
+  .brand-mark { width: 42px; height: 42px; }
+  .brand > span:last-child { font-size: 14px; }
+  .session span { display: none; }
+  .intro { align-items: stretch; flex-direction: column; }
+  .intro h1 { font-size: clamp(42px, 13vw, 58px); }
+  .site-link { text-align: center; }
+  .form-grid { grid-template-columns: 1fr; }
+  .steam-row { grid-template-columns: 1fr; }
+  .steam-preview.show { grid-template-columns: 1fr; }
+  .steam-preview img { max-height: 190px; }
+  .admin-game { grid-template-columns: 1fr; }
+  .admin-cover { min-height: 190px; max-height: 250px; }
+  .admin-game-top { flex-direction: column; }
+  .admin-game-actions { width: 100%; justify-content: stretch; }
+  .admin-game-actions .icon-btn { flex: 1; }
+  .form-actions .btn { width: 100%; }
+}

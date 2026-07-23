@@ -1,6 +1,24 @@
+.brand-mark {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 14px;
+  background: transparent;
+  box-shadow: 0 0 30px rgba(145, 71, 255, .34);
+  transition: transform .25s var(--ease), box-shadow .25s ease;
+}
+
 .brand-mark img {
-  width: 28px;
-  height: 28px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
+}
+
+.brand:hover .brand-mark {
+  transform: translateY(-2px) scale(1.045);
+  box-shadow: 0 0 40px rgba(145, 71, 255, .46);
 }
