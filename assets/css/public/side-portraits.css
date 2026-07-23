@@ -1,25 +1,19 @@
 /*
- * Tankzor game portraits — side composition v2.
- * Seven fixed decorative cards live only in the free gutters around the hero.
- * They never participate in page layout and fade away before the catalog.
+ * Tankzor game portraits — static 3D composition.
+ * Cards are anchored to the hero gutters and naturally scroll away with the page.
  */
 .side-portraits {
-  --gutter-size: max(0px, calc((100vw - 1180px) / 2));
-  --pointer-x: 0deg;
-  --pointer-y: 0deg;
-  --hero-fade: 1;
-  --rail-drift: 0px;
-  position: fixed;
-  top: 70px;
-  bottom: auto;
+  --gutter-size: max(0px, calc((100vw - 1280px) / 2));
+  position: absolute;
+  top: 76px;
   width: var(--gutter-size);
-  height: min(690px, calc(100vh - 104px));
-  z-index: 5;
+  height: 690px;
+  z-index: 2;
   pointer-events: none;
-  perspective: 1200px;
-  opacity: var(--hero-fade);
+  perspective: 1300px;
   visibility: hidden;
-  transition: opacity .45s ease, visibility .45s linear;
+  opacity: 0;
+  transition: opacity .65s ease, visibility .65s linear;
   contain: layout style paint;
 }
 
@@ -28,57 +22,63 @@
 
 .side-portraits.is-ready {
   visibility: visible;
+  opacity: 1;
+}
+
+.hero,
+header,
+.ticker-wrap {
+  position: relative;
+  z-index: 3;
 }
 
 .side-portrait-card {
-  --card-width: clamp(86px, calc(var(--gutter-size) * .42), 126px);
+  --card-width: clamp(112px, calc(var(--gutter-size) * .66), 164px);
   --base-rotate-x: 0deg;
   --base-rotate-y: 0deg;
   --base-rotate-z: 0deg;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
   --depth: 0px;
-  --scroll-y: 0px;
-  --scroll-z: 0deg;
-  --float-distance: 5px;
   --enter-x: 0px;
-  --shine-delay: 0s;
+  --light-x: 50%;
+  --light-y: 25%;
   position: absolute;
   width: var(--card-width);
   aspect-ratio: 3 / 4;
   margin: 0;
   overflow: hidden;
-  border: 1px solid rgba(191, 148, 255, .42);
-  border-radius: clamp(14px, 1.15vw, 21px);
-  background: rgba(17, 12, 25, .92);
+  border: 1px solid rgba(184, 132, 255, .52);
+  border-radius: clamp(17px, 1.25vw, 24px);
+  background: #120d1b;
   box-shadow:
-    0 22px 48px rgba(0, 0, 0, .48),
-    0 0 0 1px rgba(255, 255, 255, .035) inset,
-    0 0 34px rgba(145, 71, 255, .15);
+    0 28px 58px rgba(0, 0, 0, .53),
+    0 0 0 1px rgba(255, 255, 255, .045) inset,
+    0 0 42px rgba(145, 71, 255, .18);
   opacity: 0;
   transform-style: preserve-3d;
   backface-visibility: hidden;
   will-change: transform, opacity;
   transform:
-    translate3d(var(--enter-x), calc(var(--scroll-y) + var(--rail-drift)), var(--depth))
-    rotateX(calc(var(--base-rotate-x) + var(--pointer-y)))
-    rotateY(calc(var(--base-rotate-y) + var(--pointer-x)))
-    rotateZ(calc(var(--base-rotate-z) + var(--scroll-z)))
-    scale(.88);
+    translate3d(var(--enter-x), 0, var(--depth))
+    rotateX(calc(var(--base-rotate-x) + var(--tilt-x)))
+    rotateY(calc(var(--base-rotate-y) + var(--tilt-y)))
+    rotateZ(var(--base-rotate-z))
+    scale(.9);
   transition:
     opacity .72s ease,
-    transform 1.05s cubic-bezier(.2,.84,.2,1),
-    filter .5s ease,
-    box-shadow .5s ease;
-  animation: sidePortraitIdle 6.8s ease-in-out infinite;
-  animation-delay: var(--shine-delay);
+    transform .82s cubic-bezier(.2,.82,.2,1),
+    box-shadow .45s ease,
+    filter .45s ease;
 }
 
 .side-portraits.is-ready .side-portrait-card {
-  opacity: .91;
+  opacity: .96;
   transform:
-    translate3d(0, calc(var(--scroll-y) + var(--rail-drift)), var(--depth))
-    rotateX(calc(var(--base-rotate-x) + var(--pointer-y)))
-    rotateY(calc(var(--base-rotate-y) + var(--pointer-x)))
-    rotateZ(calc(var(--base-rotate-z) + var(--scroll-z)))
+    translate3d(0, 0, var(--depth))
+    rotateX(calc(var(--base-rotate-x) + var(--tilt-x)))
+    rotateY(calc(var(--base-rotate-y) + var(--tilt-y)))
+    rotateZ(var(--base-rotate-z))
     scale(1);
 }
 
@@ -89,22 +89,24 @@
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(255,255,255,.10), transparent 25%),
-    linear-gradient(0deg, rgba(6,4,10,.82), transparent 35%),
-    radial-gradient(circle at 50% 0%, rgba(145,71,255,.14), transparent 42%);
+    radial-gradient(circle at var(--light-x) var(--light-y), rgba(255,255,255,.22), transparent 27%),
+    linear-gradient(180deg, rgba(255,255,255,.08), transparent 24%),
+    linear-gradient(0deg, rgba(5,3,9,.30), transparent 31%);
+  mix-blend-mode: screen;
+  opacity: .72;
+  transition: background .12s linear;
 }
 
 .side-portrait-card::after {
   content: "";
   position: absolute;
-  inset: -45%;
+  inset: 0;
   z-index: 3;
   pointer-events: none;
-  opacity: .42;
-  background: linear-gradient(110deg, transparent 43%, rgba(255,255,255,.35) 50%, transparent 57%);
-  transform: translateX(-88%) rotate(10deg);
-  animation: sidePortraitShine 7.8s ease-in-out infinite;
-  animation-delay: var(--shine-delay);
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.06) inset,
+    0 0 30px rgba(145,71,255,.12) inset;
 }
 
 .side-portrait-card img {
@@ -112,135 +114,87 @@
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: 50% 25%;
-  filter: saturate(.88) contrast(1.06) brightness(.82);
-  transform: scale(1.04) translateZ(8px);
-  transition: filter .55s ease, transform .9s cubic-bezier(.2,.84,.2,1);
+  object-position: 50% 24%;
+  filter: saturate(.93) contrast(1.07) brightness(.88);
+  transform: translateZ(24px) scale(1.055);
+  transition: filter .45s ease, transform .82s cubic-bezier(.2,.82,.2,1);
 }
 
-.side-portrait-card.is-loaded:hover img {
-  filter: saturate(1) contrast(1.07) brightness(.92);
-}
+/* No captions: the images work as clean decorative game portraits. */
+.side-portrait-label { display: none !important; }
 
-.side-portrait-label {
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: 8px;
-  z-index: 4;
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: 6px;
-  color: rgba(255,255,255,.91);
-  font-size: clamp(5px, .43vw, 8px);
-  font-weight: 950;
-  line-height: 1.1;
-  letter-spacing: .10em;
-  text-transform: uppercase;
-  text-shadow: 0 2px 10px rgba(0,0,0,.8);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.side-portrait-label::before {
-  content: "";
-  flex: 0 0 6px;
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
-  background: #9147ff;
-  box-shadow: 0 0 11px rgba(145,71,255,.95);
-}
-
-/* Left gutter: slots 1, 3, 5 and the smaller seventh depth card. */
 .side-portraits--left .side-portrait-card {
-  --enter-x: -130%;
-  --base-rotate-y: 10deg;
+  --enter-x: -125%;
+  --base-rotate-y: 8deg;
 }
 
+.side-portraits--right .side-portrait-card {
+  --enter-x: 125%;
+  --base-rotate-y: -8deg;
+}
+
+/* Left rail: four fixed cards. */
 .side-portraits--left .side-portrait-card--slot-1 {
-  top: 7%;
-  left: clamp(10px, 8%, 30px);
-  --card-width: clamp(94px, calc(var(--gutter-size) * .44), 128px);
-  --base-rotate-z: -3.4deg;
-  --depth: 28px;
-  --float-distance: 7px;
-  --shine-delay: -.8s;
+  top: 26px;
+  left: clamp(14px, 8%, 32px);
+  --card-width: clamp(122px, calc(var(--gutter-size) * .69), 168px);
+  --base-rotate-z: -2.2deg;
+  --depth: 34px;
 }
 
 .side-portraits--left .side-portrait-card--slot-3 {
-  top: 36%;
-  left: clamp(30px, 25%, 82px);
-  --card-width: clamp(88px, calc(var(--gutter-size) * .39), 114px);
-  --base-rotate-y: 13deg;
-  --base-rotate-z: 2.8deg;
-  --depth: 12px;
-  --shine-delay: -2.3s;
-}
-
-.side-portraits--left .side-portrait-card--slot-5 {
-  top: 68%;
-  left: clamp(8px, 7%, 26px);
-  --card-width: clamp(80px, calc(var(--gutter-size) * .35), 104px);
-  --base-rotate-y: 8deg;
-  --base-rotate-z: -4deg;
-  --depth: 4px;
-  --shine-delay: -4.1s;
+  top: 236px;
+  left: clamp(28px, 18%, 58px);
+  --card-width: clamp(116px, calc(var(--gutter-size) * .64), 156px);
+  --base-rotate-y: 10deg;
+  --base-rotate-z: 1.8deg;
+  --depth: 20px;
 }
 
 .side-portraits--left .side-portrait-card--slot-7 {
-  top: 53%;
-  right: clamp(5px, 3%, 16px);
-  --card-width: clamp(70px, calc(var(--gutter-size) * .29), 90px);
-  --base-rotate-y: 18deg;
-  --base-rotate-z: 5.5deg;
-  --depth: -20px;
-  --float-distance: 4px;
-  --shine-delay: -5.2s;
+  top: 382px;
+  right: clamp(4px, 3%, 14px);
+  --card-width: clamp(106px, calc(var(--gutter-size) * .56), 138px);
+  --base-rotate-y: 13deg;
+  --base-rotate-z: 2.8deg;
+  --depth: 8px;
   opacity: 0;
-  filter: saturate(.74) brightness(.78);
 }
 
-.side-portraits.is-ready .side-portrait-card--slot-7 {
-  opacity: .64;
+.side-portraits.is-ready .side-portrait-card--slot-7 { opacity: .86; }
+
+.side-portraits--left .side-portrait-card--slot-5 {
+  top: 492px;
+  left: clamp(10px, 6%, 26px);
+  --card-width: clamp(116px, calc(var(--gutter-size) * .63), 154px);
+  --base-rotate-z: -2.7deg;
+  --depth: 24px;
 }
 
-/* Right gutter: slots 2, 4 and 6. */
-.side-portraits--right .side-portrait-card {
-  --enter-x: 130%;
-  --base-rotate-y: -10deg;
-}
-
+/* Right rail: three fixed cards. */
 .side-portraits--right .side-portrait-card--slot-2 {
-  top: 8%;
-  right: clamp(10px, 8%, 30px);
-  --card-width: clamp(94px, calc(var(--gutter-size) * .44), 128px);
-  --base-rotate-z: 3.2deg;
-  --depth: 26px;
-  --float-distance: 7px;
-  --shine-delay: -1.6s;
+  top: 34px;
+  right: clamp(14px, 8%, 32px);
+  --card-width: clamp(122px, calc(var(--gutter-size) * .69), 168px);
+  --base-rotate-z: 2.2deg;
+  --depth: 34px;
 }
 
 .side-portraits--right .side-portrait-card--slot-4 {
-  top: 39%;
-  right: clamp(28px, 24%, 80px);
-  --card-width: clamp(88px, calc(var(--gutter-size) * .39), 114px);
-  --base-rotate-y: -13deg;
-  --base-rotate-z: -2.7deg;
-  --depth: 11px;
-  --shine-delay: -3.2s;
+  top: 274px;
+  right: clamp(30px, 18%, 60px);
+  --card-width: clamp(116px, calc(var(--gutter-size) * .64), 156px);
+  --base-rotate-y: -10deg;
+  --base-rotate-z: -1.9deg;
+  --depth: 20px;
 }
 
 .side-portraits--right .side-portrait-card--slot-6 {
-  top: 69%;
-  right: clamp(8px, 7%, 26px);
-  --card-width: clamp(80px, calc(var(--gutter-size) * .35), 104px);
-  --base-rotate-y: -8deg;
-  --base-rotate-z: 4deg;
-  --depth: 3px;
-  --shine-delay: -4.7s;
+  top: 500px;
+  right: clamp(10px, 6%, 26px);
+  --card-width: clamp(116px, calc(var(--gutter-size) * .63), 154px);
+  --base-rotate-z: 2.7deg;
+  --depth: 24px;
 }
 
 body.modal-open .side-portraits {
@@ -248,46 +202,36 @@ body.modal-open .side-portraits {
   visibility: hidden !important;
 }
 
-@keyframes sidePortraitIdle {
-  0%, 100% { margin-top: 0; }
-  50% { margin-top: calc(var(--float-distance) * -1); }
-}
-
-@keyframes sidePortraitShine {
-  0%, 58% { transform: translateX(-88%) rotate(10deg); }
-  74%, 100% { transform: translateX(88%) rotate(10deg); }
-}
-
-/* Side cards need real gutters. They are deliberately disabled on laptops/tablets. */
-@media (max-width: 1479px), (max-height: 650px) {
+@media (max-width: 1579px), (max-height: 649px) {
   .side-portraits { display: none !important; }
 }
 
-@media (min-width: 1480px) and (max-width: 1649px) {
+@media (min-width: 1580px) and (max-width: 1750px) {
   .side-portraits {
-    --gutter-size: max(0px, calc((100vw - 1140px) / 2));
-    height: min(625px, calc(100vh - 96px));
+    --gutter-size: max(0px, calc((100vw - 1280px) / 2));
+    height: 670px;
   }
 
-  .side-portrait-label { display: none; }
-  .side-portrait-card { border-radius: 14px; }
-}
+  .side-portraits--left .side-portrait-card--slot-1,
+  .side-portraits--right .side-portrait-card--slot-2 {
+    --card-width: clamp(112px, calc(var(--gutter-size) * .67), 148px);
+  }
 
-@media (min-width: 1650px) and (max-width: 1850px) {
-  .side-portraits {
-    --gutter-size: max(0px, calc((100vw - 1180px) / 2));
-    height: min(665px, calc(100vh - 100px));
+  .side-portraits--left .side-portrait-card--slot-3,
+  .side-portraits--right .side-portrait-card--slot-4,
+  .side-portraits--left .side-portrait-card--slot-5,
+  .side-portraits--right .side-portrait-card--slot-6 {
+    --card-width: clamp(106px, calc(var(--gutter-size) * .61), 138px);
+  }
+
+  .side-portraits--left .side-portrait-card--slot-7 {
+    --card-width: clamp(94px, calc(var(--gutter-size) * .52), 120px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .side-portrait-card,
-  .side-portrait-card::after,
   .side-portrait-card img {
-    animation: none !important;
     transition: none !important;
   }
-
-  .side-portraits.is-ready .side-portrait-card { opacity: .78; }
-  .side-portraits.is-ready .side-portrait-card--slot-7 { opacity: .48; }
 }
