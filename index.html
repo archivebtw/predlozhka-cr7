@@ -861,19 +861,30 @@
       const raw = String(game.release_date_text || '').trim();
       const comingSoon = Boolean(game.coming_soon);
 
-      if (comingSoon && date) {
+      // Фактическая дата важнее потенциально устаревшего флага Steam.
+      // Если дата уже прошла, игра относится во «Вышли» и не может
+      // появляться в блоке ближайшего релиза.
+      if (date && (days < 0 || (days === 0 && !comingSoon))) {
+        return {
+          group: 'released',
+          badge: 'УЖЕ ВЫШЛА',
+          badgeClass: 'released',
+          countdown: 'Доступна в Steam',
+          line: raw || formatDate(date),
+          timestamp: date.getTime()
+        };
+      }
+
+      // Будущая дата считается релизом независимо от того, успел ли Steam
+      // обновить coming_soon. Это защищает каталог от рассинхронизации данных.
+      if (date && days >= 0) {
         if (days === 0) return { group: 'upcoming', badge: 'РЕЛИЗ СЕГОДНЯ', badgeClass: 'soon', countdown: 'Сегодня', line: raw || formatDate(date), timestamp: date.getTime() };
         if (days === 1) return { group: 'upcoming', badge: 'ВЫХОДИТ ЗАВТРА', badgeClass: 'soon', countdown: 'Завтра', line: raw || formatDate(date), timestamp: date.getTime() };
-        if (days > 1) return { group: 'upcoming', badge: `ЧЕРЕЗ ${days} ${pluralDays(days)}`, badgeClass: 'soon', countdown: `Через ${days} ${pluralDays(days)}`, line: raw || formatDate(date), timestamp: date.getTime() };
-        return { group: 'upcoming', badge: 'ДАТА МОГЛА ИЗМЕНИТЬСЯ', badgeClass: 'soon', countdown: 'Проверь Steam', line: raw || formatDate(date), timestamp: date.getTime() };
+        return { group: 'upcoming', badge: `ЧЕРЕЗ ${days} ${pluralDays(days)}`, badgeClass: 'soon', countdown: `Через ${days} ${pluralDays(days)}`, line: raw || formatDate(date), timestamp: date.getTime() };
       }
 
       if (comingSoon) {
         return { group: 'unknown', badge: 'ДАТА УТОЧНЯЕТСЯ', badgeClass: 'unknown', countdown: 'Ожидается', line: raw || 'Steam пока не назвал точную дату', timestamp: Number.MAX_SAFE_INTEGER - 1 };
-      }
-
-      if (date) {
-        return { group: 'released', badge: 'УЖЕ ВЫШЛА', badgeClass: 'released', countdown: 'Доступна в Steam', line: raw || formatDate(date), timestamp: Number.MAX_SAFE_INTEGER + date.getTime() };
       }
 
       return { group: 'unknown', badge: 'БЕЗ ДАТЫ', badgeClass: 'unknown', countdown: 'Дата неизвестна', line: raw || 'Информация о релизе не указана', timestamp: Number.MAX_SAFE_INTEGER };
@@ -899,7 +910,11 @@
     }
 
     function renderHero(sortedGames) {
-      const upcoming = sortedGames.filter(game => getReleaseMeta(game).group === 'upcoming');
+      const upcoming = sortedGames.filter(game => {
+        const meta = getReleaseMeta(game);
+        const days = daysUntil(game.release_date);
+        return meta.group === 'upcoming' && days !== null && days >= 0;
+      });
       const nearest = upcoming[0] || null;
       elements.totalCount.textContent = String(state.games.length);
       elements.upcomingCount.textContent = String(upcoming.length);
