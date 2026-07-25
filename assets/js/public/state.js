@@ -34,5 +34,5 @@
     };
 
     const state = { games: [], query: '', filter: 'all', channel: null, activeGameId: null };
-    const TWITCH_LOGO_DATA = './assets/images/twitch-logo.webp';
+    const TWITCH_LOGO_DATA = './assets/images/bloodseeker.webp';
     let lastFocusedElement = null;

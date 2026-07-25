@@ -10,7 +10,7 @@ function openGameModal(gameId) {
       state.activeGameId = String(game.id);
       lastFocusedElement = document.activeElement;
       elements.modalMedia.innerHTML = coverUrl
-        ? `<img src="${escapeHtml(coverUrl)}" alt="Обложка ${escapeHtml(game.title)}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='./assets/images/twitch-logo.webp'">`
+        ? `<img src="${escapeHtml(coverUrl)}" alt="Обложка ${escapeHtml(game.title)}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='./assets/images/bloodseeker.webp'">`
         : `<div class="cover-fallback"><img src="${TWITCH_LOGO_DATA}" alt="" aria-hidden="true"></div>`;
       elements.modalBadges.innerHTML = `
         <span class="release-badge ${meta.badgeClass}">${escapeHtml(meta.badge)}</span>
