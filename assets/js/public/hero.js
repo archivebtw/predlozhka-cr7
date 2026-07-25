@@ -122,21 +122,3 @@ function setConnection(status, text) {
       elements.nextCoop.hidden = !nextCoopLabel;
       elements.nextCoop.textContent = nextCoopLabel ? `👥 ${nextCoopLabel}` : '';
     }
-
-    const groupInfo = {
-      upcoming: {
-        kicker: 'В ПЕРВОЙ ЛИНИИ',
-        title: 'Ближайшие релизы',
-        description: 'Игры, которые ещё готовятся к выходу. Чем ближе дата, тем выше карточка.'
-      },
-      released: {
-        kicker: 'УЖЕ ДОСТУПНЫ',
-        title: 'Уже можно играть',
-        description: 'Релизы, которые уже появились в Steam и готовы для будущего стрима.'
-      },
-      unknown: {
-        kicker: 'ЖДЁМ АНОНС',
-        title: 'Дата пока неизвестна',
-        description: 'Steam ещё не указал точный день выхода или дата находится на уточнении.'
-      }
-    };
