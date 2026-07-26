@@ -116,10 +116,37 @@
     detectors.replaceChildren();
   }
 
-  function applyTwitchFallback(channel,live) {
+  function startedAtFromUptime(value) {
+    const text = String(value || '').toLowerCase();
+    const units = [
+      [/([\d.]+)\s*(?:days?|д(?:н(?:я|ей)?)?)/,86400000],
+      [/([\d.]+)\s*(?:hours?|hrs?|ч(?:ас(?:а|ов)?)?)/,3600000],
+      [/([\d.]+)\s*(?:minutes?|mins?|мин(?:ут[ы]?)?)/,60000],
+      [/([\d.]+)\s*(?:seconds?|secs?|сек(?:унд[ы]?)?)/,1000],
+    ];
+    const elapsed = units.reduce((total,[pattern,multiplier]) => total + Number(text.match(pattern)?.[1] || 0) * multiplier,0);
+    return elapsed > 0 ? new Date(Date.now() - elapsed).toISOString() : '';
+  }
+
+  async function twitchFallbackMetadata(channel) {
+    const base = `https://decapi.me/twitch`;
+    const read = async path => {
+      const response = await fetch(`${base}/${path}/${encodeURIComponent(channel)}`,{ signal: requestController?.signal });
+      if (!response.ok) throw new Error(`Twitch metadata: ${response.status}`);
+      return (await response.text()).trim();
+    };
+    const [title,category,uptime] = await Promise.all([read('title'),read('game'),read('uptime')]);
+    return {
+      title: /^(?:channel is offline|not live|error)/i.test(title) ? '' : title,
+      category: /^(?:channel is offline|not live|error)/i.test(category) ? '' : category,
+      startedAt: startedAtFromUptime(uptime),
+    };
+  }
+
+  async function applyTwitchFallback(channel,live) {
     const streamer = streamers.find(item => item.provider === 'twitch' && item.channel === channel);
     if (!streamer) return;
-    applyStatus({
+    const fallback = {
       ...streamer,
       available: true,
       live,
@@ -128,9 +155,18 @@
       thumbnailUrl: live ? `https://static-cdn.jtvnw.net/previews-ttv/live_user_${channel}-640x360.jpg?t=${Date.now()}` : '',
       avatarUrl: '',
       startedAt: '',
-    });
+    };
+    applyStatus(fallback);
     sortCards();
     updateSummary();
+    if (!live) return;
+    try {
+      const metadata = await twitchFallbackMetadata(channel);
+      const card = cardFor(streamer);
+      if (card?.dataset.status === 'live') applyStatus({ ...fallback,...metadata });
+    } catch (error) {
+      if (error?.name !== 'AbortError') console.warn(`141 GANG metadata (${channel}):`,error);
+    }
   }
 
   function checkTwitchWithPlayer(streamersToCheck) {
