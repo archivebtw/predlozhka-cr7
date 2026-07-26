@@ -47,6 +47,9 @@
       cancelEditButton: document.getElementById('cancelEditButton'),
       gameList: document.getElementById('gameList'),
       countLabel: document.getElementById('countLabel'),
+      catalogSearch: document.getElementById('catalogSearch'),
+      catalogSearchClear: document.getElementById('catalogSearchClear'),
+      catalogSort: document.getElementById('catalogSort'),
       duplicateModal: document.getElementById('duplicateModal'),
       duplicateTitle: document.getElementById('duplicateTitle'),
       duplicateText: document.getElementById('duplicateText'),
@@ -63,7 +66,9 @@
       steamImportTimer: null,
       steamImportPromise: null,
       lastImportedSteamUrl: '',
-      steamComingSoonFallback: false
+      steamComingSoonFallback: false,
+      catalogQuery: '',
+      catalogSort: 'newest'
     };
 
     // Совместимость с базами, где старый CHECK всё ещё требует хотя бы один символ.

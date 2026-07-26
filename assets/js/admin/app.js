@@ -168,6 +168,25 @@ async function persistGame(payload) {
 
     elements.cancelEditButton.addEventListener('click', resetForm);
 
+    elements.catalogSearch.addEventListener('input', () => {
+      state.catalogQuery = elements.catalogSearch.value;
+      elements.catalogSearchClear.hidden = !state.catalogQuery;
+      renderGames();
+    });
+
+    elements.catalogSearchClear.addEventListener('click', () => {
+      elements.catalogSearch.value = '';
+      state.catalogQuery = '';
+      elements.catalogSearchClear.hidden = true;
+      renderGames();
+      elements.catalogSearch.focus();
+    });
+
+    elements.catalogSort.addEventListener('change', () => {
+      state.catalogSort = elements.catalogSort.value;
+      renderGames();
+    });
+
     elements.gameList.addEventListener('click', async event => {
       const button = event.target.closest('[data-action]');
       if (!button) return;

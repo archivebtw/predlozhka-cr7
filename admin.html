@@ -127,9 +127,27 @@
 <div class="panel-head catalog-head">
 <div>
 <h2>Текущий каталог</h2>
-<p>Ближайшие будущие релизы автоматически показываются выше.</p>
+<p>Найди игру по названию или выбери удобный порядок списка.</p>
 </div>
 <span class="count" id="countLabel">0 игр</span>
+</div>
+<div class="catalog-controls" role="search">
+<div class="catalog-search">
+<label class="catalog-control-label" for="catalogSearch">Поиск по названию</label>
+<span class="catalog-search-field">
+<span aria-hidden="true" class="catalog-search-icon"></span>
+<input autocomplete="off" id="catalogSearch" placeholder="Например, Island Beekeeper" type="search"/>
+<button aria-label="Очистить поиск" class="catalog-search-clear" hidden="" id="catalogSearchClear" type="button">×</button>
+</span>
+</div>
+<label class="catalog-sort" for="catalogSort">
+<span class="catalog-control-label">Сортировка</span>
+<select id="catalogSort">
+<option value="newest">Последние добавленные</option>
+<option value="alphabetical">По алфавиту А—Я</option>
+<option value="release">Дата релиза: новые сначала</option>
+</select>
+</label>
 </div>
 <div class="panel-body"><div class="game-list" id="gameList"></div></div>
 </article>
