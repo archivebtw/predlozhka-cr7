@@ -8,21 +8,20 @@ function buildCard(game, index) {
 
       return `
         <article class="game-card" data-game-id="${escapeHtml(game.id)}" tabindex="0" role="button" aria-label="Открыть подробности игры ${escapeHtml(game.title)}" style="--delay:${Math.min(index * 45, 260)}ms">
+          <span class="card-index" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
           <div class="card-visual">${cover}</div>
-          <div class="card-shade"></div>
           <div class="card-bottom">
             <h3 class="card-title">${escapeHtml(game.title)}</h3>
             <p class="card-summary">${escapeHtml(game.description)}</p>
           </div>
           <div class="card-top">
             <span class="release-badge ${meta.badgeClass}">${escapeHtml(meta.badge)}</span>
-            <span class="card-index">${String(index + 1).padStart(2, '0')}</span>
           </div>
           <div class="card-chips">
-            <span class="date-chip">▣ ${escapeHtml(meta.line)}</span>
+            <span class="date-chip"><span class="chip-label">Релиз</span>${escapeHtml(meta.line)}</span>
             ${coop ? `<span class="coop-badge">${escapeHtml(coop)}</span>` : ''}
           </div>
-          <div class="card-actions"><span class="card-open-hint">Подробнее →</span></div>
+          <div class="card-actions"><span class="card-open-hint"><span>Подробнее</span><b aria-hidden="true">↗</b></span></div>
         </article>`;
     }
 
