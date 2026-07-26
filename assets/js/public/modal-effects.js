@@ -14,15 +14,18 @@ function openGameModal(gameId) {
         : `<div class="cover-fallback"><img src="${TWITCH_LOGO_DATA}" alt="" aria-hidden="true"></div>`;
       elements.modalBadges.innerHTML = `
         <span class="release-badge ${meta.badgeClass}">${escapeHtml(meta.badge)}</span>
-        ${coop ? `<span class="coop-badge">${escapeHtml(coop)}</span>` : ''}`;
+        ${coop ? `<span class="coop-badge">${escapeHtml(coop)}</span>` : ''}
+        ${game.is_favorite ? '<span class="modal-favorite-badge">★ Избранное</span>' : ''}`;
       elements.modalTitle.textContent = game.title || 'Без названия';
       elements.modalRelease.textContent = `Дата выхода: ${meta.line} · ${meta.countdown}`;
       elements.modalDescription.textContent = game.description || 'Описание не указано.';
-      elements.modalComment.textContent = game.author_comment || '';
-      elements.modalCommentSection.hidden = !String(game.author_comment || '').trim();
+      const authorComment = String(game.author_comment || '').replaceAll(EMPTY_AUTHOR_COMMENT, '').trim();
+      elements.modalComment.textContent = authorComment;
+      elements.modalCommentSection.hidden = !authorComment;
       elements.modalAdded.textContent = `Добавлено: ${formatDate(game.created_at)}`;
       elements.modalSteam.hidden = !steamUrl;
       if (steamUrl) elements.modalSteam.href = steamUrl;
+      updateLibraryControls(game);
 
       elements.modal.hidden = false;
       elements.modal.setAttribute('aria-hidden', 'false');
@@ -32,6 +35,63 @@ function openGameModal(gameId) {
         elements.modalClose.focus();
       });
     }
+
+    function updateLibraryControls(game) {
+      const status = String(game?.library_status || '');
+      elements.modalLibraryActions.forEach(button => {
+        const action = button.dataset.libraryAction;
+        const active = action === 'favorite' ? Boolean(game?.is_favorite) : status === action;
+        button.classList.toggle('is-active',active);
+        button.setAttribute('aria-pressed',String(active));
+        button.disabled = false;
+      });
+      elements.modalLibraryNotice.textContent = '';
+      elements.modalLibraryNotice.className = 'modal-library-notice';
+    }
+
+    async function updateGameLibrary(action) {
+      const game = state.games.find(item => String(item.id) === String(state.activeGameId));
+      const button = elements.modalLibraryActions.find(item => item.dataset.libraryAction === action);
+      if (!game || !button) return;
+      button.disabled = true;
+      elements.modalLibraryNotice.textContent = 'Проверяем права администратора…';
+      elements.modalLibraryNotice.className = 'modal-library-notice is-info';
+      try {
+        const client = getConfiguredClient();
+        if (!client) throw new Error('Supabase не настроен.');
+        const { data: sessionData,error: sessionError } = await client.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!sessionData.session?.user) throw new Error('Войди через вкладку «Управление», чтобы менять библиотеку.');
+        const { data: isAdmin,error: adminError } = await client.rpc('is_site_admin');
+        if (adminError) throw adminError;
+        if (isAdmin !== true) throw new Error('Эта функция доступна только администраторам.');
+
+        const payload = action === 'favorite'
+          ? { is_favorite: !Boolean(game.is_favorite) }
+          : { library_status: String(game.library_status || '') === action ? '' : action };
+        const { error } = await client.from('games').update(payload).eq('id',game.id);
+        if (error) throw error;
+        Object.assign(game,payload);
+        updateLibraryControls(game);
+        elements.modalBadges.innerHTML = `
+          <span class="release-badge ${getReleaseMeta(game).badgeClass}">${escapeHtml(getReleaseMeta(game).badge)}</span>
+          ${coopLabel(game) ? `<span class="coop-badge">${escapeHtml(coopLabel(game))}</span>` : ''}
+          ${game.is_favorite ? '<span class="modal-favorite-badge">★ Избранное</span>' : ''}`;
+        elements.modalLibraryNotice.textContent = action === 'favorite'
+          ? game.is_favorite ? 'Игра добавлена в избранное.' : 'Игра удалена из избранного.'
+          : game.library_status === 'completed' ? 'Игра перемещена в пройденные.'
+            : game.library_status === 'ignored' ? 'Игра перемещена в неинтересные.' : 'Игра возвращена в основной каталог.';
+        elements.modalLibraryNotice.className = 'modal-library-notice is-success';
+        render();
+      } catch (error) {
+        console.error(error);
+        elements.modalLibraryNotice.textContent = error.message || 'Не удалось сохранить изменение.';
+        elements.modalLibraryNotice.className = 'modal-library-notice is-error';
+        button.disabled = false;
+      }
+    }
+
+    elements.modalLibraryActions.forEach(button => button.addEventListener('click',() => updateGameLibrary(button.dataset.libraryAction)));
 
     function closeGameModal() {
       if (elements.modal.hidden) return;

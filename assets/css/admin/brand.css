@@ -1,3 +1,11 @@
+.brand-logo {
+  width: 58px;
+  height: 42px;
+  flex: 0 0 auto;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
 .brand-mark {
   position: relative;
   width: 46px;
