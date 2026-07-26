@@ -2,7 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -292,11 +292,102 @@ async function fetchSteamGame(appId: string, language: "russian" | "english") {
   return entry.data as SteamGame;
 }
 
+async function getSteamData(appId: string) {
+  const [ruResult, enResult] = await Promise.allSettled([
+    fetchSteamGame(appId, "russian"),
+    fetchSteamGame(appId, "english"),
+  ]);
+  const gameRu = ruResult.status === "fulfilled" ? ruResult.value : null;
+  const gameEn = enResult.status === "fulfilled" ? enResult.value : null;
+  const game = gameRu ?? gameEn;
+  if (!game) {
+    const ruError = ruResult.status === "rejected" ? String(ruResult.reason?.message ?? ruResult.reason) : "";
+    const enError = enResult.status === "rejected" ? String(enResult.reason?.message ?? enResult.reason) : "";
+    throw new Error(`Steam не вернул данные игры. ${ruError || enError}`.trim());
+  }
+  const releaseDateText = String(game.release_date?.date ?? "").trim();
+  const parsedDate = parseSteamDate(releaseDateText);
+  return {
+    appId: Number(appId),
+    title: cleanText(game.name),
+    description: cleanText(game.short_description),
+    coverUrl: String(game.header_image ?? game.capsule_image ?? "").trim(),
+    comingSoon: Boolean(game.release_date?.coming_soon),
+    releaseDate: parsedDate.iso,
+    releaseDateText,
+    releaseDatePrecision: parsedDate.precision,
+    releaseDateApproximate: parsedDate.approximate,
+    steamUrl: `https://store.steampowered.com/app/${appId}/`,
+    ...detectCoop(gameRu ?? game, gameEn ?? game),
+  };
+}
+
+async function syncStaleGames(supabase: ReturnType<typeof createClient>) {
+  const { data: games, error } = await supabase
+    .from("games")
+    .select("id,title,cover_url,description,steam_app_id,coming_soon,release_date,steam_synced_at,is_coop,coop_type,coop_min_players,coop_max_players,coop_source")
+    .not("steam_app_id", "is", null)
+    .order("steam_synced_at", { ascending: true, nullsFirst: true })
+    .limit(100);
+  if (error) throw error;
+
+  const now = Date.now();
+  const hour = 60 * 60 * 1000;
+  const candidates = (games ?? []).filter((game) => {
+    const lastSync = game.steam_synced_at ? new Date(game.steam_synced_at).getTime() : 0;
+    const maxAge = game.coming_soon || !game.release_date ? 6 * hour : 7 * 24 * hour;
+    return !lastSync || now - lastSync >= maxAge;
+  }).slice(0, 18);
+
+  const results: Array<{ id: number; ok: boolean; error?: string }> = [];
+  for (let offset = 0; offset < candidates.length; offset += 3) {
+    const batch = candidates.slice(offset, offset + 3);
+    const settled = await Promise.all(batch.map(async (record) => {
+      const steam = await getSteamData(String(record.steam_app_id));
+      const manualCoop = record.coop_source === "manual_admin";
+      const payload = {
+        title: steam.title || record.title,
+        cover_url: steam.coverUrl || record.cover_url,
+        description: steam.description || record.description,
+        release_date: steam.releaseDate || null,
+        release_date_text: steam.releaseDateText,
+        coming_soon: steam.comingSoon,
+        is_coop: manualCoop ? record.is_coop : steam.isCoop,
+        coop_type: manualCoop ? record.coop_type : steam.isCoop ? (steam.coopType || "generic") : "",
+        coop_min_players: manualCoop ? record.coop_min_players : steam.coopMinPlayers,
+        coop_max_players: manualCoop ? record.coop_max_players : steam.coopMaxPlayers,
+        coop_source: manualCoop ? record.coop_source : steam.coopSource,
+        steam_synced_at: new Date().toISOString(),
+      };
+      const { error: updateError } = await supabase.from("games").update(payload).eq("id", record.id);
+      if (updateError) throw updateError;
+      return record.id as number;
+    }));
+    settled.forEach((item, index) => {
+      const id = Number(batch[index].id);
+      if (item.status === "fulfilled") results.push({ id, ok: true });
+      else results.push({ id, ok: false, error: String(item.reason?.message ?? item.reason) });
+    });
+  }
+  return { checked: games?.length ?? 0, selected: candidates.length, results };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return jsonResponse({ error: "Используй POST-запрос." }, 405);
 
   try {
+    const body = await req.json().catch(() => ({}));
+    const cronSecret = Deno.env.get("CRON_SECRET") ?? "";
+    const scheduledRequest = body?.action === "sync-stale" && cronSecret && req.headers.get("x-cron-secret") === cronSecret;
+    if (scheduledRequest) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (!supabaseUrl || !serviceRoleKey) return jsonResponse({ error: "Сервисные переменные Supabase недоступны." }, 500);
+      const serviceClient = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
+      return jsonResponse(await syncStaleGames(serviceClient));
+    }
+
     const authorization = req.headers.get("Authorization") ?? "";
     const token = authorization.replace(/^Bearer\s+/i, "").trim();
     if (!token) return jsonResponse({ error: "Требуется вход администратора." }, 401);
@@ -316,41 +407,10 @@ Deno.serve(async (req) => {
     const { data: isAdmin, error: adminError } = await supabase.rpc("is_site_admin");
     if (adminError || isAdmin !== true) return jsonResponse({ error: "У аккаунта нет прав администратора." }, 403);
 
-    const body = await req.json().catch(() => ({}));
     const appId = extractAppId(body?.steamUrl ?? body?.appId);
     if (!appId) return jsonResponse({ error: "Не удалось определить Steam App ID из ссылки." }, 400);
 
-    const [ruResult, enResult] = await Promise.allSettled([
-      fetchSteamGame(appId, "russian"),
-      fetchSteamGame(appId, "english"),
-    ]);
-
-    const gameRu = ruResult.status === "fulfilled" ? ruResult.value : null;
-    const gameEn = enResult.status === "fulfilled" ? enResult.value : null;
-    const game = gameRu ?? gameEn;
-    if (!game) {
-      const ruError = ruResult.status === "rejected" ? String(ruResult.reason?.message ?? ruResult.reason) : "";
-      const enError = enResult.status === "rejected" ? String(enResult.reason?.message ?? enResult.reason) : "";
-      return jsonResponse({ error: `Steam не вернул данные игры. ${ruError || enError}`.trim() }, 502);
-    }
-
-    const releaseDateText = String(game.release_date?.date ?? "").trim();
-    const parsedDate = parseSteamDate(releaseDateText);
-    const coop = detectCoop(gameRu ?? game, gameEn ?? game);
-
-    return jsonResponse({
-      appId: Number(appId),
-      title: cleanText(game.name),
-      description: cleanText(game.short_description),
-      coverUrl: String(game.header_image ?? game.capsule_image ?? "").trim(),
-      comingSoon: Boolean(game.release_date?.coming_soon),
-      releaseDate: parsedDate.iso,
-      releaseDateText,
-      releaseDatePrecision: parsedDate.precision,
-      releaseDateApproximate: parsedDate.approximate,
-      steamUrl: `https://store.steampowered.com/app/${appId}/`,
-      ...coop,
-    });
+    return jsonResponse(await getSteamData(appId));
   } catch (error) {
     console.error(error);
     const message = error instanceof Error ? error.message : "Неизвестная ошибка.";
