@@ -18,8 +18,9 @@ function openGameModal(gameId) {
       elements.modalTitle.textContent = game.title || 'Без названия';
       elements.modalRelease.textContent = `Дата выхода: ${meta.line} · ${meta.countdown}`;
       elements.modalDescription.textContent = game.description || 'Описание не указано.';
-      elements.modalComment.textContent = game.author_comment || '';
-      elements.modalCommentSection.hidden = !String(game.author_comment || '').trim();
+      const authorComment = String(game.author_comment || '').replaceAll(EMPTY_AUTHOR_COMMENT, '').trim();
+      elements.modalComment.textContent = authorComment;
+      elements.modalCommentSection.hidden = !authorComment;
       elements.modalAdded.textContent = `Добавлено: ${formatDate(game.created_at)}`;
       elements.modalSteam.hidden = !steamUrl;
       if (steamUrl) elements.modalSteam.href = steamUrl;

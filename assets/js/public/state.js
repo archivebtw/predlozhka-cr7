@@ -18,7 +18,6 @@
       heroHighlights: document.getElementById('heroHighlights'),
       quickLatest: document.getElementById('quickLatest'),
       quickNearest: document.getElementById('quickNearest'),
-      quickCoop: document.getElementById('quickCoop'),
       modal: document.getElementById('gameModal'),
       modalClose: document.getElementById('modalClose'),
       modalMedia: document.getElementById('modalMedia'),
@@ -35,4 +34,5 @@
 
     const state = { games: [], query: '', filter: 'all', channel: null, activeGameId: null };
     const TWITCH_LOGO_DATA = './assets/images/bloodseeker.webp';
+    const EMPTY_AUTHOR_COMMENT = '\u2063';
     let lastFocusedElement = null;
