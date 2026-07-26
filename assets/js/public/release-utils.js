@@ -139,6 +139,9 @@ function escapeHtml(value) {
         const rankDiff = groupRank[aMeta.group] - groupRank[bMeta.group];
         if (rankDiff) return rankDiff;
         if (aMeta.group === 'upcoming') return aMeta.timestamp - bMeta.timestamp;
+        if (aMeta.group === 'released' && aMeta.timestamp !== bMeta.timestamp) {
+          return bMeta.timestamp - aMeta.timestamp;
+        }
         const orderDiff = (Number(a.display_order) || 0) - (Number(b.display_order) || 0);
         if (orderDiff) return orderDiff;
         return new Date(b.created_at || 0) - new Date(a.created_at || 0);
