@@ -46,7 +46,12 @@
       saveButton: document.getElementById('saveButton'),
       cancelEditButton: document.getElementById('cancelEditButton'),
       gameList: document.getElementById('gameList'),
-      countLabel: document.getElementById('countLabel')
+      countLabel: document.getElementById('countLabel'),
+      duplicateModal: document.getElementById('duplicateModal'),
+      duplicateTitle: document.getElementById('duplicateTitle'),
+      duplicateText: document.getElementById('duplicateText'),
+      duplicateCancel: document.getElementById('duplicateCancel'),
+      duplicateConfirm: document.getElementById('duplicateConfirm')
     };
 
     const state = {

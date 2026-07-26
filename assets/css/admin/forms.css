@@ -108,3 +108,15 @@
 .coop-editor-hint { margin: 0; color: #8ea99a; font-size: 10px; line-height: 1.45; }
 .coop-editor.is-disabled { border-color: rgba(255,255,255,.08); }
 @media (max-width: 620px) { .coop-editor-head { flex-direction: column; } .coop-player-fields { grid-template-columns: 1fr; } }
+
+.duplicate-modal[hidden] { display: none !important; }
+.duplicate-modal { position: fixed; inset: 0; z-index: 1500; display: grid; place-items: center; padding: 18px; }
+.duplicate-backdrop { position: absolute; inset: 0; background: rgba(4,0,0,.82); opacity: 0; backdrop-filter: blur(10px); transition: opacity .25s ease; }
+.duplicate-dialog { position: relative; width: min(500px,100%); padding: 28px; border: 1px solid rgba(232,72,51,.3); border-radius: 22px 22px 22px 7px; color: #fff; background: linear-gradient(145deg,rgba(38,8,7,.99),rgba(10,3,3,.99)); box-shadow: 0 36px 100px rgba(0,0,0,.62); opacity: 0; transform: translateY(18px) scale(.97); transition: opacity .25s ease,transform .3s ease; }
+.duplicate-modal.is-open .duplicate-backdrop { opacity: 1; }
+.duplicate-modal.is-open .duplicate-dialog { opacity: 1; transform: translateY(0) scale(1); }
+.duplicate-kicker { color: #ef715f; font-size: 9px; font-weight: 950; letter-spacing: .16em; text-transform: uppercase; }
+.duplicate-dialog h2 { margin: 9px 0 0; font-size: 28px; letter-spacing: -.04em; }
+.duplicate-dialog p { margin: 14px 0 0; color: #c4b4b0; font-size: 13px; line-height: 1.6; }
+.duplicate-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 24px; }
+.duplicate-actions .btn[hidden] { display: none !important; }

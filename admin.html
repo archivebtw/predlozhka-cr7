@@ -136,5 +136,14 @@
 </div>
 </section>
 </main>
+<div aria-hidden="true" class="duplicate-modal" hidden="" id="duplicateModal">
+<div class="duplicate-backdrop" data-duplicate-close=""></div>
+<section aria-labelledby="duplicateTitle" aria-modal="true" class="duplicate-dialog" role="dialog">
+<span class="duplicate-kicker">Проверка каталога</span>
+<h2 id="duplicateTitle">Игра уже есть</h2>
+<p id="duplicateText"></p>
+<div class="duplicate-actions"><button class="btn" id="duplicateCancel" type="button">Отмена</button><button class="btn btn-primary" id="duplicateConfirm" type="button">Добавить второй экземпляр</button></div>
+</section>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js"></script><script src="./assets/js/admin/state.js"></script><script src="./assets/js/admin/utils.js"></script><script src="./assets/js/admin/games.js"></script><script src="./assets/js/admin/steam-import.js"></script><script src="./assets/js/admin/game-form.js"></script><script src="./assets/js/admin/auth.js"></script><script src="./assets/js/admin/app.js"></script></body>
 </html>

@@ -10,6 +10,37 @@ async function persistGame(payload) {
       if (error) throw error;
     }
 
+    function confirmDuplicateGame(gameTitle, existingCount) {
+      return new Promise(resolve => {
+        const limitReached = existingCount >= 2;
+        elements.duplicateTitle.textContent = limitReached ? 'Достигнут лимит копий' : 'Игра уже есть в каталоге';
+        elements.duplicateText.textContent = limitReached
+          ? `«${gameTitle}» уже добавлена два раза. Третий экземпляр создать нельзя.`
+          : `«${gameTitle}» уже есть в каталоге. Разрешено добавить только один дополнительный экземпляр.`;
+        elements.duplicateConfirm.hidden = limitReached;
+        elements.duplicateModal.hidden = false;
+        elements.duplicateModal.setAttribute('aria-hidden', 'false');
+        requestAnimationFrame(() => elements.duplicateModal.classList.add('is-open'));
+
+        const onKeydown = event => { if (event.key === 'Escape') finish(false); };
+        const finish = allowed => {
+          elements.duplicateModal.classList.remove('is-open');
+          elements.duplicateModal.setAttribute('aria-hidden', 'true');
+          window.setTimeout(() => { elements.duplicateModal.hidden = true; }, 260);
+          elements.duplicateCancel.onclick = null;
+          elements.duplicateConfirm.onclick = null;
+          elements.duplicateModal.onclick = null;
+          document.removeEventListener('keydown', onKeydown);
+          resolve(allowed);
+        };
+        elements.duplicateCancel.onclick = () => finish(false);
+        elements.duplicateConfirm.onclick = () => finish(true);
+        elements.duplicateModal.onclick = event => { if (event.target.matches('[data-duplicate-close]')) finish(false); };
+        document.addEventListener('keydown', onKeydown);
+        (limitReached ? elements.duplicateCancel : elements.duplicateConfirm).focus();
+      });
+    }
+
     elements.loginForm.addEventListener('submit', async event => {
       event.preventDefault();
       setBusy(elements.loginButton, true, 'Вход…');
@@ -111,6 +142,10 @@ async function persistGame(payload) {
         }
         if (payload.is_coop && payload.coop_min_players && payload.coop_max_players && payload.coop_min_players > payload.coop_max_players) {
           throw new Error('Минимальное число игроков не может быть больше максимального.');
+        }
+        if (!state.editingId && payload.steam_app_id) {
+          const duplicateCount = state.games.filter(game => Number(game.steam_app_id) === payload.steam_app_id).length;
+          if (duplicateCount && !(await confirmDuplicateGame(payload.title, duplicateCount))) return;
         }
 
         if (state.editingId) {
