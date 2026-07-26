@@ -19,6 +19,7 @@
   let requestController = null;
   let players = [];
   let fallbackTimeout = 0;
+  let uptimeTimer = 0;
 
   const label = channel => channel.replace(/(^|_)(\w)/g,(_,prefix,letter) => `${prefix}${letter.toUpperCase()}`);
   const channelUrl = ({ provider,channel }) => `https://${provider === 'kick' ? 'kick.com' : 'www.twitch.tv'}/${channel}`;
@@ -37,6 +38,7 @@
           <h3>${label(streamer.channel)}</h3>
           <span class="gang-category" hidden></span>
           <p class="gang-stream-title">Получаем актуальный статус…</p>
+          <span class="gang-uptime" hidden></span>
           <small>${streamer.provider === 'kick' ? 'kick.com' : 'twitch.tv'}/${streamer.channel}</small>
         </span>
         <span class="gang-card-arrow" aria-hidden="true">↗</span>
@@ -63,6 +65,25 @@
     else status.textContent = liveCount ? `Сейчас стримят: ${liveCount} · онлайн-каналы показаны первыми` : 'Сейчас все участники вне эфира';
   }
 
+  function formatUptime(value) {
+    const startedAt = Date.parse(value || '');
+    if (!Number.isFinite(startedAt)) return '';
+    const totalMinutes = Math.max(0,Math.floor((Date.now() - startedAt) / 60000));
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor(totalMinutes % 1440 / 60);
+    const minutes = totalMinutes % 60;
+    return `В эфире ${days ? `${days} д ` : ''}${hours ? `${hours} ч ` : ''}${minutes} мин`;
+  }
+
+  function updateUptimes() {
+    grid.querySelectorAll('.gang-card.is-live').forEach(card => {
+      const uptime = card.querySelector('.gang-uptime');
+      const text = formatUptime(card.dataset.startedAt);
+      uptime.textContent = text;
+      uptime.hidden = !text;
+    });
+  }
+
   function applyStatus(item) {
     const card = cardFor(item);
     if (!card) return;
@@ -71,13 +92,18 @@
     const avatar = card.querySelector('.gang-avatar');
     const preview = card.querySelector('.gang-preview');
     const category = card.querySelector('.gang-category');
+    const uptime = card.querySelector('.gang-uptime');
     card.dataset.status = nextStatus;
+    card.dataset.startedAt = live ? (item.startedAt || '') : '';
     card.classList.toggle('is-live',live);
     card.classList.remove('is-checking');
     card.querySelector('.gang-live').textContent = live ? 'Сейчас в эфире' : nextStatus === 'unavailable' ? 'Статус недоступен' : 'Не в эфире';
     card.querySelector('.gang-stream-title').textContent = live ? (item.title || 'Прямой эфир') : nextStatus === 'unavailable' ? 'Не удалось получить данные платформы' : 'Канал сейчас отдыхает';
     category.textContent = item.category || '';
     category.hidden = !live || !item.category;
+    const uptimeText = live ? formatUptime(item.startedAt) : '';
+    uptime.textContent = uptimeText;
+    uptime.hidden = !uptimeText;
     if (item.avatarUrl) { avatar.hidden = false; avatar.src = item.avatarUrl; }
     if (live && item.thumbnailUrl) preview.src = item.thumbnailUrl.replace('{width}','640').replace('{height}','360');
     else preview.removeAttribute('src');
@@ -101,6 +127,7 @@
       category: '',
       thumbnailUrl: live ? `https://static-cdn.jtvnw.net/previews-ttv/live_user_${channel}-640x360.jpg?t=${Date.now()}` : '',
       avatarUrl: '',
+      startedAt: '',
     });
     sortCards();
     updateSummary();
@@ -145,6 +172,7 @@
         category: live?.categories?.[0]?.name || live?.category?.name || '',
         thumbnailUrl: live?.thumbnail?.url || live?.thumbnail_url || '',
         avatarUrl: data.user?.profile_pic || data.user?.profile_picture || data.profile_picture || '',
+        startedAt: live?.start_time || live?.created_at || live?.started_at || '',
       });
     } catch (error) {
       console.warn('141 GANG Kick fallback:',error);
@@ -198,6 +226,8 @@
     openButton.setAttribute('aria-expanded','true');
     document.body.classList.add('gang-open');
     requestAnimationFrame(() => { panel.classList.add('is-open'); closeButton.focus(); });
+    window.clearInterval(uptimeTimer);
+    uptimeTimer = window.setInterval(updateUptimes,30000);
     checkLiveChannels();
   }
 
@@ -207,6 +237,7 @@
     openButton.setAttribute('aria-expanded','false');
     document.body.classList.remove('gang-open');
     window.clearTimeout(refreshTimer);
+    window.clearInterval(uptimeTimer);
     requestController?.abort();
     destroyFallbackPlayers();
     window.setTimeout(() => { panel.hidden = true; lastFocusedElement?.focus(); },420);

@@ -12,13 +12,14 @@ type StreamStatus = Streamer & {
   category: string;
   thumbnailUrl: string;
   avatarUrl: string;
+  startedAt: string;
 };
 
 let twitchToken = "";
 let twitchTokenExpiresAt = 0;
 
 const clean = (value: unknown, max = 300) => String(value ?? "").trim().slice(0,max);
-const unavailable = (streamer: Streamer): StreamStatus => ({ ...streamer, available: false, live: false, title: "", category: "", thumbnailUrl: "", avatarUrl: "" });
+const unavailable = (streamer: Streamer): StreamStatus => ({ ...streamer, available: false, live: false, title: "", category: "", thumbnailUrl: "", avatarUrl: "", startedAt: "" });
 
 function response(body: unknown, status = 200) {
   return new Response(JSON.stringify(body),{ status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=45" } });
@@ -73,6 +74,7 @@ async function twitchStatuses(streamers: Streamer[]): Promise<StreamStatus[]> {
         ...streamer, available: Boolean(user), live: Boolean(stream),
         title: clean(stream?.title), category: clean(stream?.game_name,120),
         thumbnailUrl: clean(stream?.thumbnail_url,500), avatarUrl: clean(user?.profile_image_url,500),
+        startedAt: clean(stream?.started_at,80),
       };
     });
   } catch (error) {
@@ -92,6 +94,7 @@ async function kickStatus(streamer: Streamer): Promise<StreamStatus> {
       category: clean(live?.categories?.[0]?.name || live?.category?.name,120),
       thumbnailUrl: clean(live?.thumbnail?.url || live?.thumbnail_url,500),
       avatarUrl: clean(data.user?.profile_pic || data.user?.profile_picture || data.profile_picture,500),
+      startedAt: clean(live?.start_time || live?.created_at || live?.started_at,80),
     };
   } catch (error) {
     console.error(error);
