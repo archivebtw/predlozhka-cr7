@@ -100,9 +100,6 @@ elements.loginForm.addEventListener('submit', async event => {
         if (payload.is_coop && payload.coop_min_players && payload.coop_max_players && payload.coop_min_players > payload.coop_max_players) {
           throw new Error('Минимальное число игроков не может быть больше максимального.');
         }
-        if (payload.is_coop && payload.coop_min_players && payload.coop_max_players && payload.coop_min_players > payload.coop_max_players) {
-          throw new Error('Минимальное число игроков не может быть больше максимального.');
-        }
 
         if (state.editingId) {
           const { error } = await state.client.from('games').update(payload).eq('id', state.editingId);
