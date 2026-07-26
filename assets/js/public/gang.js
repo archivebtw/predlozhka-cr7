@@ -8,14 +8,17 @@
   ].map(([provider,channel],order) => ({ provider, channel, order }));
   const panel = document.getElementById('gangPanel');
   const grid = document.getElementById('gangGrid');
+  const detectors = document.getElementById('gangDetectors');
   const openButton = document.getElementById('gangOpen');
   const closeButton = document.getElementById('gangClose');
   const status = document.getElementById('gangStatus');
-  if (!panel || !grid || !openButton || !closeButton || !status) return;
+  if (!panel || !grid || !detectors || !openButton || !closeButton || !status) return;
 
   let lastFocusedElement = null;
   let refreshTimer = 0;
   let requestController = null;
+  let players = [];
+  let fallbackTimeout = 0;
 
   const label = channel => channel.replace(/(^|_)(\w)/g,(_,prefix,letter) => `${prefix}${letter.toUpperCase()}`);
   const channelUrl = ({ provider,channel }) => `https://${provider === 'kick' ? 'kick.com' : 'www.twitch.tv'}/${channel}`;
@@ -80,10 +83,80 @@
     else preview.removeAttribute('src');
   }
 
+  function destroyFallbackPlayers() {
+    window.clearTimeout(fallbackTimeout);
+    players.forEach(player => { try { player.destroy(); } catch {} });
+    players = [];
+    detectors.replaceChildren();
+  }
+
+  function applyTwitchFallback(channel,live) {
+    const streamer = streamers.find(item => item.provider === 'twitch' && item.channel === channel);
+    if (!streamer) return;
+    applyStatus({
+      ...streamer,
+      available: true,
+      live,
+      title: live ? 'Прямой эфир — открыть на Twitch' : '',
+      category: '',
+      thumbnailUrl: live ? `https://static-cdn.jtvnw.net/previews-ttv/live_user_${channel}-640x360.jpg?t=${Date.now()}` : '',
+      avatarUrl: '',
+    });
+    sortCards();
+    updateSummary();
+  }
+
+  function checkTwitchWithPlayer(streamersToCheck) {
+    if (!streamersToCheck.length) return;
+    if (!window.Twitch?.Player) {
+      streamersToCheck.forEach(streamer => applyStatus({ ...streamer, available: false }));
+      return;
+    }
+    const parent = window.location.hostname || 'localhost';
+    streamersToCheck.forEach(streamer => {
+      const detector = document.createElement('div');
+      detector.className = 'gang-detector';
+      detector.id = `gangDetector-${streamer.channel}`;
+      detectors.appendChild(detector);
+      const player = new window.Twitch.Player(detector.id,{ channel: streamer.channel, parent: [parent], width: 400, height: 300, autoplay: false, muted: true });
+      player.addEventListener(window.Twitch.Player.ONLINE,() => applyTwitchFallback(streamer.channel,true));
+      player.addEventListener(window.Twitch.Player.OFFLINE,() => applyTwitchFallback(streamer.channel,false));
+      players.push(player);
+    });
+    fallbackTimeout = window.setTimeout(() => {
+      streamersToCheck.forEach(streamer => {
+        const card = cardFor(streamer);
+        if (card?.dataset.status === 'checking') applyStatus({ ...streamer, available: false });
+      });
+      sortCards();
+      updateSummary();
+    },15000);
+  }
+
+  async function checkKickDirect(streamer) {
+    try {
+      const response = await fetch(`https://kick.com/api/v2/channels/${encodeURIComponent(streamer.channel)}`,{ headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`Kick: ${response.status}`);
+      const data = await response.json();
+      const live = data.livestream || null;
+      applyStatus({
+        ...streamer, available: true, live: Boolean(live),
+        title: live?.session_title || '',
+        category: live?.categories?.[0]?.name || live?.category?.name || '',
+        thumbnailUrl: live?.thumbnail?.url || live?.thumbnail_url || '',
+        avatarUrl: data.user?.profile_pic || data.user?.profile_picture || data.profile_picture || '',
+      });
+    } catch (error) {
+      console.warn('141 GANG Kick fallback:',error);
+      applyStatus({ ...streamer, available: false });
+    }
+  }
+
   async function checkLiveChannels() {
     window.clearTimeout(refreshTimer);
     requestController?.abort();
     requestController = new AbortController();
+    destroyFallbackPlayers();
     [...grid.children].forEach(card => { card.dataset.status = 'checking'; card.classList.add('is-checking'); });
     sortCards();
     updateSummary();
@@ -93,15 +166,27 @@
       const { data,error } = await client.functions.invoke('stream-status',{ body: { streamers }, signal: requestController.signal });
       if (error) throw error;
       const received = Array.isArray(data?.streamers) ? data.streamers : [];
-      streamers.forEach(streamer => applyStatus(received.find(item => item.provider === streamer.provider && item.channel.toLowerCase() === streamer.channel) || { ...streamer, available: false }));
+      const twitchFallback = [];
+      const kickFallback = [];
+      streamers.forEach(streamer => {
+        const item = received.find(candidate => candidate.provider === streamer.provider && candidate.channel.toLowerCase() === streamer.channel);
+        if (item && item.available !== false) applyStatus(item);
+        else if (streamer.provider === 'twitch') twitchFallback.push(streamer);
+        else kickFallback.push(streamer);
+      });
+      checkTwitchWithPlayer(twitchFallback);
+      await Promise.all(kickFallback.map(checkKickDirect));
       sortCards();
       updateSummary();
     } catch (error) {
       if (error?.name === 'AbortError') return;
       console.error('141 GANG status:',error);
-      streamers.forEach(streamer => applyStatus({ ...streamer, available: false }));
+      const twitch = streamers.filter(streamer => streamer.provider === 'twitch');
+      const kick = streamers.filter(streamer => streamer.provider === 'kick');
+      checkTwitchWithPlayer(twitch);
+      await Promise.all(kick.map(checkKickDirect));
       sortCards();
-      updateSummary('Не удалось обновить статусы · попробуйте открыть каталог позже');
+      updateSummary();
     }
     if (panel.getAttribute('aria-hidden') === 'false') refreshTimer = window.setTimeout(checkLiveChannels,120000);
   }
@@ -123,6 +208,7 @@
     document.body.classList.remove('gang-open');
     window.clearTimeout(refreshTimer);
     requestController?.abort();
+    destroyFallbackPlayers();
     window.setTimeout(() => { panel.hidden = true; lastFocusedElement?.focus(); },420);
   }
 
