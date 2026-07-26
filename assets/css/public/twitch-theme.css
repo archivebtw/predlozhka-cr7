@@ -81,7 +81,7 @@ header {
   -webkit-text-stroke: 1px rgba(230,55,38,.07);
   font-size: min(34vw, 520px);
   font-weight: 1000;
-  letter-spacing: -.17em;
+  letter-spacing: .045em;
   transform: translateY(-50%) rotate(-7deg);
 }
 .bloodseeker-hero {
@@ -634,8 +634,9 @@ h1 .accent {
 }
 
 .hero-copy-wrap h1 .accent {
-  display: inline;
-  margin-left: .035em;
+  display: inline-block;
+  margin-left: .1em;
+  letter-spacing: .045em;
 }
 
 @media (max-width: 1180px) {
@@ -650,8 +651,8 @@ h1 .accent {
     white-space: normal;
   }
   .hero-copy-wrap h1 .accent {
-    display: inline;
-    margin-left: .035em;
+    display: inline-block;
+    margin-left: .08em;
   }
 }
 
@@ -665,7 +666,7 @@ h1 .accent {
 }
 
 .hero-copy-wrap h1 .accent {
-  display: inline;
+  display: inline-block;
   position: relative;
   z-index: 21;
   color: #b82419;
