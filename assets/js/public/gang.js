@@ -2,13 +2,15 @@
   const channels = ['rostikfacekid','tankzor','sasavot','yurapivo','r4dom1r','iceicell','poisonika','formixyouknow','narek_cr'];
   const panel = document.getElementById('gangPanel');
   const grid = document.getElementById('gangGrid');
+  const detectors = document.getElementById('gangDetectors');
   const openButton = document.getElementById('gangOpen');
   const closeButton = document.getElementById('gangClose');
   const status = document.getElementById('gangStatus');
-  if (!panel || !grid || !openButton || !closeButton || !status) return;
+  if (!panel || !grid || !detectors || !openButton || !closeButton || !status) return;
 
   let lastFocusedElement = null;
-  let refreshTimer = 0;
+  let players = [];
+  let checkTimeout = 0;
 
   function channelLabel(channel) {
     return channel.replace(/(^|_)(\w)/g, (_, prefix, letter) => `${prefix}${letter.toUpperCase()}`);
@@ -16,35 +18,79 @@
 
   function renderCards() {
     grid.innerHTML = channels.map(channel => `
-      <a class="gang-card" data-channel="${channel}" href="https://www.twitch.tv/${channel}" rel="noopener noreferrer" target="_blank">
-        <span class="gang-card-media"><img alt="" data-preview="${channel}" decoding="async"/></span>
-        <span class="gang-card-copy"><span class="gang-live">Не в эфире</span><h3>${channelLabel(channel)}</h3><p class="gang-stream-title">Канал сейчас отдыхает</p><small>twitch.tv/${channel}</small></span>
+      <a class="gang-card is-checking" data-channel="${channel}" data-status="checking" href="https://www.twitch.tv/${channel}" rel="noopener noreferrer" target="_blank">
+        <span class="gang-card-media"><img alt="Превью трансляции ${channelLabel(channel)}" data-preview="${channel}" decoding="async"/></span>
+        <span class="gang-card-copy"><span class="gang-live">Проверяем эфир</span><h3>${channelLabel(channel)}</h3><p class="gang-stream-title">Получаем статус с Twitch…</p><small>twitch.tv/${channel}</small></span>
         <span class="gang-card-arrow" aria-hidden="true">↗</span>
       </a>`).join('');
   }
 
-  function refreshLiveState() {
-    let checked = 0;
-    let liveCount = 0;
-    const stamp = Date.now();
-    status.textContent = 'Проверяем, кто сейчас в эфире…';
+  function sortCards() {
+    const rank = { live: 0, checking: 1, offline: 2 };
+    [...grid.children]
+      .sort((a,b) => rank[a.dataset.status] - rank[b.dataset.status] || channels.indexOf(a.dataset.channel) - channels.indexOf(b.dataset.channel))
+      .forEach(card => grid.appendChild(card));
+  }
 
-    grid.querySelectorAll('[data-preview]').forEach(image => {
-      const card = image.closest('.gang-card');
-      const liveLabel = card.querySelector('.gang-live');
-      const streamTitle = card.querySelector('.gang-stream-title');
-      const finish = isLive => {
-        checked += 1;
-        card.classList.toggle('is-live', isLive);
-        liveLabel.textContent = isLive ? 'Сейчас в эфире' : 'Не в эфире';
-        streamTitle.textContent = isLive ? 'Прямой эфир — смотреть на Twitch' : 'Канал сейчас отдыхает';
-        if (isLive) liveCount += 1;
-        if (checked === channels.length) status.textContent = liveCount ? `Сейчас стримят: ${liveCount}` : 'Сейчас все участники вне эфира';
-      };
-      image.onload = () => finish(image.naturalWidth > 1 && image.naturalHeight > 1);
-      image.onerror = () => finish(false);
-      image.src = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${image.dataset.preview}-640x360.jpg?t=${stamp}`;
+  function updateSummary() {
+    const cards = [...grid.children];
+    const liveCount = cards.filter(card => card.dataset.status === 'live').length;
+    const checkingCount = cards.filter(card => card.dataset.status === 'checking').length;
+    if (checkingCount) status.textContent = `Проверяем Twitch: ${channels.length - checkingCount} из ${channels.length}`;
+    else status.textContent = liveCount ? `Сейчас стримят: ${liveCount} · онлайн-каналы показаны первыми` : 'Сейчас все участники вне эфира';
+  }
+
+  function setChannelStatus(channel,newStatus) {
+    const card = grid.querySelector(`[data-channel="${channel}"]`);
+    if (!card) return;
+    const liveLabel = card.querySelector('.gang-live');
+    const streamTitle = card.querySelector('.gang-stream-title');
+    const preview = card.querySelector('[data-preview]');
+    card.dataset.status = newStatus;
+    card.classList.toggle('is-live',newStatus === 'live');
+    card.classList.toggle('is-checking',newStatus === 'checking');
+    liveLabel.textContent = newStatus === 'live' ? 'Сейчас в эфире' : newStatus === 'offline' ? 'Не в эфире' : 'Проверяем эфир';
+    streamTitle.textContent = newStatus === 'live' ? 'Прямой эфир — смотреть на Twitch' : newStatus === 'offline' ? 'Канал сейчас отдыхает' : 'Получаем статус с Twitch…';
+    if (newStatus === 'live') preview.src = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${channel}-640x360.jpg?t=${Date.now()}`;
+    else preview.removeAttribute('src');
+    sortCards();
+    updateSummary();
+  }
+
+  function destroyPlayers() {
+    clearTimeout(checkTimeout);
+    players.forEach(player => { try { player.destroy(); } catch {} });
+    players = [];
+    detectors.replaceChildren();
+  }
+
+  function checkLiveChannels() {
+    destroyPlayers();
+    channels.forEach(channel => setChannelStatus(channel,'checking'));
+    if (!window.Twitch?.Player) {
+      channels.forEach(channel => setChannelStatus(channel,'offline'));
+      status.textContent = 'Не удалось подключиться к Twitch для проверки эфиров';
+      return;
+    }
+
+    const parent = window.location.hostname || 'localhost';
+    channels.forEach(channel => {
+      const detector = document.createElement('div');
+      detector.className = 'gang-detector';
+      detector.id = `gangDetector-${channel}`;
+      detectors.appendChild(detector);
+      const player = new window.Twitch.Player(detector.id,{ channel, parent: [parent], width: 400, height: 300, autoplay: false, muted: true });
+      player.addEventListener(window.Twitch.Player.ONLINE,() => setChannelStatus(channel,'live'));
+      player.addEventListener(window.Twitch.Player.OFFLINE,() => setChannelStatus(channel,'offline'));
+      players.push(player);
     });
+
+    checkTimeout = window.setTimeout(() => {
+      channels.forEach(channel => {
+        const card = grid.querySelector(`[data-channel="${channel}"]`);
+        if (card?.dataset.status === 'checking') setChannelStatus(channel,'offline');
+      });
+    },15000);
   }
 
   function openPanel() {
@@ -54,9 +100,7 @@
     openButton.setAttribute('aria-expanded','true');
     document.body.classList.add('gang-open');
     requestAnimationFrame(() => { panel.classList.add('is-open'); closeButton.focus(); });
-    refreshLiveState();
-    clearInterval(refreshTimer);
-    refreshTimer = window.setInterval(refreshLiveState,120000);
+    checkLiveChannels();
   }
 
   function closePanel() {
@@ -64,7 +108,7 @@
     panel.setAttribute('aria-hidden','true');
     openButton.setAttribute('aria-expanded','false');
     document.body.classList.remove('gang-open');
-    clearInterval(refreshTimer);
+    destroyPlayers();
     window.setTimeout(() => { panel.hidden = true; lastFocusedElement?.focus(); },420);
   }
 

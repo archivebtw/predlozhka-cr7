@@ -30,10 +30,14 @@ body.gang-open { overflow: hidden; }
 .gang-live::before { width: 7px; height: 7px; border-radius: 50%; background: #746965; content: ''; }
 .gang-card.is-live .gang-live { color: #ff725e; }
 .gang-card.is-live .gang-live::before { background: #f04431; box-shadow: 0 0 12px #e33324; animation: gang-pulse 1.6s ease infinite; }
+.gang-card.is-checking .gang-live { color: #c3aaa4; }
+.gang-card.is-checking .gang-live::before { background: #d26454; animation: gang-pulse 1.2s ease infinite; }
 .gang-card h3 { margin: 0; font-family: var(--font-display); font-size: 24px; letter-spacing: -.025em; }
 .gang-card p { margin: 5px 0 0; color: #a99a96; font-size: 11px; }
 .gang-card small { display: block; margin-top: 4px; color: #756966; font-size: 9px; }
 .gang-card-arrow { position: absolute; right: 18px; bottom: 18px; z-index: 2; display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; background: rgba(0,0,0,.28); }
+.gang-detectors { position: fixed; left: -10000px; top: 0; width: 1px; height: 1px; overflow: hidden; opacity: .001; pointer-events: none; }
+.gang-detector { width: 400px; height: 300px; }
 @keyframes gang-pulse { 50% { opacity: .5; transform: scale(.72); } }
 
 @media (max-width: 680px) {
