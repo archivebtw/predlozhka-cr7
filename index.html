@@ -129,6 +129,9 @@
 <button class="filter-btn" data-filter="upcoming" type="button">Скоро</button>
 <button class="filter-btn" data-filter="released" type="button">Вышли</button>
 <button class="filter-btn" data-filter="unknown" type="button">Без даты</button>
+<button class="filter-btn" data-filter="favorite" type="button">★ Избранное</button>
+<button class="filter-btn" data-filter="completed" type="button">Пройденные</button>
+<button class="filter-btn" data-filter="ignored" type="button">Неинтересно</button>
 </div>
 </div>
 </div>
@@ -309,12 +312,13 @@
 <h2 class="modal-title" id="modalTitle"></h2>
 <p class="modal-release" id="modalRelease"></p>
 <div aria-label="Будущие отметки игры" class="modal-collection-tabs" role="group">
-<span class="modal-tabs-label">Моя библиотека <small>скоро</small></span>
+<span class="modal-tabs-label">Моя библиотека <small>только админ</small></span>
 <div class="modal-tabs-list">
-<button aria-disabled="true" class="modal-collection-tab is-completed" title="Функция появится позже" type="button"><i aria-hidden="true">✓</i><span>Пройдено</span></button>
-<button aria-disabled="true" class="modal-collection-tab is-ignored" title="Функция появится позже" type="button"><i aria-hidden="true">×</i><span>Не интересует</span></button>
-<button aria-disabled="true" class="modal-collection-tab is-favorite" title="Функция появится позже" type="button"><i aria-hidden="true">★</i><span>Избранное</span></button>
+<button aria-pressed="false" class="modal-collection-tab is-completed" data-library-action="completed" type="button"><i aria-hidden="true">✓</i><span>Пройдено</span></button>
+<button aria-pressed="false" class="modal-collection-tab is-ignored" data-library-action="ignored" type="button"><i aria-hidden="true">×</i><span>Не интересует</span></button>
+<button aria-pressed="false" class="modal-collection-tab is-favorite" data-library-action="favorite" type="button"><i aria-hidden="true">★</i><span>Избранное</span></button>
 </div>
+<p aria-live="polite" class="modal-library-notice" id="modalLibraryNotice"></p>
 </div>
 <section class="modal-section">
 <h3>Об игре</h3>

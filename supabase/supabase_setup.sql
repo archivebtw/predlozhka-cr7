@@ -34,6 +34,8 @@ create table if not exists public.games (
   author_comment text not null default '' check (char_length(author_comment) <= 1200),
   display_order integer not null default 0 check (display_order between 0 and 9999),
   published boolean not null default true,
+  library_status text not null default '' check (library_status in ('', 'completed', 'ignored')),
+  is_favorite boolean not null default false,
   created_by uuid not null default auth.uid() references auth.users(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

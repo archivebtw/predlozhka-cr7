@@ -56,6 +56,11 @@
 }
 .filter-btn:hover { transform: translateY(-2px); border-color: rgba(226,59,40,.35); color: #fff; }
 .filter-btn.active { border-color: rgba(237,64,44,.72); color: #fff; background: linear-gradient(135deg,rgba(213,40,27,.5),rgba(103,10,7,.32)); box-shadow: 0 8px 20px rgba(110,10,7,.22), inset 0 1px rgba(255,255,255,.06); }
+.favorite-star { margin-right: 7px; color: #ffd066; filter: drop-shadow(0 0 7px rgba(255,192,55,.5)); }
+.game-card.is-favorite { box-shadow: inset 2px 0 #d69b28; }
+.library-state-chip { padding: 6px 8px; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; font-size: 8px; font-weight: 900; text-transform: uppercase; }
+.library-state-chip.completed { color: #bff1d1; border-color: rgba(75,192,124,.25); background: rgba(75,192,124,.08); }
+.library-state-chip.ignored { color: #d2aaa3; background: rgba(255,255,255,.035); }
 
 .catalog-stream { display: grid; gap: 46px; }
 .catalog-group { display: grid; gap: 14px; }

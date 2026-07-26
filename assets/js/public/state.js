@@ -24,6 +24,8 @@
       modalBadges: document.getElementById('modalBadges'),
       modalTitle: document.getElementById('modalTitle'),
       modalRelease: document.getElementById('modalRelease'),
+      modalLibraryNotice: document.getElementById('modalLibraryNotice'),
+      modalLibraryActions: [...document.querySelectorAll('[data-library-action]')],
       modalDescription: document.getElementById('modalDescription'),
       modalCommentSection: document.getElementById('modalCommentSection'),
       modalComment: document.getElementById('modalComment'),
