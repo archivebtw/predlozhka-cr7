@@ -12,8 +12,30 @@ function resetForm() {
       setImporting(false);
       state.lastImportedSteamUrl = '';
       state.steamComingSoonFallback = false;
+      updateCoopEditor();
       updateAutomaticReleaseStatus();
       clearTimeout(state.steamImportTimer);
+    }
+
+    function updateCoopEditor(manual = false) {
+      const enabled = elements.isCoop.checked;
+      elements.coopEditor.classList.toggle('is-disabled', !enabled);
+      elements.coopMinPlayers.disabled = !enabled;
+      elements.coopMaxPlayers.disabled = !enabled;
+      if (enabled && !elements.coopType.value) elements.coopType.value = 'generic';
+      if (manual) elements.coopSource.value = 'manual_admin';
+
+      const label = coopLabel({
+        is_coop: enabled,
+        coop_type: elements.coopType.value,
+        coop_min_players: elements.coopMinPlayers.value,
+        coop_max_players: elements.coopMaxPlayers.value
+      });
+      elements.coopEditorHint.textContent = manual
+        ? 'Ручное значение будет сохранено вместо автоматического результата Steam.'
+        : 'Автоматические значения Steam можно оставить без изменений.';
+      elements.steamPreviewCoop.hidden = !label;
+      elements.steamPreviewCoop.textContent = label ? `👥 ${label}` : '';
     }
 
     function editGame(id) {
@@ -34,6 +56,7 @@ function resetForm() {
       elements.coopMinPlayers.value = game.coop_min_players || '';
       elements.coopMaxPlayers.value = game.coop_max_players || '';
       elements.coopSource.value = game.coop_source || '';
+      updateCoopEditor();
       state.steamComingSoonFallback = Boolean(game.coming_soon);
       updateAutomaticReleaseStatus();
       elements.published.checked = Boolean(game.published);
@@ -61,6 +84,7 @@ function resetForm() {
       if (!game) return;
       showNotice(`Обновляем данные Steam для «${game.title}»…`, 'info', true);
       const data = await fetchSteamData(game.steam_url, true);
+      const hasManualCoop = game.coop_source === 'manual_admin';
       const payload = {
         steam_app_id: data.appId,
         title: data.title || game.title,
@@ -69,11 +93,11 @@ function resetForm() {
         release_date: data.releaseDate || null,
         release_date_text: data.releaseDateText || '',
         coming_soon: isUpcomingByLocalDate(data.releaseDate, data.comingSoon),
-        is_coop: Boolean(data.isCoop),
-        coop_type: data.isCoop ? (data.coopType || 'generic') : '',
-        coop_min_players: data.isCoop && data.coopMinPlayers ? Number(data.coopMinPlayers) : null,
-        coop_max_players: data.isCoop && data.coopMaxPlayers ? Number(data.coopMaxPlayers) : null,
-        coop_source: data.coopSource || '',
+        is_coop: hasManualCoop ? Boolean(game.is_coop) : Boolean(data.isCoop),
+        coop_type: hasManualCoop ? game.coop_type : data.isCoop ? (data.coopType || 'generic') : '',
+        coop_min_players: hasManualCoop ? game.coop_min_players : data.isCoop && data.coopMinPlayers ? Number(data.coopMinPlayers) : null,
+        coop_max_players: hasManualCoop ? game.coop_max_players : data.isCoop && data.coopMaxPlayers ? Number(data.coopMaxPlayers) : null,
+        coop_source: hasManualCoop ? game.coop_source : (data.coopSource || ''),
         steam_synced_at: new Date().toISOString()
       };
       const { error } = await state.client.from('games').update(payload).eq('id', game.id);
