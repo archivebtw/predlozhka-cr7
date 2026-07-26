@@ -46,7 +46,7 @@ header {
       color: var(--muted);
       font-size: 10px;
       letter-spacing: .2em;
-    }.nav-right { display: flex; align-items: center; gap: 12px; }.nav-link {
+    }.nav-right { display: flex; align-items: center; gap: 12px; }.connection-status { display: none !important; }.nav-link {
       padding: 10px 13px;
       color: #c7c1d1;
       border-radius: 12px;
