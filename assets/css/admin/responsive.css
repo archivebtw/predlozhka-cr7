@@ -17,4 +17,5 @@
       .admin-game-actions { width: 100%; justify-content: stretch; }
       .admin-game-actions .icon-btn { flex: 1; }
       .form-actions .btn { width: 100%; }
+      .catalog-controls { grid-template-columns: 1fr; padding: 14px; }
     }
