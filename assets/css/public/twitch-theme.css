@@ -380,9 +380,9 @@ body.is-ready .hero-divider {
   min-width: 162px;
 }
 .quick-cover img {
-  object-fit: contain;
-  padding: 8px;
-  background: radial-gradient(circle at center, rgba(255, 96, 53, .18), rgba(92, 12, 10, .5));
+  object-fit: cover;
+  padding: 0;
+  background: #210706;
 }
 .next-release {
   min-height: 438px;
