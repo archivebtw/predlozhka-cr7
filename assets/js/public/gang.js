@@ -1,0 +1,260 @@
+(() => {
+  const streamers = [
+    ['twitch','rostikfacekid'], ['twitch','tankzor'], ['twitch','sasavot'],
+    ['twitch','yurapivo'], ['twitch','r4dom1r'], ['twitch','iceicell'],
+    ['twitch','poisonika'], ['twitch','formixyouknow'], ['twitch','narek_cr'],
+    ['kick','helin139ban'], ['twitch','timaevvv'], ['twitch','gagik'],
+    ['twitch','kennethonline']
+  ].map(([provider,channel],order) => ({ provider, channel, order }));
+  const panel = document.getElementById('gangPanel');
+  const grid = document.getElementById('gangGrid');
+  const detectors = document.getElementById('gangDetectors');
+  const openButton = document.getElementById('gangOpen');
+  const closeButton = document.getElementById('gangClose');
+  const status = document.getElementById('gangStatus');
+  if (!panel || !grid || !detectors || !openButton || !closeButton || !status) return;
+
+  let lastFocusedElement = null;
+  let refreshTimer = 0;
+  let requestController = null;
+  let players = [];
+  let fallbackTimeout = 0;
+  let uptimeTimer = 0;
+
+  const label = channel => channel.replace(/(^|_)(\w)/g,(_,prefix,letter) => `${prefix}${letter.toUpperCase()}`);
+  const channelUrl = ({ provider,channel }) => `https://${provider === 'kick' ? 'kick.com' : 'www.twitch.tv'}/${channel}`;
+  const fallbackAvatar = ({ provider,channel }) => `https://unavatar.io/${provider}/${encodeURIComponent(channel)}?fallback=false`;
+
+  function renderCards() {
+    grid.innerHTML = streamers.map(streamer => `
+      <a class="gang-card is-checking" data-channel="${streamer.channel}" data-provider="${streamer.provider}" data-order="${streamer.order}" data-status="checking" href="${channelUrl(streamer)}" rel="noopener noreferrer" target="_blank">
+        <span class="gang-card-media">
+          <span aria-hidden="true" class="gang-avatar-fallback">${label(streamer.channel).slice(0,1)}</span>
+          <img alt="Аватар канала ${label(streamer.channel)}" class="gang-avatar" decoding="async" loading="lazy" onerror="this.hidden=true" referrerpolicy="no-referrer" src="${fallbackAvatar(streamer)}"/>
+          <img alt="Превью трансляции ${label(streamer.channel)}" class="gang-preview" decoding="async" referrerpolicy="no-referrer"/>
+        </span>
+        <span class="gang-card-copy">
+          <span class="gang-card-topline"><span class="gang-live">Проверяем эфир</span><span class="gang-provider">${streamer.provider}</span></span>
+          <h3>${label(streamer.channel)}</h3>
+          <span class="gang-category" hidden></span>
+          <p class="gang-stream-title">Получаем актуальный статус…</p>
+          <span class="gang-uptime" hidden></span>
+          <small>${streamer.provider === 'kick' ? 'kick.com' : 'twitch.tv'}/${streamer.channel}</small>
+        </span>
+        <span class="gang-card-arrow" aria-hidden="true">↗</span>
+      </a>`).join('');
+  }
+
+  function cardFor(item) {
+    return grid.querySelector(`[data-provider="${item.provider}"][data-channel="${item.channel.toLowerCase()}"]`);
+  }
+
+  function sortCards() {
+    const rank = { live: 0, checking: 1, offline: 2, unavailable: 3 };
+    [...grid.children]
+      .sort((a,b) => rank[a.dataset.status] - rank[b.dataset.status] || Number(a.dataset.order) - Number(b.dataset.order))
+      .forEach(card => grid.appendChild(card));
+  }
+
+  function updateSummary(message = '') {
+    if (message) { status.textContent = message; return; }
+    const cards = [...grid.children];
+    const liveCount = cards.filter(card => card.dataset.status === 'live').length;
+    const checkingCount = cards.filter(card => card.dataset.status === 'checking').length;
+    if (checkingCount) status.textContent = `Проверяем каналы: ${cards.length - checkingCount} из ${cards.length}`;
+    else status.textContent = liveCount ? `Сейчас стримят: ${liveCount} · онлайн-каналы показаны первыми` : 'Сейчас все участники вне эфира';
+  }
+
+  function formatUptime(value) {
+    const startedAt = Date.parse(value || '');
+    if (!Number.isFinite(startedAt)) return '';
+    const totalMinutes = Math.max(0,Math.floor((Date.now() - startedAt) / 60000));
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor(totalMinutes % 1440 / 60);
+    const minutes = totalMinutes % 60;
+    return `В эфире ${days ? `${days} д ` : ''}${hours ? `${hours} ч ` : ''}${minutes} мин`;
+  }
+
+  function updateUptimes() {
+    grid.querySelectorAll('.gang-card.is-live').forEach(card => {
+      const uptime = card.querySelector('.gang-uptime');
+      const text = formatUptime(card.dataset.startedAt);
+      uptime.textContent = text;
+      uptime.hidden = !text;
+    });
+  }
+
+  function applyStatus(item) {
+    const card = cardFor(item);
+    if (!card) return;
+    const live = item.live === true;
+    const nextStatus = live ? 'live' : item.available === false ? 'unavailable' : 'offline';
+    const avatar = card.querySelector('.gang-avatar');
+    const preview = card.querySelector('.gang-preview');
+    const category = card.querySelector('.gang-category');
+    const uptime = card.querySelector('.gang-uptime');
+    card.dataset.status = nextStatus;
+    card.dataset.startedAt = live ? (item.startedAt || '') : '';
+    card.classList.toggle('is-live',live);
+    card.classList.remove('is-checking');
+    card.querySelector('.gang-live').textContent = live ? 'Сейчас в эфире' : nextStatus === 'unavailable' ? 'Статус недоступен' : 'Не в эфире';
+    card.querySelector('.gang-stream-title').textContent = live ? (item.title || 'Прямой эфир') : nextStatus === 'unavailable' ? 'Не удалось получить данные платформы' : 'Канал сейчас отдыхает';
+    category.textContent = item.category || '';
+    category.hidden = !live || !item.category;
+    const uptimeText = live ? formatUptime(item.startedAt) : '';
+    uptime.textContent = uptimeText;
+    uptime.hidden = !uptimeText;
+    if (item.avatarUrl) { avatar.hidden = false; avatar.src = item.avatarUrl; }
+    if (live && item.thumbnailUrl) preview.src = item.thumbnailUrl.replace('{width}','640').replace('{height}','360');
+    else preview.removeAttribute('src');
+  }
+
+  function destroyFallbackPlayers() {
+    window.clearTimeout(fallbackTimeout);
+    players.forEach(player => { try { player.destroy(); } catch {} });
+    players = [];
+    detectors.replaceChildren();
+  }
+
+  function applyTwitchFallback(channel,live) {
+    const streamer = streamers.find(item => item.provider === 'twitch' && item.channel === channel);
+    if (!streamer) return;
+    applyStatus({
+      ...streamer,
+      available: true,
+      live,
+      title: live ? 'Прямой эфир — открыть на Twitch' : '',
+      category: '',
+      thumbnailUrl: live ? `https://static-cdn.jtvnw.net/previews-ttv/live_user_${channel}-640x360.jpg?t=${Date.now()}` : '',
+      avatarUrl: '',
+      startedAt: '',
+    });
+    sortCards();
+    updateSummary();
+  }
+
+  function checkTwitchWithPlayer(streamersToCheck) {
+    if (!streamersToCheck.length) return;
+    if (!window.Twitch?.Player) {
+      streamersToCheck.forEach(streamer => applyStatus({ ...streamer, available: false }));
+      return;
+    }
+    const parent = window.location.hostname || 'localhost';
+    streamersToCheck.forEach(streamer => {
+      const detector = document.createElement('div');
+      detector.className = 'gang-detector';
+      detector.id = `gangDetector-${streamer.channel}`;
+      detectors.appendChild(detector);
+      const player = new window.Twitch.Player(detector.id,{ channel: streamer.channel, parent: [parent], width: 400, height: 300, autoplay: false, muted: true });
+      player.addEventListener(window.Twitch.Player.ONLINE,() => applyTwitchFallback(streamer.channel,true));
+      player.addEventListener(window.Twitch.Player.OFFLINE,() => applyTwitchFallback(streamer.channel,false));
+      players.push(player);
+    });
+    fallbackTimeout = window.setTimeout(() => {
+      streamersToCheck.forEach(streamer => {
+        const card = cardFor(streamer);
+        if (card?.dataset.status === 'checking') applyStatus({ ...streamer, available: false });
+      });
+      sortCards();
+      updateSummary();
+    },15000);
+  }
+
+  async function checkKickDirect(streamer) {
+    try {
+      const response = await fetch(`https://kick.com/api/v2/channels/${encodeURIComponent(streamer.channel)}`,{ headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`Kick: ${response.status}`);
+      const data = await response.json();
+      const live = data.livestream || null;
+      applyStatus({
+        ...streamer, available: true, live: Boolean(live),
+        title: live?.session_title || '',
+        category: live?.categories?.[0]?.name || live?.category?.name || '',
+        thumbnailUrl: live?.thumbnail?.url || live?.thumbnail_url || '',
+        avatarUrl: data.user?.profile_pic || data.user?.profile_picture || data.profile_picture || '',
+        startedAt: live?.start_time || live?.created_at || live?.started_at || '',
+      });
+    } catch (error) {
+      console.warn('141 GANG Kick fallback:',error);
+      applyStatus({ ...streamer, available: false });
+    }
+  }
+
+  async function checkLiveChannels() {
+    window.clearTimeout(refreshTimer);
+    requestController?.abort();
+    requestController = new AbortController();
+    destroyFallbackPlayers();
+    [...grid.children].forEach(card => { card.dataset.status = 'checking'; card.classList.add('is-checking'); });
+    sortCards();
+    updateSummary();
+    try {
+      const client = getConfiguredClient();
+      if (!client) throw new Error('Supabase не настроен');
+      const { data,error } = await client.functions.invoke('stream-status',{ body: { streamers }, signal: requestController.signal });
+      if (error) throw error;
+      const received = Array.isArray(data?.streamers) ? data.streamers : [];
+      const twitchFallback = [];
+      const kickFallback = [];
+      streamers.forEach(streamer => {
+        const item = received.find(candidate => candidate.provider === streamer.provider && candidate.channel.toLowerCase() === streamer.channel);
+        if (item && item.available !== false) applyStatus(item);
+        else if (streamer.provider === 'twitch') twitchFallback.push(streamer);
+        else kickFallback.push(streamer);
+      });
+      checkTwitchWithPlayer(twitchFallback);
+      await Promise.all(kickFallback.map(checkKickDirect));
+      sortCards();
+      updateSummary();
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      console.error('141 GANG status:',error);
+      const twitch = streamers.filter(streamer => streamer.provider === 'twitch');
+      const kick = streamers.filter(streamer => streamer.provider === 'kick');
+      checkTwitchWithPlayer(twitch);
+      await Promise.all(kick.map(checkKickDirect));
+      sortCards();
+      updateSummary();
+    }
+    if (panel.getAttribute('aria-hidden') === 'false') refreshTimer = window.setTimeout(checkLiveChannels,120000);
+  }
+
+  function openPanel() {
+    lastFocusedElement = document.activeElement;
+    panel.hidden = false;
+    panel.setAttribute('aria-hidden','false');
+    openButton.setAttribute('aria-expanded','true');
+    document.body.classList.add('gang-open');
+    requestAnimationFrame(() => { panel.classList.add('is-open'); closeButton.focus(); });
+    window.clearInterval(uptimeTimer);
+    uptimeTimer = window.setInterval(updateUptimes,30000);
+    checkLiveChannels();
+  }
+
+  function closePanel() {
+    panel.classList.remove('is-open');
+    panel.setAttribute('aria-hidden','true');
+    openButton.setAttribute('aria-expanded','false');
+    document.body.classList.remove('gang-open');
+    window.clearTimeout(refreshTimer);
+    window.clearInterval(uptimeTimer);
+    requestController?.abort();
+    destroyFallbackPlayers();
+    window.setTimeout(() => { panel.hidden = true; lastFocusedElement?.focus(); },420);
+  }
+
+  renderCards();
+  openButton.addEventListener('click',openPanel);
+  closeButton.addEventListener('click',closePanel);
+  panel.addEventListener('click',event => { if (event.target.matches('[data-gang-close]')) closePanel(); });
+  document.addEventListener('keydown',event => {
+    if (panel.hidden) return;
+    if (event.key === 'Escape') closePanel();
+    if (event.key !== 'Tab') return;
+    const focusable = [...panel.querySelectorAll('button,a[href]')];
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  });
+})();

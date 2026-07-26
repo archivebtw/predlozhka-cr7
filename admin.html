@@ -6,12 +6,12 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="#090303" name="theme-color"/>
 <title>Админ-панель — ПРЕДЛОЖКА141</title>
-<link href="./assets/images/bloodseeker.webp" rel="icon" type="image/webp"/><link href="./assets/css/admin/variables.css" rel="stylesheet"/><link href="./assets/css/admin/base.css" rel="stylesheet"/><link href="./assets/css/admin/forms.css" rel="stylesheet"/><link href="./assets/css/admin/game-list.css" rel="stylesheet"/><link href="./assets/css/admin/responsive.css" rel="stylesheet"/><link href="./assets/css/admin/brand.css" rel="stylesheet"/></head>
+<link href="./assets/images/theme/logo-141.png" rel="icon" type="image/png"/><link href="./assets/images/theme/site-logo.png" rel="icon" type="image/png"/><link href="./assets/css/admin/variables.css" rel="stylesheet"/><link href="./assets/css/admin/base.css" rel="stylesheet"/><link href="./assets/css/admin/forms.css" rel="stylesheet"/><link href="./assets/css/admin/game-list.css" rel="stylesheet"/><link href="./assets/css/admin/responsive.css" rel="stylesheet"/><link href="./assets/css/admin/brand.css" rel="stylesheet"/></head>
 <body>
 <header>
 <div class="shell nav">
 <div class="brand">
-<span class="brand-mark">141</span>
+<img alt="" aria-hidden="true" class="brand-logo" onerror="this.onerror=null;this.src='./assets/images/theme/logo-141.png'" src="./assets/images/theme/site-logo.png"/>
 <span>АДМИН-ПАНЕЛЬ<small>ПРЕДЛОЖКА141 · SASAVOT</small></span>
 </div>
 <div class="session">
@@ -87,9 +87,18 @@
 <button class="change-game-btn" id="changeGameButton" type="button">Выбрать другую игру</button>
 </div>
 </div>
+<div class="coop-editor" id="coopEditor">
+<div class="coop-editor-head"><div><span>Настройка после импорта</span><h3>Количество игроков в кооперативе</h3><p>Steam заполняет данные автоматически, но их можно уточнить вручную.</p></div><label class="coop-toggle" for="isCoop"><input id="isCoop" type="checkbox"/><span>Есть кооператив</span></label></div>
+<div class="coop-player-fields">
+<label for="coopMinPlayers">Минимум игроков<input id="coopMinPlayers" max="64" min="2" placeholder="2" type="number"/></label>
+<label for="coopMaxPlayers">Максимум игроков<input id="coopMaxPlayers" max="64" min="2" placeholder="4" type="number"/></label>
+</div>
+<p class="coop-editor-hint" id="coopEditorHint">Автоматические значения Steam можно оставить без изменений.</p>
+<input id="coopSource" maxlength="120" type="hidden"/>
+</div>
 <div class="comment-focus">
-<label for="authorComment">Комментарий автора <span class="required">*</span></label>
-<textarea id="authorComment" maxlength="1200" placeholder="Почему эту игру стоит показать на стриме?" required=""></textarea>
+<label for="authorComment">Комментарий автора <span class="optional">необязательно</span></label>
+<textarea id="authorComment" maxlength="1200" placeholder="Почему эту игру стоит показать на стриме?"></textarea>
 </div>
 <div class="form-actions compact-actions">
 <button class="btn btn-primary" id="saveButton" type="submit">Опубликовать игру</button>
@@ -104,11 +113,7 @@
 <input id="releaseDateText" maxlength="120"/>
 <input id="displayOrder" max="9999" min="0" type="number" value="0"/>
 <input id="steamAppId" min="1" readonly="" type="number"/>
-<input id="isCoop" type="checkbox"/>
 <input id="coopType" maxlength="20"/>
-<input id="coopMinPlayers" max="64" min="2" type="number"/>
-<input id="coopMaxPlayers" max="64" min="2" type="number"/>
-<input id="coopSource" maxlength="120"/>
 <div aria-live="polite" class="release-status-auto unknown" id="releaseStatusAuto">
 <small id="releaseStatusHint">Статус определяется автоматически.</small>
 <span class="release-status-badge" id="releaseStatusBadge">Без даты</span>
@@ -122,14 +127,41 @@
 <div class="panel-head catalog-head">
 <div>
 <h2>Текущий каталог</h2>
-<p>Ближайшие будущие релизы автоматически показываются выше.</p>
+<p>Найди игру по названию или выбери удобный порядок списка.</p>
 </div>
 <span class="count" id="countLabel">0 игр</span>
+</div>
+<div class="catalog-controls" role="search">
+<div class="catalog-search">
+<label class="catalog-control-label" for="catalogSearch">Поиск по названию</label>
+<span class="catalog-search-field">
+<span aria-hidden="true" class="catalog-search-icon"></span>
+<input autocomplete="off" id="catalogSearch" placeholder="Например, Island Beekeeper" type="search"/>
+<button aria-label="Очистить поиск" class="catalog-search-clear" hidden="" id="catalogSearchClear" type="button">×</button>
+</span>
+</div>
+<label class="catalog-sort" for="catalogSort">
+<span class="catalog-control-label">Сортировка</span>
+<select id="catalogSort">
+<option value="newest">Последние добавленные</option>
+<option value="alphabetical">По алфавиту А—Я</option>
+<option value="release">Дата релиза: новые сначала</option>
+</select>
+</label>
 </div>
 <div class="panel-body"><div class="game-list" id="gameList"></div></div>
 </article>
 </div>
 </section>
 </main>
+<div aria-hidden="true" class="duplicate-modal" hidden="" id="duplicateModal">
+<div class="duplicate-backdrop" data-duplicate-close=""></div>
+<section aria-labelledby="duplicateTitle" aria-modal="true" class="duplicate-dialog" role="dialog">
+<span class="duplicate-kicker">Проверка каталога</span>
+<h2 id="duplicateTitle">Игра уже есть</h2>
+<p id="duplicateText"></p>
+<div class="duplicate-actions"><button class="btn" id="duplicateCancel" type="button">Отмена</button><button class="btn btn-primary" id="duplicateConfirm" type="button">Добавить второй экземпляр</button></div>
+</section>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js"></script><script src="./assets/js/admin/state.js"></script><script src="./assets/js/admin/utils.js"></script><script src="./assets/js/admin/games.js"></script><script src="./assets/js/admin/steam-import.js"></script><script src="./assets/js/admin/game-form.js"></script><script src="./assets/js/admin/auth.js"></script><script src="./assets/js/admin/app.js"></script></body>
 </html>
