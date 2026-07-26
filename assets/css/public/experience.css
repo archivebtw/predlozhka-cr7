@@ -10,6 +10,7 @@ body.has-scrolled > header { border-color: var(--glass-line) !important; backgro
 .nav { min-height: 82px; transition: min-height .3s ease; }
 body.has-scrolled .nav { min-height: 68px; }
 .brand { gap: 13px; }
+.brand-logo { width: 58px; height: 42px; flex: 0 0 auto; object-fit: contain; border-radius: 8px; }
 .brand-copy b { letter-spacing: -.025em; }
 .nav-right { padding: 5px; border: 1px solid rgba(255,255,255,.055); border-radius: 14px 14px 14px 5px; background: rgba(255,255,255,.018); }
 .nav-link,.twitch-nav { min-height: 38px; display: inline-flex; align-items: center; border-radius: 9px 9px 9px 3px !important; }
@@ -81,6 +82,7 @@ footer { padding: 0 !important; background: linear-gradient(180deg,rgba(10,3,3,.
 }
 @media (max-width: 760px) {
   .nav { min-height: 66px; }
+  .brand-logo { width: 46px; height: 34px; }
   .nav-right { border: 0; padding: 0; background: transparent; }
   .hero { padding-top: 40px; }
   .eyebrow { font-size: 8px; }
