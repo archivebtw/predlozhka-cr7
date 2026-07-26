@@ -87,6 +87,15 @@
 <button class="change-game-btn" id="changeGameButton" type="button">Выбрать другую игру</button>
 </div>
 </div>
+<div class="coop-editor" id="coopEditor">
+<div class="coop-editor-head"><div><span>Настройка после импорта</span><h3>Количество игроков в кооперативе</h3><p>Steam заполняет данные автоматически, но их можно уточнить вручную.</p></div><label class="coop-toggle" for="isCoop"><input id="isCoop" type="checkbox"/><span>Есть кооператив</span></label></div>
+<div class="coop-player-fields">
+<label for="coopMinPlayers">Минимум игроков<input id="coopMinPlayers" max="64" min="2" placeholder="2" type="number"/></label>
+<label for="coopMaxPlayers">Максимум игроков<input id="coopMaxPlayers" max="64" min="2" placeholder="4" type="number"/></label>
+</div>
+<p class="coop-editor-hint" id="coopEditorHint">Автоматические значения Steam можно оставить без изменений.</p>
+<input id="coopSource" maxlength="120" type="hidden"/>
+</div>
 <div class="comment-focus">
 <label for="authorComment">Комментарий автора <span class="required">*</span></label>
 <textarea id="authorComment" maxlength="1200" placeholder="Почему эту игру стоит показать на стриме?" required=""></textarea>
@@ -104,11 +113,7 @@
 <input id="releaseDateText" maxlength="120"/>
 <input id="displayOrder" max="9999" min="0" type="number" value="0"/>
 <input id="steamAppId" min="1" readonly="" type="number"/>
-<input id="isCoop" type="checkbox"/>
 <input id="coopType" maxlength="20"/>
-<input id="coopMinPlayers" max="64" min="2" type="number"/>
-<input id="coopMaxPlayers" max="64" min="2" type="number"/>
-<input id="coopSource" maxlength="120"/>
 <div aria-live="polite" class="release-status-auto unknown" id="releaseStatusAuto">
 <small id="releaseStatusHint">Статус определяется автоматически.</small>
 <span class="release-status-badge" id="releaseStatusBadge">Без даты</span>

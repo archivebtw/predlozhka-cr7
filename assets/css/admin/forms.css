@@ -94,3 +94,17 @@
       background: rgba(85,224,157,.09);
       letter-spacing: 0 !important;
     }.connection-card { margin-bottom: 20px; padding: 14px 16px; border: 1px solid rgba(85,224,157,.22); border-radius: 15px; color: #c9f5dc; background: rgba(85,224,157,.07); font-size: 13px; line-height: 1.55; }
+
+.coop-editor { display: grid; gap: 14px; margin-top: 16px; padding: 18px; border: 1px solid rgba(85,224,157,.18); border-radius: 18px; background: linear-gradient(145deg,rgba(85,224,157,.055),rgba(17,55,37,.035)); transition: border-color .2s ease,opacity .2s ease; }
+.coop-editor-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.coop-editor-head > div > span { color: #74dba4; font-size: 9px; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
+.coop-editor-head h3 { margin: 5px 0 0; font-size: 16px; }
+.coop-editor-head p { margin: 6px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+.coop-toggle { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; padding: 9px 11px; border: 1px solid rgba(85,224,157,.2); border-radius: 11px; color: #c9ffe2; background: rgba(85,224,157,.07); cursor: pointer; white-space: nowrap; }
+.coop-toggle input { width: auto; margin: 0; accent-color: var(--green); }
+.coop-player-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.coop-player-fields label { display: grid; gap: 7px; }
+.coop-player-fields input:disabled { cursor: not-allowed; opacity: .4; }
+.coop-editor-hint { margin: 0; color: #8ea99a; font-size: 10px; line-height: 1.45; }
+.coop-editor.is-disabled { border-color: rgba(255,255,255,.08); }
+@media (max-width: 620px) { .coop-editor-head { flex-direction: column; } .coop-player-fields { grid-template-columns: 1fr; } }
