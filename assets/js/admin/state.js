@@ -25,6 +25,8 @@
       steamPreviewText: document.getElementById('steamPreviewText'),
       steamPreviewRelease: document.getElementById('steamPreviewRelease'),
       steamPreviewCoop: document.getElementById('steamPreviewCoop'),
+      coopEditor: document.getElementById('coopEditor'),
+      coopEditorHint: document.getElementById('coopEditorHint'),
       coverUrl: document.getElementById('coverUrl'),
       description: document.getElementById('description'),
       authorComment: document.getElementById('authorComment'),
@@ -44,7 +46,12 @@
       saveButton: document.getElementById('saveButton'),
       cancelEditButton: document.getElementById('cancelEditButton'),
       gameList: document.getElementById('gameList'),
-      countLabel: document.getElementById('countLabel')
+      countLabel: document.getElementById('countLabel'),
+      duplicateModal: document.getElementById('duplicateModal'),
+      duplicateTitle: document.getElementById('duplicateTitle'),
+      duplicateText: document.getElementById('duplicateText'),
+      duplicateCancel: document.getElementById('duplicateCancel'),
+      duplicateConfirm: document.getElementById('duplicateConfirm')
     };
 
     const state = {
@@ -58,3 +65,6 @@
       lastImportedSteamUrl: '',
       steamComingSoonFallback: false
     };
+
+    // Совместимость с базами, где старый CHECK всё ещё требует хотя бы один символ.
+    const EMPTY_AUTHOR_COMMENT = '\u2063';
