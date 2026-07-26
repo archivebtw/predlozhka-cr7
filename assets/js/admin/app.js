@@ -28,6 +28,11 @@ elements.loginForm.addEventListener('submit', async event => {
     elements.releaseDate.addEventListener('change', updateAutomaticReleaseStatus);
     setInterval(updateAutomaticReleaseStatus, 60000);
 
+    elements.isCoop.addEventListener('change', () => updateCoopEditor(true));
+    [elements.coopMinPlayers, elements.coopMaxPlayers].forEach(input => {
+      input.addEventListener('input', () => updateCoopEditor(true));
+    });
+
     elements.steamUrl.addEventListener('input', () => {
       state.lastImportedSteamUrl = '';
       scheduleSteamAutoImport();
@@ -94,6 +99,9 @@ elements.loginForm.addEventListener('submit', async event => {
         }
         if (!payload.author_comment) {
           throw new Error('Добавь только комментарий автора — название и описание уже берутся из Steam автоматически.');
+        }
+        if (payload.is_coop && payload.coop_min_players && payload.coop_max_players && payload.coop_min_players > payload.coop_max_players) {
+          throw new Error('Минимальное число игроков не может быть больше максимального.');
         }
 
         if (state.editingId) {
