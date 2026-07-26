@@ -7,11 +7,12 @@
 <meta content="#090303" name="theme-color"/>
 <meta content="ПРЕДЛОЖКА141 — каталог игр для будущих стримов Глеба Орлова (Sasavot) с данными из Steam." name="description"/>
 <title>ПРЕДЛОЖКА141 — SASAVOT</title>
-<link href="./assets/images/theme/logo-141.png" rel="icon" type="image/webp"/>
+<link href="./assets/images/theme/logo-141.png" rel="icon" type="image/png"/>
+<link href="./assets/images/theme/site-logo.png" rel="icon" type="image/png"/>
 <link href="./assets/css/public/fonts.css" rel="stylesheet"/>
 <link href="./assets/css/public/variables.css" rel="stylesheet"/>
-<link href="./assets/css/public/bloodseeker-motion.css" rel="stylesheet"/><link href="./assets/css/public/base.css" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/twitch-theme.css" rel="stylesheet"/><link href="./assets/css/public/loading.css" rel="stylesheet"/></head>
-<body><div aria-label="Загрузка сайта" aria-live="polite" class="site-loader" id="siteLoader" role="status">
+<link href="./assets/css/public/bloodseeker-motion.css" rel="stylesheet"/><link href="./assets/css/public/base.css" rel="stylesheet"/><link href="./assets/css/public/animated-background.css" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css" rel="stylesheet"/><link href="./assets/css/public/auction.css" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/twitch-theme.css" rel="stylesheet"/><link href="./assets/css/public/loading.css" rel="stylesheet"/><link href="./assets/css/public/experience.css" rel="stylesheet"/></head>
+<body><a class="skip-link" href="#catalog">Перейти к каталогу</a><div aria-hidden="true" class="scroll-progress" id="scrollProgress"></div><div aria-label="Загрузка сайта" aria-live="polite" class="site-loader" id="siteLoader" role="status">
 <div class="loader-content">
 <div aria-hidden="true" class="loader-visual">
 <div class="loader-emblem"></div>
@@ -21,6 +22,13 @@
 <p>ПРИ ПОДДЕРЖКЕ: <strong>@tankzor</strong>, <strong>@archivebtw</strong>, <strong>@obwectbo141</strong></p>
 </div>
 </div>
+<div aria-hidden="true" class="animated-backdrop" id="animatedBackdrop">
+<div class="backdrop-mist backdrop-mist-one"></div>
+<div class="backdrop-mist backdrop-mist-two"></div>
+<div class="backdrop-rune backdrop-rune-one"></div>
+<div class="backdrop-rune backdrop-rune-two"></div>
+<canvas class="backdrop-embers" id="backdropEmbers"></canvas>
+</div>
 <div aria-hidden="true" class="ambient-grid"></div>
 <div aria-hidden="true" class="cursor-glow" id="cursorGlow"></div>
 
@@ -28,13 +36,14 @@
 <header>
 <div class="shell nav">
 <a aria-label="ПРЕДЛОЖКА141" class="brand" href="#top">
-<span aria-hidden="true" class="brand-slashes"><i></i><i></i><i></i></span>
+<img alt="" aria-hidden="true" class="brand-logo" src="./assets/images/theme/logo-141.png"/>
 <span class="brand-copy"><b>ПРЕДЛОЖКА<span>141</span></b><small>САЙТ ПРЕДЛОЖЕНИЙ ДЛЯ СТРИМЕРА<br/>ГЛЕБ ОРЛОВ (SASAVOT)</small></span>
 </a>
 <div class="nav-right">
-<a class="twitch-nav" href="https://www.twitch.tv/sasavot" rel="noopener noreferrer" target="_blank">Sasavot ↗</a>
+<button aria-controls="gangPanel" aria-expanded="false" class="twitch-nav gang-trigger" id="gangOpen" type="button">141 GANG <span aria-hidden="true">↗</span></button>
 <a class="nav-link" href="#catalog">Каталог</a>
-<div class="status" title="Подключение к каталогу">
+<button aria-controls="auctionPanel" aria-expanded="false" class="nav-link auction-trigger" id="auctionOpen" type="button">Аукцион</button>
+<div class="status connection-status" hidden="" title="Подключение к каталогу">
 <span class="status-dot" id="statusDot"></span>
 <span id="statusText">Подключение…</span>
 </div>
@@ -44,18 +53,17 @@
 <main id="top">
 <section class="shell hero"><div aria-hidden="true" class="hero-theme hero-theme-portal"></div><div aria-hidden="true" class="hero-theme hero-theme-rune"></div><div aria-hidden="true" class="hero-theme hero-theme-claws"></div>
 <div class="hero-copy-wrap">
-<span class="eyebrow"><i></i> TWITCH-КАНАЛ SASAVOT · ИГРЫ ИЗ STEAM</span>
+<span class="eyebrow"><i></i> Выбор сообщества · будущие стримы</span>
 <h1><span class="word">ПРЕДЛОЖКА<span class="accent">141</span></span></h1>
 <div class="hero-hosting">
 <p class="hero-host">Глеб Орлов (Sasavot)</p>
-<a class="hero-link" href="https://www.twitch.tv/sasavot" rel="noopener noreferrer" target="_blank"><span aria-hidden="true">◧</span> twitch.tv/sasavot</a>
+<a class="hero-link" href="https://www.twitch.tv/sasavot" rel="noopener noreferrer" target="_blank"><img alt="" aria-hidden="true" src="./assets/images/twitch-logo.webp"/> twitch.tv/sasavot</a>
 </div>
 <div class="hero-divider"></div>
-<p class="hero-copy">Добро пожаловать на официальный сайт предложек для стримера Глеба Орлова (Sasavot). Предлагай игры, за которые хочешь увидеть стримы. Лучшие варианты всегда собраны в одном месте.</p>
+<p class="hero-copy">Здесь собраны игры, которые могут однажды появиться на стримах Sasavot. Каталог обновляется автором проекта, а следующую историю Глеб выбирает сам.</p>
 <div class="hero-actions">
-<a class="hero-cta" href="#catalog">ПРЕДЛОЖИТЬ ИГРУ <span>↓</span></a>
 <a class="channel-cta" href="#catalog">КАТАЛОГ ИГР ↗</a>
-<span class="hero-note">Игры, которые выбирает комьюнити</span>
+<span class="hero-note">Игры для будущих стримов.</span>
 </div>
 <div class="hero-stats">
 <div class="stat-chip"><strong id="totalCount">0</strong><span>игр в каталоге</span></div>
@@ -86,7 +94,7 @@
 <div aria-label="Быстрый обзор каталога" class="hero-highlights" id="heroHighlights">
 <button class="quick-game-card" disabled="" id="quickLatest" type="button">
 <span class="quick-cover"><img alt="" aria-hidden="true" src="./assets/images/theme/logo-141.png"/></span>
-<span class="quick-copy"><span class="quick-kicker">ПОСЛЕДНЯЯ ДОБАВЛЕННАЯ</span><span class="quick-title">Загрузка…</span><span class="quick-meta">Проверяем каталог</span></span>
+<span class="quick-copy"><span class="quick-kicker">ПОСЛЕДНИЙ РЕЛИЗ</span><span class="quick-title">Загрузка…</span><span class="quick-meta">Проверяем даты выхода</span></span>
 <span aria-hidden="true" class="quick-arrow">→</span>
 </button>
 <button class="quick-game-card" disabled="" id="quickNearest" type="button">
@@ -94,31 +102,27 @@
 <span class="quick-copy"><span class="quick-kicker">БЛИЖАЙШИЙ РЕЛИЗ</span><span class="quick-title">Загрузка…</span><span class="quick-meta">Проверяем даты</span></span>
 <span aria-hidden="true" class="quick-arrow">→</span>
 </button>
-<button class="quick-game-card" disabled="" id="quickCoop" type="button">
-<span class="quick-cover"><img alt="" aria-hidden="true" src="./assets/images/theme/logo-141.png"/></span>
-<span class="quick-copy"><span class="quick-kicker">ЛУЧШИЙ КООП</span><span class="quick-title">Загрузка…</span><span class="quick-meta">Ищем игру для компании</span></span>
-<span aria-hidden="true" class="quick-arrow">→</span>
-</button>
 </div>
 </section>
 <div aria-hidden="true" class="ticker-wrap">
 <div class="ticker" id="infiniteTicker">
 <div class="ticker-group" data-ticker-group="">
-<span class="ticker-item">ПРЕДЛОЖКА141 <b>◆</b> SASAVOT <b>◆</b> STEAM RELEASES <b>◆</b> NEXT STREAM <b>◆</b> КРОВЬ ПОКАЖЕТ ПУТЬ <b>◆</b></span>
+<span class="ticker-item">СИСТЕМА <b>◆</b> АМБИЦИОЗНОГО <b>◆</b> СВОЕВОЛЬНОГО <b>◆</b> АРТИСТА <b>◆</b> В ОБЩЕСТВЕ <b>◆</b> ТОВАРИЩЕЙ <b>◆</b></span>
 </div>
 <div aria-hidden="true" class="ticker-group" data-ticker-clone="">
-<span class="ticker-item">ПРЕДЛОЖКА141 <b>◆</b> SASAVOT <b>◆</b> STEAM RELEASES <b>◆</b> NEXT STREAM <b>◆</b> КРОВЬ ПОКАЖЕТ ПУТЬ <b>◆</b></span>
+<span class="ticker-item">СИСТЕМА <b>◆</b> АМБИЦИОЗНОГО <b>◆</b> СВОЕВОЛЬНОГО <b>◆</b> АРТИСТА <b>◆</b> В ОБЩЕСТВЕ <b>◆</b> ТОВАРИЩЕЙ <b>◆</b></span>
 </div>
 </div>
 </div>
 <section class="shell catalog-section" id="catalog">
 <div class="catalog-toolbar reveal">
 <div class="toolbar-title">
+<span class="catalog-eyebrow"><i aria-hidden="true"></i> Библиотека сообщества</span>
 <h2>Каталог предложений</h2>
 <p id="catalogSubtitle">Загрузка каталога…</p>
 </div>
 <div class="controls">
-<input autocomplete="off" class="search" id="searchInput" placeholder="Найти игру…" type="search"/>
+<label class="search-wrap" for="searchInput"><span aria-hidden="true">⌕</span><input autocomplete="off" class="search" id="searchInput" placeholder="Найти игру…" type="search"/></label>
 <div aria-label="Фильтр игр" class="filters" role="group">
 <button class="filter-btn active" data-filter="all" type="button">Все</button>
 <button class="filter-btn" data-filter="upcoming" type="button">Скоро</button>
@@ -130,6 +134,26 @@
 <div aria-live="polite" class="catalog-stream" id="gameGrid"></div>
 </section>
 </main>
+<div aria-hidden="true" class="gang-panel" hidden="" id="gangPanel">
+<div class="gang-backdrop" data-gang-close=""></div>
+<section aria-labelledby="gangTitle" aria-modal="true" class="gang-dialog" role="dialog">
+<header class="gang-head">
+<div><span class="gang-kicker">В эфире и вне эфира</span><h2 id="gangTitle">141 GANG</h2><p>Стримеры и участники сообщества в одном месте.</p></div>
+<button aria-label="Закрыть 141 GANG" class="gang-close" id="gangClose" type="button">×</button>
+</header>
+<div aria-live="polite" class="gang-status" id="gangStatus">Проверяем, кто сейчас в эфире…</div>
+<div class="gang-grid" id="gangGrid"></div>
+<div aria-hidden="true" class="gang-detectors" id="gangDetectors"></div>
+</section>
+</div>
+<div aria-hidden="true" class="auction-panel" hidden="" id="auctionPanel">
+<div class="auction-backdrop" data-auction-close=""></div>
+<section aria-labelledby="auctionTitle" aria-modal="true" class="auction-dialog" role="dialog">
+<button aria-label="Закрыть аукцион" class="auction-close" id="auctionClose" type="button">×</button>
+<div aria-hidden="true" class="auction-rings"><i></i><i></i><i></i></div>
+<div class="auction-copy"><span>Новый раздел</span><h2 id="auctionTitle">СКОРО<span>...</span></h2><p>Аукцион 141 уже готовится.</p></div>
+</section>
+</div>
 <div aria-hidden="true" class="game-modal" hidden="" id="gameModal">
 <div class="modal-backdrop" data-modal-close=""></div>
 <div aria-labelledby="modalTitle" aria-modal="true" class="modal-panel" role="dialog">
@@ -139,6 +163,14 @@
 <div class="modal-badges" id="modalBadges"></div>
 <h2 class="modal-title" id="modalTitle"></h2>
 <p class="modal-release" id="modalRelease"></p>
+<div aria-label="Будущие отметки игры" class="modal-collection-tabs" role="group">
+<span class="modal-tabs-label">Моя библиотека <small>скоро</small></span>
+<div class="modal-tabs-list">
+<button aria-disabled="true" class="modal-collection-tab is-completed" title="Функция появится позже" type="button"><i aria-hidden="true">✓</i><span>Пройдено</span></button>
+<button aria-disabled="true" class="modal-collection-tab is-ignored" title="Функция появится позже" type="button"><i aria-hidden="true">×</i><span>Не интересует</span></button>
+<button aria-disabled="true" class="modal-collection-tab is-favorite" title="Функция появится позже" type="button"><i aria-hidden="true">★</i><span>Избранное</span></button>
+</div>
+</div>
 <section class="modal-section">
 <h3>Об игре</h3>
 <p id="modalDescription"></p>
@@ -154,6 +186,6 @@
 </div>
 </div>
 </div>
-<footer>ПРЕДЛОЖКА141 · <a href="https://www.twitch.tv/sasavot" rel="noopener noreferrer" target="_blank">twitch.tv/sasavot</a> · Steam × Supabase · КРОВЬ ПОКАЖЕТ ПУТЬ</footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js"></script><script src="./assets/js/public/state.js"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js"></script><script src="./assets/js/public/hero.js"></script><script src="./assets/js/public/catalog.js"></script><script src="./assets/js/public/modal-effects.js"></script><script src="./assets/js/public/loading.js"></script><script src="./assets/js/public/bloodseeker-motion.js"></script><script src="./assets/js/public/app.js"></script></body>
+<footer><div class="shell footer-inner"><div class="footer-brand"><strong>ПРЕДЛОЖКА<span>141</span></strong><small>Сделано сообществом для сообщества</small></div><div class="footer-credits"><span>Создатели сайта</span><div><b>@tankzor</b><b>@archivebtw</b><b>@obwectbo141</b></div></div><a class="footer-top" href="#top">Наверх ↑</a></div></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js"></script><script src="./assets/js/public/state.js"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js"></script><script src="./assets/js/public/hero.js"></script><script src="./assets/js/public/catalog.js"></script><script src="./assets/js/public/modal-effects.js"></script><script src="./assets/js/public/loading.js"></script><script src="./assets/js/public/bloodseeker-motion.js"></script><script src="./assets/js/public/animated-background.js"></script><script src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js"></script><script src="./assets/js/public/auction.js"></script><script src="./assets/js/public/experience.js"></script><script src="./assets/js/public/app.js"></script></body>
 </html>

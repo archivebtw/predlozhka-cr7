@@ -1,0 +1,71 @@
+/* Final admin experience layer: visually aligned with the public Bloodseeker theme. */
+:root { --admin-glass: rgba(18,5,5,.82); --admin-line: rgba(240,78,54,.18); --admin-hot: #f04430; }
+html { color-scheme: dark; scroll-behavior: smooth; }
+body { overflow-x: hidden; background: #050101 !important; font-family: Inter,ui-sans-serif,system-ui,sans-serif; }
+body::before { opacity: .22; background-size: 64px 64px !important; mask-image: linear-gradient(to bottom,#000,transparent 92%); }
+body::after { position: fixed; inset: 0; z-index: -1; background: linear-gradient(90deg,rgba(3,0,0,.75),transparent 35%,transparent 65%,rgba(3,0,0,.65)); content: ''; pointer-events: none; }
+::selection { color: #fff; background: rgba(226,59,40,.65); }
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #080202; }
+::-webkit-scrollbar-thumb { border: 3px solid #080202; border-radius: 999px; background: #6d1711; }
+
+body > header { border-color: rgba(240,78,54,.13) !important; background: linear-gradient(180deg,rgba(6,1,1,.94),rgba(8,2,2,.76)) !important; box-shadow: 0 18px 55px rgba(0,0,0,.24); backdrop-filter: blur(22px) saturate(130%); }
+.nav { min-height: 82px; }
+.brand { gap: 14px; }
+.brand-logo { width: 62px; height: 46px; filter: drop-shadow(0 0 16px rgba(229,52,34,.22)); }
+.brand > span { font-family: 'Russo One',Inter,sans-serif; font-size: 16px; letter-spacing: .015em; }
+.brand small { color: #9d8580; font-family: Inter,sans-serif; font-size: 8px; letter-spacing: .17em; }
+.session { gap: 14px; }
+#sessionEmail { max-width: 260px; overflow: hidden; color: #a9938e; text-overflow: ellipsis; white-space: nowrap; }
+#logoutButton { min-height: 40px; padding-inline: 16px; border-radius: 10px 10px 10px 3px; }
+
+main.shell { position: relative; width: min(1340px,calc(100% - 40px)); padding: 74px 0 100px; }
+.intro { position: relative; min-height: 230px; margin-bottom: 28px; padding: 30px 32px; overflow: hidden; align-items: center; border: 1px solid rgba(240,78,54,.14); border-radius: 28px 28px 28px 8px; background: linear-gradient(110deg,rgba(24,6,5,.87),rgba(8,2,2,.68)); box-shadow: 0 36px 90px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.025); }
+.intro::before { position: absolute; top: 50%; right: -20px; width: 340px; aspect-ratio: 1.5; background: url('../../images/theme/logo-141.png') center/cover no-repeat; opacity: .08; filter: saturate(1.2); transform: translateY(-50%); content: ''; pointer-events: none; }
+.intro > * { position: relative; z-index: 1; }
+.intro-kicker { display: inline-flex; align-items: center; gap: 8px; color: #e97865; font-size: 9px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+.intro-kicker i { width: 7px; height: 7px; border-radius: 50%; background: var(--red); box-shadow: 0 0 14px var(--red); }
+.intro h1 { max-width: 920px; margin: 14px 0 12px; color: #f8ede8; font-family: 'Russo One',Inter,sans-serif; font-size: clamp(39px,5vw,68px); font-weight: 400; line-height: .98; letter-spacing: -.045em; }
+.intro p { max-width: 760px; color: #b8a4a0; font-size: 14px; }
+.site-link { min-height: 48px; display: inline-flex; align-items: center; padding-inline: 18px; border-radius: 12px 12px 12px 4px; color: #f4d9d2; background: linear-gradient(135deg,rgba(168,26,17,.2),rgba(48,8,6,.5)) !important; box-shadow: inset 0 1px rgba(255,255,255,.04); transition: transform .22s ease,border-color .22s ease,background .22s ease; }
+.site-link:hover { border-color: rgba(240,78,54,.5) !important; background: rgba(120,18,12,.25) !important; transform: translateY(-3px); }
+
+.connection-card { position: relative; margin-bottom: 22px; padding: 15px 18px 15px 46px; border-color: rgba(104,217,148,.18); border-radius: 14px 14px 14px 4px; color: #bee9d0; background: rgba(17,52,35,.2); }
+.connection-card::before { position: absolute; top: 50%; left: 19px; width: 9px; height: 9px; border-radius: 50%; background: #67d993; box-shadow: 0 0 18px rgba(103,217,147,.7); content: ''; transform: translateY(-50%); }
+.layout { grid-template-columns: minmax(400px,.88fr) minmax(520px,1.12fr); gap: 24px; }
+.panel { overflow: hidden; border-color: var(--admin-line) !important; border-radius: 24px 24px 24px 7px; background: linear-gradient(145deg,rgba(21,6,6,.94),rgba(8,2,2,.94)); box-shadow: 0 30px 80px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.02) !important; }
+.panel-head { position: relative; padding: 25px 26px; border-color: rgba(240,78,54,.14); background: linear-gradient(90deg,rgba(116,16,11,.08),transparent); }
+.panel-head::before { position: absolute; inset: 22px auto 22px 0; width: 2px; background: linear-gradient(180deg,transparent,var(--red),transparent); content: ''; }
+.panel-head h2 { color: #fff4ef; font-family: 'Russo One',Inter,sans-serif; font-size: 24px; font-weight: 400; }
+.panel-head p { color: #a89590; }
+.panel-body { padding: 25px 26px; }
+
+input,textarea,.catalog-sort select { border-color: rgba(240,78,54,.16) !important; border-radius: 12px 12px 12px 4px !important; background: rgba(4,1,1,.76) !important; box-shadow: inset 0 1px 8px rgba(0,0,0,.25); }
+input:hover,textarea:hover,.catalog-sort select:hover { border-color: rgba(240,78,54,.3) !important; }
+input:focus,textarea:focus,.catalog-sort select:focus { border-color: rgba(255,103,78,.7) !important; box-shadow: 0 0 0 3px rgba(226,59,40,.1),0 12px 30px rgba(0,0,0,.2) !important; }
+label,.catalog-control-label { color: #d8c6c1; }
+.btn { border-radius: 11px 11px 11px 3px; background: rgba(255,255,255,.045); }
+.btn-primary { background: linear-gradient(135deg,#e23b28,#8e130d); box-shadow: 0 14px 32px rgba(116,15,9,.3); }
+.btn-steam { color: #f3d3cc; border-color: rgba(240,78,54,.24); background: rgba(150,25,16,.1); }
+.comment-focus,.coop-editor { border-radius: 18px 18px 18px 5px; }
+
+.catalog-controls { padding: 18px 20px; border-color: rgba(240,78,54,.14); background: rgba(5,1,1,.42); }
+.count { color: #ff8976; }
+.game-list { gap: 11px; }
+.admin-game { grid-template-columns: 126px 1fr; border-color: rgba(240,78,54,.13); border-radius: 16px 16px 16px 5px; background: linear-gradient(100deg,rgba(34,9,8,.84),rgba(13,4,4,.92)); transition: transform .22s ease,border-color .22s ease,box-shadow .22s ease; }
+.admin-game:hover { border-color: rgba(240,78,54,.35); box-shadow: 0 18px 45px rgba(0,0,0,.3); transform: translateY(-2px); }
+.admin-cover { position: relative; overflow: hidden; }
+.admin-cover::after { position: absolute; inset: 0; background: linear-gradient(90deg,transparent 70%,rgba(14,4,4,.7)); content: ''; pointer-events: none; }
+.admin-game h3 { color: #fff3ee; font-family: 'Russo One',Inter,sans-serif; font-weight: 400; }
+.icon-btn { border-radius: 9px 9px 9px 3px; background: rgba(255,255,255,.04); transition: border-color .18s ease,background .18s ease,transform .18s ease; }
+.icon-btn:hover { border-color: rgba(240,78,54,.38); background: rgba(142,22,14,.16); transform: translateY(-1px); }
+
+.notice { position: sticky; top: 92px; z-index: 20; box-shadow: 0 16px 45px rgba(0,0,0,.35); backdrop-filter: blur(14px); }
+.login-panel { margin-top: 48px; }
+.login-panel .panel-head { text-align: center; }
+
+@media (min-width: 961px) { .layout > .panel:first-child { position: sticky; top: 104px; } }
+@media (max-width: 1100px) { .layout { grid-template-columns: minmax(360px,.86fr) minmax(460px,1.14fr); } .admin-game-top { flex-direction: column; } .admin-game-actions { justify-content: flex-start; } }
+@media (max-width: 960px) { .layout { grid-template-columns: 1fr; } main.shell { padding-top: 48px; } .intro { min-height: 210px; } }
+@media (max-width: 650px) { main.shell { width: min(100% - 20px,1340px); padding-top: 24px; } .nav { min-height: 68px; } .brand-logo { width: 48px; height: 36px; } .brand > span { font-size: 13px; } .intro { min-height: 0; padding: 25px 20px; border-radius: 20px 20px 20px 6px; } .intro::before { right: -100px; width: 280px; } .intro h1 { font-size: clamp(35px,12vw,52px); } .panel-head,.panel-body { padding-inline: 18px; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .intro-kicker i { box-shadow: none; } .admin-game,.site-link { transition: none; } }
