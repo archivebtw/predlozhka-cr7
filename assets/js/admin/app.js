@@ -1,4 +1,47 @@
-elements.loginForm.addEventListener('submit', async event => {
+async function persistGame(payload) {
+      const write = nextPayload => state.editingId
+        ? state.client.from('games').update(nextPayload).eq('id', state.editingId)
+        : state.client.from('games').insert(nextPayload);
+      let { error } = await write(payload);
+      const oldCommentConstraint = !payload.author_comment
+        && error?.code === '23514'
+        && String(error.message || '').includes('games_author_comment_check');
+      if (oldCommentConstraint) ({ error } = await write({ ...payload, author_comment: EMPTY_AUTHOR_COMMENT }));
+      if (error) throw error;
+    }
+
+    function confirmDuplicateGame(gameTitle, existingCount) {
+      return new Promise(resolve => {
+        const limitReached = existingCount >= 2;
+        elements.duplicateTitle.textContent = limitReached ? 'Достигнут лимит копий' : 'Игра уже есть в каталоге';
+        elements.duplicateText.textContent = limitReached
+          ? `«${gameTitle}» уже добавлена два раза. Третий экземпляр создать нельзя.`
+          : `«${gameTitle}» уже есть в каталоге. Разрешено добавить только один дополнительный экземпляр.`;
+        elements.duplicateConfirm.hidden = limitReached;
+        elements.duplicateModal.hidden = false;
+        elements.duplicateModal.setAttribute('aria-hidden', 'false');
+        requestAnimationFrame(() => elements.duplicateModal.classList.add('is-open'));
+
+        const onKeydown = event => { if (event.key === 'Escape') finish(false); };
+        const finish = allowed => {
+          elements.duplicateModal.classList.remove('is-open');
+          elements.duplicateModal.setAttribute('aria-hidden', 'true');
+          window.setTimeout(() => { elements.duplicateModal.hidden = true; }, 260);
+          elements.duplicateCancel.onclick = null;
+          elements.duplicateConfirm.onclick = null;
+          elements.duplicateModal.onclick = null;
+          document.removeEventListener('keydown', onKeydown);
+          resolve(allowed);
+        };
+        elements.duplicateCancel.onclick = () => finish(false);
+        elements.duplicateConfirm.onclick = () => finish(true);
+        elements.duplicateModal.onclick = event => { if (event.target.matches('[data-duplicate-close]')) finish(false); };
+        document.addEventListener('keydown', onKeydown);
+        (limitReached ? elements.duplicateCancel : elements.duplicateConfirm).focus();
+      });
+    }
+
+    elements.loginForm.addEventListener('submit', async event => {
       event.preventDefault();
       setBusy(elements.loginButton, true, 'Вход…');
       try {
@@ -27,6 +70,11 @@ elements.loginForm.addEventListener('submit', async event => {
     elements.releaseDate.addEventListener('input', updateAutomaticReleaseStatus);
     elements.releaseDate.addEventListener('change', updateAutomaticReleaseStatus);
     setInterval(updateAutomaticReleaseStatus, 60000);
+
+    elements.isCoop.addEventListener('change', () => updateCoopEditor(true));
+    [elements.coopMinPlayers, elements.coopMaxPlayers].forEach(input => {
+      input.addEventListener('input', () => updateCoopEditor(true));
+    });
 
     elements.steamUrl.addEventListener('input', () => {
       state.lastImportedSteamUrl = '';
@@ -92,17 +140,19 @@ elements.loginForm.addEventListener('submit', async event => {
         if (!payload.title || !payload.description) {
           throw new Error('Steam не заполнил название или описание. Нажми «Обновить из Steam» и проверь ссылку.');
         }
-        if (!payload.author_comment) {
-          throw new Error('Добавь только комментарий автора — название и описание уже берутся из Steam автоматически.');
+        if (payload.is_coop && payload.coop_min_players && payload.coop_max_players && payload.coop_min_players > payload.coop_max_players) {
+          throw new Error('Минимальное число игроков не может быть больше максимального.');
+        }
+        if (!state.editingId && payload.steam_app_id) {
+          const duplicateCount = state.games.filter(game => Number(game.steam_app_id) === payload.steam_app_id).length;
+          if (duplicateCount && !(await confirmDuplicateGame(payload.title, duplicateCount))) return;
         }
 
         if (state.editingId) {
-          const { error } = await state.client.from('games').update(payload).eq('id', state.editingId);
-          if (error) throw error;
+          await persistGame(payload);
           showNotice('Изменения сохранены и уже доступны на сайте.', 'success');
         } else {
-          const { error } = await state.client.from('games').insert(payload);
-          if (error) throw error;
+          await persistGame(payload);
           showNotice('Игра опубликована и уже доступна на сайте.', 'success');
         }
 

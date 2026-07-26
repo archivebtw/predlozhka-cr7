@@ -74,11 +74,33 @@ function escapeHtml(value) {
       return prefix;
     }
 
+    function hasExactReleaseDay(game) {
+      const raw = String(game?.release_date_text || '').trim();
+      if (!raw) return Boolean(parseDate(game?.release_date));
+      if (/^\d{4}$/.test(raw)) return false;
+      if (/\b(?:q[1-4]|quarter|квартал|spring|summer|autumn|fall|winter|весн\w*|лет\w*|осен\w*|зим\w*)\b/iu.test(raw)) return false;
+      if (/\b\d{1,2}[./-]\d{1,2}[./-]\d{4}\b/.test(raw)) return true;
+      const numbers = raw.match(/\b\d+\b/g) || [];
+      return numbers.some(value => Number(value) >= 1 && Number(value) <= 31)
+        && numbers.some(value => /^\d{4}$/.test(value));
+    }
+
     function getReleaseMeta(game) {
       const date = parseDate(game.release_date);
       const days = daysUntil(game.release_date);
       const raw = String(game.release_date_text || '').trim();
       const comingSoon = Boolean(game.coming_soon);
+
+      if (date && !hasExactReleaseDay(game)) {
+        return {
+          group: 'unknown',
+          badge: 'ДАТА УТОЧНЯЕТСЯ',
+          badgeClass: 'unknown',
+          countdown: 'Точный день не объявлен',
+          line: raw || 'Steam пока не назвал точную дату',
+          timestamp: Number.MAX_SAFE_INTEGER - 1
+        };
+      }
 
       // Фактическая дата важнее потенциально устаревшего флага Steam.
       // Если дата уже прошла, игра относится во «Вышли» и не может
