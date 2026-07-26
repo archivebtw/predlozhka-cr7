@@ -43,16 +43,24 @@ function openGameModal(gameId) {
         const active = action === 'favorite' ? Boolean(game?.is_favorite) : status === action;
         button.classList.toggle('is-active',active);
         button.setAttribute('aria-pressed',String(active));
-        button.disabled = false;
+        button.disabled = !state.librarySchemaReady;
       });
-      elements.modalLibraryNotice.textContent = '';
-      elements.modalLibraryNotice.className = 'modal-library-notice';
+      elements.modalLibraryNotice.textContent = state.librarySchemaReady
+        ? ''
+        : 'Сначала выполни supabase/game_library_status.sql в Supabase SQL Editor, затем обнови страницу.';
+      elements.modalLibraryNotice.className = state.librarySchemaReady
+        ? 'modal-library-notice'
+        : 'modal-library-notice is-error';
     }
 
     async function updateGameLibrary(action) {
       const game = state.games.find(item => String(item.id) === String(state.activeGameId));
       const button = elements.modalLibraryActions.find(item => item.dataset.libraryAction === action);
       if (!game || !button) return;
+      if (!state.librarySchemaReady) {
+        updateLibraryControls(game);
+        return;
+      }
       button.disabled = true;
       elements.modalLibraryNotice.textContent = 'Проверяем права администратора…';
       elements.modalLibraryNotice.className = 'modal-library-notice is-info';
@@ -85,6 +93,12 @@ function openGameModal(gameId) {
         render();
       } catch (error) {
         console.error(error);
+        const missingColumn = typeof isMissingLibraryColumn === 'function' && isMissingLibraryColumn(error);
+        if (missingColumn) {
+          state.librarySchemaReady = false;
+          updateLibraryControls(game);
+          return;
+        }
         elements.modalLibraryNotice.textContent = error.message || 'Не удалось сохранить изменение.';
         elements.modalLibraryNotice.className = 'modal-library-notice is-error';
         button.disabled = false;

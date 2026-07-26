@@ -28,11 +28,14 @@ function getConfiguredClient() {
       // Не скрываем весь каталог, если frontend опубликован раньше SQL-миграции.
       // После выполнения game_library_status.sql следующий Realtime/reload вернёт отметки.
       if (isMissingLibraryColumn(result.error)) {
+        state.librarySchemaReady = false;
         console.warn('Отметки библиотеки ещё не добавлены в Supabase; загружаем каталог без них.');
         result = await client
           .from('games')
           .select(PUBLIC_GAME_FIELDS)
           .eq('published', true);
+      } else {
+        state.librarySchemaReady = true;
       }
 
       if (result.error) throw result.error;

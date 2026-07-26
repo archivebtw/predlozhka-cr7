@@ -14,5 +14,9 @@ create index if not exists games_library_status_idx
   on public.games (library_status, is_favorite)
   where published = true;
 
+-- PostgREST обычно обновляет схему автоматически, но явное уведомление
+-- сразу устраняет ошибку "column ... not found in the schema cache".
+notify pgrst, 'reload schema';
+
 -- Запись уже защищена существующими RLS-политиками games:
 -- update разрешён только когда public.is_site_admin() возвращает true.
