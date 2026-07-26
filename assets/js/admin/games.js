@@ -1,8 +1,42 @@
 function renderGames() {
-      const games = sortGames(state.games);
-      elements.countLabel.textContent = `${games.length} ${games.length === 1 ? 'игра' : games.length < 5 ? 'игры' : 'игр'}`;
-      if (!games.length) {
+      const query = state.catalogQuery.trim().toLocaleLowerCase('ru-RU');
+      const games = state.games.filter(game => String(game.title || '').toLocaleLowerCase('ru-RU').includes(query));
+
+      games.sort((a, b) => {
+        if (state.catalogSort === 'alphabetical') {
+          return String(a.title || '').localeCompare(String(b.title || ''), 'ru', { sensitivity: 'base', numeric: true });
+        }
+        if (state.catalogSort === 'release') {
+          const aDate = parseDate(a.release_date)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+          const bDate = parseDate(b.release_date)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+          if (aDate !== bDate) {
+            if (aDate === Number.MAX_SAFE_INTEGER) return 1;
+            if (bDate === Number.MAX_SAFE_INTEGER) return -1;
+            return bDate - aDate;
+          }
+          return String(a.title || '').localeCompare(String(b.title || ''), 'ru', { sensitivity: 'base', numeric: true });
+        }
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      });
+
+      const gameWord = count => {
+        const lastTwo = count % 100;
+        const last = count % 10;
+        if (lastTwo >= 11 && lastTwo <= 14) return 'игр';
+        if (last === 1) return 'игра';
+        if (last >= 2 && last <= 4) return 'игры';
+        return 'игр';
+      };
+      elements.countLabel.textContent = query
+        ? `${games.length} из ${state.games.length}`
+        : `${games.length} ${gameWord(games.length)}`;
+
+      if (!state.games.length) {
         elements.gameList.innerHTML = '<div class="empty">Каталог пока пуст. Добавь первую игру через форму слева.</div>';
+        return;
+      }
+      if (!games.length) {
+        elements.gameList.innerHTML = `<div class="empty search-empty"><strong>Ничего не найдено</strong><span>В каталоге нет игры с названием «${escapeHtml(state.catalogQuery.trim())}».</span></div>`;
         return;
       }
 
