@@ -1,6 +1,11 @@
 /* Final experience layer: one coherent visual language over legacy theme modules. */
 :root { --glass: rgba(15,5,5,.78); --glass-line: rgba(255,103,79,.16); --hot: #f04430; }
 body { background-color: #050101; }
+html { scrollbar-color: #6d1711 #080202; scrollbar-width: thin; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #080202; }
+::-webkit-scrollbar-thumb { border: 3px solid #080202; border-radius: 999px; background: #6d1711; }
+::-webkit-scrollbar-thumb:hover { background: #a62419; }
 .skip-link { position: fixed; top: 10px; left: 10px; z-index: 3000; padding: 10px 14px; border-radius: 8px; color: #fff; background: var(--red); transform: translateY(-150%); transition: transform .2s ease; }
 .skip-link:focus { transform: translateY(0); }
 .scroll-progress { position: fixed; inset: 0 0 auto; z-index: 2100; height: 2px; background: linear-gradient(90deg,#8d0e08,#ff4e36,#ff9b62); box-shadow: 0 0 16px rgba(240,68,46,.7); transform: scaleX(0); transform-origin: left; pointer-events: none; }
