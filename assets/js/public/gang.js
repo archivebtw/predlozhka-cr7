@@ -16,10 +16,18 @@
     return channel.replace(/(^|_)(\w)/g, (_, prefix, letter) => `${prefix}${letter.toUpperCase()}`);
   }
 
+  function avatarUrl(channel) {
+    return `https://unavatar.io/twitch/${encodeURIComponent(channel)}?fallback=false`;
+  }
+
   function renderCards() {
     grid.innerHTML = channels.map(channel => `
       <a class="gang-card is-checking" data-channel="${channel}" data-status="checking" href="https://www.twitch.tv/${channel}" rel="noopener noreferrer" target="_blank">
-        <span class="gang-card-media"><img alt="Превью трансляции ${channelLabel(channel)}" data-preview="${channel}" decoding="async"/></span>
+        <span class="gang-card-media">
+          <span aria-hidden="true" class="gang-avatar-fallback">${channelLabel(channel).slice(0, 1)}</span>
+          <img alt="Аватар канала ${channelLabel(channel)}" class="gang-avatar" decoding="async" loading="lazy" onerror="this.hidden=true" referrerpolicy="no-referrer" src="${avatarUrl(channel)}"/>
+          <img alt="Превью трансляции ${channelLabel(channel)}" class="gang-preview" data-preview="${channel}" decoding="async" referrerpolicy="no-referrer"/>
+        </span>
         <span class="gang-card-copy"><span class="gang-live">Проверяем эфир</span><h3>${channelLabel(channel)}</h3><p class="gang-stream-title">Получаем статус с Twitch…</p><small>twitch.tv/${channel}</small></span>
         <span class="gang-card-arrow" aria-hidden="true">↗</span>
       </a>`).join('');
