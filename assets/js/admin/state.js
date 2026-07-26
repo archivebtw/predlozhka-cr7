@@ -25,6 +25,8 @@
       steamPreviewText: document.getElementById('steamPreviewText'),
       steamPreviewRelease: document.getElementById('steamPreviewRelease'),
       steamPreviewCoop: document.getElementById('steamPreviewCoop'),
+      coopEditor: document.getElementById('coopEditor'),
+      coopEditorHint: document.getElementById('coopEditorHint'),
       coverUrl: document.getElementById('coverUrl'),
       description: document.getElementById('description'),
       authorComment: document.getElementById('authorComment'),
@@ -58,3 +60,6 @@
       lastImportedSteamUrl: '',
       steamComingSoonFallback: false
     };
+
+    // Совместимость с базами, где старый CHECK всё ещё требует хотя бы один символ.
+    const EMPTY_AUTHOR_COMMENT = '\u2063';

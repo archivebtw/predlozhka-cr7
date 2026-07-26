@@ -1,4 +1,16 @@
-elements.loginForm.addEventListener('submit', async event => {
+async function persistGame(payload) {
+      const write = nextPayload => state.editingId
+        ? state.client.from('games').update(nextPayload).eq('id', state.editingId)
+        : state.client.from('games').insert(nextPayload);
+      let { error } = await write(payload);
+      const oldCommentConstraint = !payload.author_comment
+        && error?.code === '23514'
+        && String(error.message || '').includes('games_author_comment_check');
+      if (oldCommentConstraint) ({ error } = await write({ ...payload, author_comment: EMPTY_AUTHOR_COMMENT }));
+      if (error) throw error;
+    }
+
+    elements.loginForm.addEventListener('submit', async event => {
       event.preventDefault();
       setBusy(elements.loginButton, true, 'Вход…');
       try {
@@ -27,6 +39,11 @@ elements.loginForm.addEventListener('submit', async event => {
     elements.releaseDate.addEventListener('input', updateAutomaticReleaseStatus);
     elements.releaseDate.addEventListener('change', updateAutomaticReleaseStatus);
     setInterval(updateAutomaticReleaseStatus, 60000);
+
+    elements.isCoop.addEventListener('change', () => updateCoopEditor(true));
+    [elements.coopMinPlayers, elements.coopMaxPlayers].forEach(input => {
+      input.addEventListener('input', () => updateCoopEditor(true));
+    });
 
     elements.steamUrl.addEventListener('input', () => {
       state.lastImportedSteamUrl = '';
@@ -92,17 +109,15 @@ elements.loginForm.addEventListener('submit', async event => {
         if (!payload.title || !payload.description) {
           throw new Error('Steam не заполнил название или описание. Нажми «Обновить из Steam» и проверь ссылку.');
         }
-        if (!payload.author_comment) {
-          throw new Error('Добавь только комментарий автора — название и описание уже берутся из Steam автоматически.');
+        if (payload.is_coop && payload.coop_min_players && payload.coop_max_players && payload.coop_min_players > payload.coop_max_players) {
+          throw new Error('Минимальное число игроков не может быть больше максимального.');
         }
 
         if (state.editingId) {
-          const { error } = await state.client.from('games').update(payload).eq('id', state.editingId);
-          if (error) throw error;
+          await persistGame(payload);
           showNotice('Изменения сохранены и уже доступны на сайте.', 'success');
         } else {
-          const { error } = await state.client.from('games').insert(payload);
-          if (error) throw error;
+          await persistGame(payload);
           showNotice('Игра опубликована и уже доступна на сайте.', 'success');
         }
 
