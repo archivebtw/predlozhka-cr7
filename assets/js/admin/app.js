@@ -97,8 +97,8 @@ elements.loginForm.addEventListener('submit', async event => {
         if (!payload.title || !payload.description) {
           throw new Error('Steam не заполнил название или описание. Нажми «Обновить из Steam» и проверь ссылку.');
         }
-        if (!payload.author_comment) {
-          throw new Error('Добавь только комментарий автора — название и описание уже берутся из Steam автоматически.');
+        if (payload.is_coop && payload.coop_min_players && payload.coop_max_players && payload.coop_min_players > payload.coop_max_players) {
+          throw new Error('Минимальное число игроков не может быть больше максимального.');
         }
         if (payload.is_coop && payload.coop_min_players && payload.coop_max_players && payload.coop_min_players > payload.coop_max_players) {
           throw new Error('Минимальное число игроков не может быть больше максимального.');
