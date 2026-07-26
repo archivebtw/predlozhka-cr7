@@ -1,0 +1,118 @@
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+type Streamer = { provider: "twitch" | "kick"; channel: string };
+type StreamStatus = Streamer & {
+  available: boolean;
+  live: boolean;
+  title: string;
+  category: string;
+  thumbnailUrl: string;
+  avatarUrl: string;
+  startedAt: string;
+};
+
+let twitchToken = "";
+let twitchTokenExpiresAt = 0;
+
+const clean = (value: unknown, max = 300) => String(value ?? "").trim().slice(0,max);
+const unavailable = (streamer: Streamer): StreamStatus => ({ ...streamer, available: false, live: false, title: "", category: "", thumbnailUrl: "", avatarUrl: "", startedAt: "" });
+
+function response(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body),{ status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=45" } });
+}
+
+function requestedStreamers(body: unknown): Streamer[] {
+  const input = Array.isArray((body as { streamers?: unknown[] })?.streamers) ? (body as { streamers: unknown[] }).streamers : [];
+  const seen = new Set<string>();
+  return input.flatMap(item => {
+    const provider = clean((item as Streamer)?.provider,10).toLowerCase();
+    const channel = clean((item as Streamer)?.channel,40).toLowerCase();
+    const key = `${provider}:${channel}`;
+    if (!['twitch','kick'].includes(provider) || !/^[a-z0-9_]{2,40}$/.test(channel) || seen.has(key)) return [];
+    seen.add(key);
+    return [{ provider,channel } as Streamer];
+  }).slice(0,30);
+}
+
+async function getTwitchToken(clientId: string,clientSecret: string) {
+  if (twitchToken && Date.now() < twitchTokenExpiresAt - 60000) return twitchToken;
+  const tokenResponse = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${encodeURIComponent(clientId)}&client_secret=${encodeURIComponent(clientSecret)}&grant_type=client_credentials`,{ method: "POST" });
+  if (!tokenResponse.ok) throw new Error(`Twitch OAuth: ${tokenResponse.status}`);
+  const tokenData = await tokenResponse.json();
+  twitchToken = clean(tokenData.access_token,200);
+  twitchTokenExpiresAt = Date.now() + Number(tokenData.expires_in || 0) * 1000;
+  if (!twitchToken) throw new Error("Twitch OAuth returned no token");
+  return twitchToken;
+}
+
+async function twitchStatuses(streamers: Streamer[]): Promise<StreamStatus[]> {
+  if (!streamers.length) return [];
+  const clientId = clean(Deno.env.get("TWITCH_CLIENT_ID"),200);
+  const clientSecret = clean(Deno.env.get("TWITCH_CLIENT_SECRET"),300);
+  if (!clientId || !clientSecret) return streamers.map(unavailable);
+  try {
+    const token = await getTwitchToken(clientId,clientSecret);
+    const headers = { "Client-Id": clientId, "Authorization": `Bearer ${token}` };
+    const streamQuery = streamers.map(({ channel }) => `user_login=${encodeURIComponent(channel)}`).join('&');
+    const userQuery = streamers.map(({ channel }) => `login=${encodeURIComponent(channel)}`).join('&');
+    const [streamsResponse,usersResponse] = await Promise.all([
+      fetch(`https://api.twitch.tv/helix/streams?${streamQuery}`,{ headers }),
+      fetch(`https://api.twitch.tv/helix/users?${userQuery}`,{ headers }),
+    ]);
+    if (!streamsResponse.ok || !usersResponse.ok) throw new Error(`Twitch Helix: ${streamsResponse.status}/${usersResponse.status}`);
+    const [streamsPayload,usersPayload] = await Promise.all([streamsResponse.json(),usersResponse.json()]);
+    const streams = new Map((streamsPayload.data || []).map((item: Record<string,unknown>) => [clean(item.user_login,40).toLowerCase(),item]));
+    const users = new Map((usersPayload.data || []).map((item: Record<string,unknown>) => [clean(item.login,40).toLowerCase(),item]));
+    return streamers.map(streamer => {
+      const stream = streams.get(streamer.channel) as Record<string,unknown> | undefined;
+      const user = users.get(streamer.channel) as Record<string,unknown> | undefined;
+      return {
+        ...streamer, available: Boolean(user), live: Boolean(stream),
+        title: clean(stream?.title), category: clean(stream?.game_name,120),
+        thumbnailUrl: clean(stream?.thumbnail_url,500), avatarUrl: clean(user?.profile_image_url,500),
+        startedAt: clean(stream?.started_at,80),
+      };
+    });
+  } catch (error) {
+    console.error(error);
+    return streamers.map(unavailable);
+  }
+}
+
+async function kickStatus(streamer: Streamer): Promise<StreamStatus> {
+  try {
+    const result = await fetch(`https://kick.com/api/v2/channels/${encodeURIComponent(streamer.channel)}`,{ headers: { "Accept": "application/json", "User-Agent": "Predlozhka141/1.0" } });
+    if (!result.ok) throw new Error(`Kick: ${result.status}`);
+    const data = await result.json();
+    const live = data.livestream || null;
+    return {
+      ...streamer, available: true, live: Boolean(live), title: clean(live?.session_title),
+      category: clean(live?.categories?.[0]?.name || live?.category?.name,120),
+      thumbnailUrl: clean(live?.thumbnail?.url || live?.thumbnail_url,500),
+      avatarUrl: clean(data.user?.profile_pic || data.user?.profile_picture || data.profile_picture,500),
+      startedAt: clean(live?.start_time || live?.created_at || live?.started_at,80),
+    };
+  } catch (error) {
+    console.error(error);
+    return unavailable(streamer);
+  }
+}
+
+Deno.serve(async request => {
+  if (request.method === "OPTIONS") return new Response("ok",{ headers: corsHeaders });
+  if (request.method !== "POST") return response({ error: "Method not allowed" },405);
+  try {
+    const streamers = requestedStreamers(await request.json());
+    const twitch = streamers.filter(item => item.provider === 'twitch');
+    const kick = streamers.filter(item => item.provider === 'kick');
+    const [twitchResult,kickResult] = await Promise.all([twitchStatuses(twitch),Promise.all(kick.map(kickStatus))]);
+    return response({ streamers: [...twitchResult,...kickResult], checkedAt: new Date().toISOString() });
+  } catch (error) {
+    console.error(error);
+    return response({ error: "Invalid request" },400);
+  }
+});
