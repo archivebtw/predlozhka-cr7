@@ -25,6 +25,12 @@
   const label = channel => channel.replace(/(^|_)(\w)/g,(_,prefix,letter) => `${prefix}${letter.toUpperCase()}`);
   const channelUrl = ({ provider,channel }) => `https://${provider === 'kick' ? 'kick.com' : 'www.twitch.tv'}/${channel}`;
   const fallbackAvatar = ({ provider,channel }) => `https://unavatar.io/${provider}/${encodeURIComponent(channel)}?fallback=false`;
+  const imageUrl = value => {
+    const url = String(value || '').trim();
+    if (url.startsWith('//')) return `https:${url}`;
+    if (url.startsWith('/')) return `https://kick.com${url}`;
+    return /^https?:\/\//i.test(url) ? url : '';
+  };
 
   function renderCards() {
     grid.innerHTML = streamers.map(streamer => `
@@ -32,7 +38,7 @@
         <span class="gang-card-media">
           <span aria-hidden="true" class="gang-avatar-fallback">${label(streamer.channel).slice(0,1)}</span>
           <img alt="Аватар канала ${label(streamer.channel)}" class="gang-avatar" decoding="async" loading="lazy" onerror="this.hidden=true" referrerpolicy="no-referrer" src="${fallbackAvatar(streamer)}"/>
-          <img alt="Превью трансляции ${label(streamer.channel)}" class="gang-preview" decoding="async" referrerpolicy="no-referrer"/>
+          <img alt="" aria-hidden="true" class="gang-preview" decoding="async" referrerpolicy="no-referrer"/>
         </span>
         <span class="gang-card-copy">
           <span class="gang-card-topline"><span class="gang-live">Проверяем эфир</span><span class="gang-provider">${streamer.provider}</span></span>
@@ -97,6 +103,7 @@
     card.dataset.status = nextStatus;
     card.dataset.startedAt = live ? (item.startedAt || '') : '';
     card.classList.toggle('is-live',live);
+    card.classList.remove('has-live-preview');
     card.classList.remove('is-checking');
     card.querySelector('.gang-live').textContent = live ? 'Сейчас в эфире' : nextStatus === 'unavailable' ? 'Статус недоступен' : 'Не в эфире';
     card.querySelector('.gang-stream-title').textContent = live ? (item.title || 'Прямой эфир') : nextStatus === 'unavailable' ? 'Не удалось получить данные платформы' : 'Канал сейчас отдыхает';
@@ -105,9 +112,13 @@
     const uptimeText = live ? formatUptime(item.startedAt) : '';
     uptime.textContent = uptimeText;
     uptime.hidden = !uptimeText;
-    if (item.avatarUrl) { avatar.hidden = false; avatar.src = item.avatarUrl; }
-    if (live && item.thumbnailUrl) preview.src = item.thumbnailUrl.replace('{width}','640').replace('{height}','360');
-    else preview.removeAttribute('src');
+    const avatarSource = imageUrl(item.avatarUrl);
+    const previewSource = imageUrl(item.thumbnailUrl).replace('{width}','640').replace('{height}','360');
+    if (avatarSource) { avatar.hidden = false; avatar.src = avatarSource; }
+    preview.onload = () => { preview.hidden = false; card.classList.add('has-live-preview'); };
+    preview.onerror = () => { preview.hidden = true; card.classList.remove('has-live-preview'); preview.removeAttribute('src'); };
+    if (live && previewSource) { preview.hidden = false; preview.src = previewSource; }
+    else { preview.hidden = true; preview.removeAttribute('src'); }
   }
 
   function destroyFallbackPlayers() {
@@ -229,12 +240,14 @@
       if (!response.ok) throw new Error(`Kick: ${response.status}`);
       const data = await response.json();
       const live = data.livestream || null;
+      const thumbnail = live?.thumbnail?.url || (typeof live?.thumbnail === 'string' ? live.thumbnail : '') || live?.thumbnail_url || data.banner_image?.url || data.banner_image?.src || '';
+      const avatar = data.user?.profile_pic || data.user?.profile_picture || data.profile_picture || data.user?.avatar || data.avatar || '';
       applyStatus({
         ...streamer, available: true, live: Boolean(live),
         title: live?.session_title || '',
         category: live?.categories?.[0]?.name || live?.category?.name || '',
-        thumbnailUrl: live?.thumbnail?.url || live?.thumbnail_url || '',
-        avatarUrl: data.user?.profile_pic || data.user?.profile_picture || data.profile_picture || '',
+        thumbnailUrl: thumbnail,
+        avatarUrl: avatar,
         startedAt: live?.start_time || live?.created_at || live?.started_at || '',
       });
     } catch (error) {

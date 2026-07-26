@@ -20,6 +20,12 @@ let twitchTokenExpiresAt = 0;
 
 const clean = (value: unknown, max = 300) => String(value ?? "").trim().slice(0,max);
 const unavailable = (streamer: Streamer): StreamStatus => ({ ...streamer, available: false, live: false, title: "", category: "", thumbnailUrl: "", avatarUrl: "", startedAt: "" });
+const imageUrl = (value: unknown): string => {
+  const url = clean(value,500);
+  if (url.startsWith("//")) return `https:${url}`;
+  if (url.startsWith("/")) return `https://kick.com${url}`;
+  return /^https?:\/\//i.test(url) ? url : "";
+};
 
 function response(body: unknown, status = 200) {
   return new Response(JSON.stringify(body),{ status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=45" } });
@@ -89,11 +95,13 @@ async function kickStatus(streamer: Streamer): Promise<StreamStatus> {
     if (!result.ok) throw new Error(`Kick: ${result.status}`);
     const data = await result.json();
     const live = data.livestream || null;
+    const thumbnail = live?.thumbnail?.url || (typeof live?.thumbnail === "string" ? live.thumbnail : "") || live?.thumbnail_url || data.banner_image?.url || data.banner_image?.src;
+    const avatar = data.user?.profile_pic || data.user?.profile_picture || data.profile_picture || data.user?.avatar || data.avatar;
     return {
       ...streamer, available: true, live: Boolean(live), title: clean(live?.session_title),
       category: clean(live?.categories?.[0]?.name || live?.category?.name,120),
-      thumbnailUrl: clean(live?.thumbnail?.url || live?.thumbnail_url,500),
-      avatarUrl: clean(data.user?.profile_pic || data.user?.profile_picture || data.profile_picture,500),
+      thumbnailUrl: imageUrl(thumbnail),
+      avatarUrl: imageUrl(avatar),
       startedAt: clean(live?.start_time || live?.created_at || live?.started_at,80),
     };
   } catch (error) {
