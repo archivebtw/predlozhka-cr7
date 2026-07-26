@@ -12,7 +12,7 @@ function getConfiguredClient() {
     async function loadGames(client) {
       const { data, error } = await client
         .from('games')
-        .select('id,title,steam_url,cover_url,description,author_comment,created_at,display_order,steam_app_id,release_date,release_date_text,coming_soon,steam_synced_at,is_coop,coop_type,coop_min_players,coop_max_players,coop_source')
+        .select('id,title,steam_url,cover_url,description,author_comment,created_at,display_order,steam_app_id,release_date,release_date_text,coming_soon,steam_synced_at,is_coop,coop_type,coop_min_players,coop_max_players,coop_source,library_status,is_favorite')
         .eq('published', true);
 
       if (error) throw error;
