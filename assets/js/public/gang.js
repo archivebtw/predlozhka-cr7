@@ -20,6 +20,7 @@
   let players = [];
   let fallbackTimeout = 0;
   let uptimeTimer = 0;
+  const regionRestrictedChannels = new Set(['yurapivo','r4dom1r']);
 
   const label = channel => channel.replace(/(^|_)(\w)/g,(_,prefix,letter) => `${prefix}${letter.toUpperCase()}`);
   const channelUrl = ({ provider,channel }) => `https://${provider === 'kick' ? 'kick.com' : 'www.twitch.tv'}/${channel}`;
@@ -136,11 +137,32 @@
       return (await response.text()).trim();
     };
     const [title,category,uptime] = await Promise.all([read('title'),read('game'),read('uptime')]);
+    const offlinePattern = /(?:channel is offline|not live|currently offline|offline)/i;
+    const startedAt = startedAtFromUptime(uptime);
+    if (!startedAt && !offlinePattern.test(uptime)) throw new Error(`Unknown Twitch uptime response: ${uptime}`);
     return {
-      title: /^(?:channel is offline|not live|error)/i.test(title) ? '' : title,
-      category: /^(?:channel is offline|not live|error)/i.test(category) ? '' : category,
-      startedAt: startedAtFromUptime(uptime),
+      available: true,
+      live: Boolean(startedAt),
+      title: offlinePattern.test(title) ? '' : title,
+      category: offlinePattern.test(category) ? '' : category,
+      startedAt,
     };
+  }
+
+  async function checkRegionRestrictedChannel(streamer) {
+    try {
+      const metadata = await twitchFallbackMetadata(streamer.channel);
+      applyStatus({
+        ...streamer,
+        ...metadata,
+        thumbnailUrl: metadata.live ? `https://static-cdn.jtvnw.net/previews-ttv/live_user_${streamer.channel}-640x360.jpg?t=${Date.now()}` : '',
+        avatarUrl: '',
+      });
+      return true;
+    } catch (error) {
+      if (error?.name !== 'AbortError') console.warn(`141 GANG regional check (${streamer.channel}):`,error);
+      return false;
+    }
   }
 
   async function applyTwitchFallback(channel,live) {
@@ -163,20 +185,25 @@
     try {
       const metadata = await twitchFallbackMetadata(channel);
       const card = cardFor(streamer);
-      if (card?.dataset.status === 'live') applyStatus({ ...fallback,...metadata });
+      if (card?.dataset.status === 'live') applyStatus({ ...fallback,...metadata,available: true,live: true });
     } catch (error) {
       if (error?.name !== 'AbortError') console.warn(`141 GANG metadata (${channel}):`,error);
     }
   }
 
-  function checkTwitchWithPlayer(streamersToCheck) {
+  async function checkTwitchWithPlayer(streamersToCheck) {
     if (!streamersToCheck.length) return;
+    const restricted = streamersToCheck.filter(streamer => regionRestrictedChannels.has(streamer.channel));
+    const regionalResults = await Promise.all(restricted.map(checkRegionRestrictedChannel));
+    const resolved = new Set(restricted.filter((_,index) => regionalResults[index]).map(streamer => streamer.channel));
+    const playerStreamers = streamersToCheck.filter(streamer => !resolved.has(streamer.channel));
+    if (!playerStreamers.length) { sortCards(); updateSummary(); return; }
     if (!window.Twitch?.Player) {
-      streamersToCheck.forEach(streamer => applyStatus({ ...streamer, available: false }));
+      playerStreamers.forEach(streamer => applyStatus({ ...streamer, available: false }));
       return;
     }
     const parent = window.location.hostname || 'localhost';
-    streamersToCheck.forEach(streamer => {
+    playerStreamers.forEach(streamer => {
       const detector = document.createElement('div');
       detector.className = 'gang-detector';
       detector.id = `gangDetector-${streamer.channel}`;
@@ -187,7 +214,7 @@
       players.push(player);
     });
     fallbackTimeout = window.setTimeout(() => {
-      streamersToCheck.forEach(streamer => {
+      playerStreamers.forEach(streamer => {
         const card = cardFor(streamer);
         if (card?.dataset.status === 'checking') applyStatus({ ...streamer, available: false });
       });
@@ -238,7 +265,7 @@
         else if (streamer.provider === 'twitch') twitchFallback.push(streamer);
         else kickFallback.push(streamer);
       });
-      checkTwitchWithPlayer(twitchFallback);
+      await checkTwitchWithPlayer(twitchFallback);
       await Promise.all(kickFallback.map(checkKickDirect));
       sortCards();
       updateSummary();
@@ -247,7 +274,7 @@
       console.error('141 GANG status:',error);
       const twitch = streamers.filter(streamer => streamer.provider === 'twitch');
       const kick = streamers.filter(streamer => streamer.provider === 'kick');
-      checkTwitchWithPlayer(twitch);
+      await checkTwitchWithPlayer(twitch);
       await Promise.all(kick.map(checkKickDirect));
       sortCards();
       updateSummary();
