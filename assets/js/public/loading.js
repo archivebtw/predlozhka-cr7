@@ -4,7 +4,7 @@
   if (!loader) return;
 
   const startedAt = performance.now();
-  const minimumVisibleMs = 700;
+  const minimumVisibleMs = 380;
   const maximumVisibleMs = 9000;
 
   function hideLoader() {
