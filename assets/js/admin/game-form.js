@@ -76,7 +76,9 @@ function resetForm() {
         coopMaxPlayers: game.coop_max_players
       });
       setImportReady(true, false);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const portalDialog = elements.gameForm.closest('.admin-portal-dialog');
+      if (portalDialog) portalDialog.scrollTo({ top: 0, behavior: 'smooth' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function syncGame(id) {

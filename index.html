@@ -11,7 +11,7 @@
 <link href="./assets/images/theme/site-logo.png" rel="icon" type="image/png"/>
 <link href="./assets/css/public/fonts.css" rel="stylesheet"/>
 <link href="./assets/css/public/variables.css" rel="stylesheet"/>
-<link href="./assets/css/public/bloodseeker-motion.css" rel="stylesheet"/><link href="./assets/css/public/base.css" rel="stylesheet"/><link href="./assets/css/public/animated-background.css" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css" rel="stylesheet"/><link href="./assets/css/public/auction.css" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/twitch-theme.css" rel="stylesheet"/><link href="./assets/css/public/loading.css" rel="stylesheet"/><link href="./assets/css/public/experience.css" rel="stylesheet"/></head>
+<link href="./assets/css/public/bloodseeker-motion.css" rel="stylesheet"/><link href="./assets/css/public/base.css" rel="stylesheet"/><link href="./assets/css/public/animated-background.css" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css" rel="stylesheet"/><link href="./assets/css/public/auction.css" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/twitch-theme.css" rel="stylesheet"/><link href="./assets/css/public/loading.css" rel="stylesheet"/><link href="./assets/css/public/experience.css" rel="stylesheet"/><link href="./assets/css/public/admin-portal.css" rel="stylesheet"/></head>
 <body><a class="skip-link" href="#catalog">Перейти к каталогу</a><div aria-hidden="true" class="scroll-progress" id="scrollProgress"></div><div aria-label="Загрузка сайта" aria-live="polite" class="site-loader" id="siteLoader" role="status">
 <div class="loader-content">
 <div aria-hidden="true" class="loader-visual">
@@ -42,6 +42,7 @@
 <div class="nav-right">
 <button aria-controls="gangPanel" aria-expanded="false" class="twitch-nav gang-trigger" id="gangOpen" type="button">141 GANG <span aria-hidden="true">↗</span></button>
 <a class="nav-link" href="#catalog">Каталог</a>
+<button aria-controls="adminPortal" aria-expanded="false" class="nav-link admin-portal-trigger" id="adminPortalOpen" type="button">Управление</button>
 <button aria-controls="auctionPanel" aria-expanded="false" class="nav-link auction-trigger" id="auctionOpen" type="button">Аукцион</button>
 <div class="status connection-status" hidden="" title="Подключение к каталогу">
 <span class="status-dot" id="statusDot"></span>
@@ -154,6 +155,150 @@
 <div class="auction-copy"><span>Новый раздел</span><h2 id="auctionTitle">СКОРО<span>...</span></h2><p>Аукцион 141 уже готовится.</p></div>
 </section>
 </div>
+<div aria-hidden="true" class="admin-portal" hidden="" id="adminPortal">
+<div class="admin-portal-backdrop" data-admin-portal-close=""></div>
+<section aria-labelledby="adminPortalTitle" aria-modal="true" class="admin-portal-dialog" role="dialog">
+<header class="admin-portal-head"><div><span>Защищённый раздел</span><h2 id="adminPortalTitle">Управление каталогом</h2><p>Войди с существующими данными администратора — все инструменты теперь находятся прямо на сайте.</p></div><button aria-label="Закрыть управление каталогом" class="admin-portal-close" id="adminPortalClose" type="button">×</button></header>
+<div class="admin-portal-session"><span id="sessionEmail">Не выполнен вход</span><button class="btn btn-danger" hidden="" id="logoutButton" type="button">Выйти</button></div>
+<div class="admin-portal-body">
+<div class="notice" id="notice" role="status"></div>
+<section class="panel login-panel" hidden="" id="configError">
+<div class="panel-head"><h2>Supabase не настроен</h2></div>
+<div class="panel-body">Открой <strong>config.js</strong> и вставь Project URL и публичный publishable/anon key.</div>
+</section>
+<section class="panel login-panel" hidden="" id="loginSection">
+<div class="panel-head">
+<h2>Вход владельца</h2>
+<p>Используй email и пароль пользователя из Supabase Auth.</p>
+</div>
+<div class="panel-body">
+<form id="loginForm">
+<div class="field">
+<label for="email">Email</label>
+<input autocomplete="username" id="email" placeholder="you@example.com" required="" type="email"/>
+</div>
+<div class="field">
+<label for="password">Пароль</label>
+<input autocomplete="current-password" id="password" minlength="6" placeholder="••••••••" required="" type="password"/>
+</div>
+<button class="btn btn-primary" id="loginButton" type="submit">Войти</button>
+</form>
+</div>
+</section>
+<section hidden="" id="adminSection">
+<div class="connection-card">Steam-данные загружаются через защищённую Supabase Edge Function. Игры и даты сразу синхронизируются с публичным каталогом.</div>
+<div class="layout">
+<article class="panel">
+<div class="panel-head">
+<h2 id="formTitle">Добавить игру</h2>
+<p>Вставь ссылку Steam. После загрузки форма сама свернётся — останется только комментарий и публикация.</p>
+</div>
+<div class="panel-body">
+<form id="gameForm" novalidate="">
+<div class="steam-step" id="steamStep">
+<div class="field">
+<label for="steamUrl">Ссылка на Steam <span class="required">*</span></label>
+<div class="steam-row">
+<input id="steamUrl" maxlength="500" placeholder="https://store.steampowered.com/app/..." required="" type="url"/>
+<button class="btn btn-steam" id="steamImportButton" type="button">Загрузить игру</button>
+</div>
+<p class="hint">Вставь ссылку — Steam сам заполнит название, описание, обложку и дату.</p>
+<div aria-hidden="true" class="import-progress"></div>
+</div>
+</div>
+<div aria-hidden="true" class="details-stage" id="detailsStage">
+<div aria-live="polite" class="steam-preview" id="steamPreview">
+<img alt="Предпросмотр обложки Steam" id="steamPreviewImage"/>
+<div class="steam-preview-body">
+<span>Игра готова к публикации</span>
+<h3 id="steamPreviewTitle">—</h3>
+<p id="steamPreviewText">—</p>
+<div class="preview-chips">
+<span class="release-chip" id="steamPreviewRelease">—</span>
+<span class="coop-preview-chip" hidden="" id="steamPreviewCoop">—</span>
+</div>
+<button class="change-game-btn" id="changeGameButton" type="button">Выбрать другую игру</button>
+</div>
+</div>
+<div class="coop-editor" id="coopEditor">
+<div class="coop-editor-head"><div><span>Настройка после импорта</span><h3>Количество игроков в кооперативе</h3><p>Steam заполняет данные автоматически, но их можно уточнить вручную.</p></div><label class="coop-toggle" for="isCoop"><input id="isCoop" type="checkbox"/><span>Есть кооператив</span></label></div>
+<div class="coop-player-fields">
+<label for="coopMinPlayers">Минимум игроков<input id="coopMinPlayers" max="64" min="2" placeholder="2" type="number"/></label>
+<label for="coopMaxPlayers">Максимум игроков<input id="coopMaxPlayers" max="64" min="2" placeholder="4" type="number"/></label>
+</div>
+<p class="coop-editor-hint" id="coopEditorHint">Автоматические значения Steam можно оставить без изменений.</p>
+<input id="coopSource" maxlength="120" type="hidden"/>
+</div>
+<div class="comment-focus">
+<label for="authorComment">Комментарий автора <span class="optional">необязательно</span></label>
+<textarea id="authorComment" maxlength="1200" placeholder="Почему эту игру стоит показать на стриме?"></textarea>
+</div>
+<div class="form-actions compact-actions">
+<button class="btn btn-primary" id="saveButton" type="submit">Опубликовать игру</button>
+<button class="btn" hidden="" id="cancelEditButton" type="button">Отменить редактирование</button>
+</div>
+</div>
+<div aria-hidden="true" class="machine-fields">
+<input id="title" maxlength="120" required=""/>
+<input id="coverUrl" maxlength="1000" type="url"/>
+<textarea id="description" maxlength="2000" required=""></textarea>
+<input id="releaseDate" type="date"/>
+<input id="releaseDateText" maxlength="120"/>
+<input id="displayOrder" max="9999" min="0" type="number" value="0"/>
+<input id="steamAppId" min="1" readonly="" type="number"/>
+<input id="coopType" maxlength="20"/>
+<div aria-live="polite" class="release-status-auto unknown" id="releaseStatusAuto">
+<small id="releaseStatusHint">Статус определяется автоматически.</small>
+<span class="release-status-badge" id="releaseStatusBadge">Без даты</span>
+</div>
+<input checked="" id="published" type="checkbox"/>
+</div>
+</form>
+</div>
+</article>
+<article class="panel">
+<div class="panel-head catalog-head">
+<div>
+<h2>Текущий каталог</h2>
+<p>Найди игру по названию или выбери удобный порядок списка.</p>
+</div>
+<span class="count" id="countLabel">0 игр</span>
+</div>
+<div class="catalog-controls" role="search">
+<div class="catalog-search">
+<label class="catalog-control-label" for="catalogSearch">Поиск по названию</label>
+<span class="catalog-search-field">
+<span aria-hidden="true" class="catalog-search-icon"></span>
+<input autocomplete="off" id="catalogSearch" placeholder="Например, Island Beekeeper" type="search"/>
+<button aria-label="Очистить поиск" class="catalog-search-clear" hidden="" id="catalogSearchClear" type="button">×</button>
+</span>
+</div>
+<label class="catalog-sort" for="catalogSort">
+<span class="catalog-control-label">Сортировка</span>
+<select id="catalogSort">
+<option value="newest">Последние добавленные</option>
+<option value="alphabetical">По алфавиту А—Я</option>
+<option value="release">Дата релиза: новые сначала</option>
+</select>
+</label>
+</div>
+<div class="panel-body"><div class="game-list" id="gameList"></div></div>
+</article>
+</div>
+</section>
+
+</div>
+</section>
+<div aria-hidden="true" class="duplicate-modal" hidden="" id="duplicateModal">
+<div class="duplicate-backdrop" data-duplicate-close=""></div>
+<section aria-labelledby="duplicateTitle" aria-modal="true" class="duplicate-dialog" role="dialog">
+<span class="duplicate-kicker">Проверка каталога</span>
+<h2 id="duplicateTitle">Игра уже есть</h2>
+<p id="duplicateText"></p>
+<div class="duplicate-actions"><button class="btn" id="duplicateCancel" type="button">Отмена</button><button class="btn btn-primary" id="duplicateConfirm" type="button">Добавить второй экземпляр</button></div>
+</section>
+</div>
+</div>
 <div aria-hidden="true" class="game-modal" hidden="" id="gameModal">
 <div class="modal-backdrop" data-modal-close=""></div>
 <div aria-labelledby="modalTitle" aria-modal="true" class="modal-panel" role="dialog">
@@ -187,5 +332,5 @@
 </div>
 </div>
 <footer><div class="shell footer-inner"><div class="footer-brand"><strong>ПРЕДЛОЖКА<span>141</span></strong><small>Сделано сообществом для сообщества</small></div><div class="footer-credits"><span>Создатели сайта</span><div><b>@tankzor</b><b>@archivebtw</b><b>@obwectbo141</b></div></div><a class="footer-top" href="#top">Наверх ↑</a></div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js"></script><script src="./assets/js/public/state.js"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js"></script><script src="./assets/js/public/hero.js"></script><script src="./assets/js/public/catalog.js"></script><script src="./assets/js/public/modal-effects.js"></script><script src="./assets/js/public/loading.js"></script><script src="./assets/js/public/bloodseeker-motion.js"></script><script src="./assets/js/public/animated-background.js"></script><script src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js"></script><script src="./assets/js/public/auction.js"></script><script src="./assets/js/public/experience.js"></script><script src="./assets/js/public/app.js"></script></body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js"></script><script src="./assets/js/public/state.js"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js"></script><script src="./assets/js/public/hero.js"></script><script src="./assets/js/public/catalog.js"></script><script src="./assets/js/public/modal-effects.js"></script><script src="./assets/js/public/loading.js"></script><script src="./assets/js/public/bloodseeker-motion.js"></script><script src="./assets/js/public/animated-background.js"></script><script src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js"></script><script src="./assets/js/public/auction.js"></script><script src="./assets/js/public/admin-portal.js"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js"></script><script src="./assets/js/public/app.js"></script></body>
 </html>
