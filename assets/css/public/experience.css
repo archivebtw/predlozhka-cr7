@@ -103,6 +103,14 @@ footer { padding: 0 !important; background: linear-gradient(180deg,rgba(10,3,3,.
   .stat-chip strong { font-size: 17px; }
   .stat-chip span { font-size: 7px; }
   #catalog .catalog-toolbar { top: 72px; }
+  .game-modal { align-items: end; padding: 10px 0 0; }
+  .modal-panel { max-height: 94vh; border-radius: 24px 24px 0 0; }
+  .modal-media { position: relative; min-height: 230px; max-height: 290px; }
+  .modal-media img,.modal-media .cover-fallback { min-height: 230px; max-height: 290px; }
+  .modal-content { padding: 30px 20px 26px; }
+  .modal-title { font-size: clamp(36px,12vw,50px); }
+  .modal-tabs-list { grid-template-columns: 1fr; }
+  .modal-collection-tab { justify-content: flex-start; padding-inline: 12px; }
   .footer-inner { grid-template-columns: 1fr; gap: 22px; text-align: center; }
   .footer-credits { grid-row: auto; grid-column: auto; justify-items: center; }
   .footer-credits div { justify-content: center; }
