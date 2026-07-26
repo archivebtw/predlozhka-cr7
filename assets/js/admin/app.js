@@ -1,4 +1,16 @@
-elements.loginForm.addEventListener('submit', async event => {
+async function persistGame(payload) {
+      const write = nextPayload => state.editingId
+        ? state.client.from('games').update(nextPayload).eq('id', state.editingId)
+        : state.client.from('games').insert(nextPayload);
+      let { error } = await write(payload);
+      const oldCommentConstraint = !payload.author_comment
+        && error?.code === '23514'
+        && String(error.message || '').includes('games_author_comment_check');
+      if (oldCommentConstraint) ({ error } = await write({ ...payload, author_comment: EMPTY_AUTHOR_COMMENT }));
+      if (error) throw error;
+    }
+
+    elements.loginForm.addEventListener('submit', async event => {
       event.preventDefault();
       setBusy(elements.loginButton, true, 'Вход…');
       try {
@@ -102,12 +114,10 @@ elements.loginForm.addEventListener('submit', async event => {
         }
 
         if (state.editingId) {
-          const { error } = await state.client.from('games').update(payload).eq('id', state.editingId);
-          if (error) throw error;
+          await persistGame(payload);
           showNotice('Изменения сохранены и уже доступны на сайте.', 'success');
         } else {
-          const { error } = await state.client.from('games').insert(payload);
-          if (error) throw error;
+          await persistGame(payload);
           showNotice('Игра опубликована и уже доступна на сайте.', 'success');
         }
 

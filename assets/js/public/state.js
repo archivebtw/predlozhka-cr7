@@ -34,4 +34,5 @@
 
     const state = { games: [], query: '', filter: 'all', channel: null, activeGameId: null };
     const TWITCH_LOGO_DATA = './assets/images/bloodseeker.webp';
+    const EMPTY_AUTHOR_COMMENT = '\u2063';
     let lastFocusedElement = null;

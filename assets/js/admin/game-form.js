@@ -46,7 +46,7 @@ function resetForm() {
       elements.steamUrl.value = game.steam_url || '';
       elements.coverUrl.value = game.cover_url || '';
       elements.description.value = game.description || '';
-      elements.authorComment.value = game.author_comment || '';
+      elements.authorComment.value = game.author_comment === EMPTY_AUTHOR_COMMENT ? '' : (game.author_comment || '');
       elements.releaseDate.value = game.release_date || '';
       elements.releaseDateText.value = game.release_date_text || '';
       elements.displayOrder.value = Number(game.display_order) || 0;

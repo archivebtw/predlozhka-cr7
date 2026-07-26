@@ -60,3 +60,6 @@
       lastImportedSteamUrl: '',
       steamComingSoonFallback: false
     };
+
+    // Совместимость с базами, где старый CHECK всё ещё требует хотя бы один символ.
+    const EMPTY_AUTHOR_COMMENT = '\u2063';
