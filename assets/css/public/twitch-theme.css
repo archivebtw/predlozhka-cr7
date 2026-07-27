@@ -81,7 +81,7 @@ header {
   -webkit-text-stroke: 1px rgba(230,55,38,.07);
   font-size: min(34vw, 520px);
   font-weight: 1000;
-  letter-spacing: -.17em;
+  letter-spacing: .045em;
   transform: translateY(-50%) rotate(-7deg);
 }
 .bloodseeker-hero {
@@ -380,9 +380,9 @@ body.is-ready .hero-divider {
   min-width: 162px;
 }
 .quick-cover img {
-  object-fit: contain;
-  padding: 8px;
-  background: radial-gradient(circle at center, rgba(255, 96, 53, .18), rgba(92, 12, 10, .5));
+  object-fit: cover;
+  padding: 0;
+  background: #210706;
 }
 .next-release {
   min-height: 438px;
@@ -551,10 +551,12 @@ h1 .accent {
   font-weight: 800;
   letter-spacing: -.025em;
 }
-.hero-link span {
-  color: #9147ff;
-  font-family: var(--font-accent);
-  font-size: .78em;
+.hero-link img {
+  width: .9em;
+  height: .9em;
+  flex: 0 0 auto;
+  border-radius: .18em;
+  object-fit: contain;
 }
 .hero-divider {
   width: 155px;
@@ -578,20 +580,14 @@ h1 .accent {
   letter-spacing: .045em;
 }
 .hero-cta {
-  padding-left: 56px;
+  justify-content: flex-start;
+  padding: 14px 22px;
   background:
     linear-gradient(90deg, rgba(15,0,0,.28), transparent 28%),
     linear-gradient(135deg, #c62117, #7b0b07 66%, #3d0302);
 }
 .hero-cta::after {
-  content: '///';
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  color: rgba(255,255,255,.2);
-  font-size: 28px;
-  letter-spacing: -.28em;
-  transform: translateY(-55%) rotate(-9deg);
+  display: none;
 }
 .channel-cta {
   border-color: rgba(225, 66, 47, .42);
@@ -634,8 +630,9 @@ h1 .accent {
 }
 
 .hero-copy-wrap h1 .accent {
-  display: inline;
-  margin-left: .035em;
+  display: inline-block;
+  margin-left: .1em;
+  letter-spacing: .045em;
 }
 
 @media (max-width: 1180px) {
@@ -650,8 +647,8 @@ h1 .accent {
     white-space: normal;
   }
   .hero-copy-wrap h1 .accent {
-    display: inline;
-    margin-left: .035em;
+    display: inline-block;
+    margin-left: .08em;
   }
 }
 
@@ -665,7 +662,7 @@ h1 .accent {
 }
 
 .hero-copy-wrap h1 .accent {
-  display: inline;
+  display: inline-block;
   position: relative;
   z-index: 21;
   color: #b82419;

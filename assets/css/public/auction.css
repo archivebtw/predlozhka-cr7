@@ -1,0 +1,44 @@
+.auction-trigger { border: 0; background: transparent; }
+.videos-trigger { border: 0; background: transparent; }
+.twitch-login-trigger { position: relative; min-height: 38px; display: inline-flex; align-items: center; gap: 8px; margin-left: 11px; padding: 0 14px; border: 1px solid rgba(145,70,255,.38); border-radius: 9px 9px 9px 3px; color: #ded0f4; background: linear-gradient(135deg,rgba(100,48,153,.2),rgba(39,16,61,.32)); box-shadow: 0 0 0 5px rgba(2,0,3,.42),0 10px 28px rgba(50,14,81,.16); font-size: 10px; font-weight: 900; white-space: nowrap; transition: color .2s ease,border-color .2s ease,background .2s ease,transform .2s ease; }
+.twitch-login-trigger::before { position: absolute; top: 7px; bottom: 7px; left: -12px; width: 1px; background: rgba(255,255,255,.08); content: ''; }
+.twitch-login-trigger img { width: 15px; height: 15px; object-fit: contain; filter: drop-shadow(0 0 7px rgba(169,112,255,.5)); }
+.twitch-login-trigger:hover { color: #fff; border-color: rgba(169,112,255,.62); background: linear-gradient(135deg,rgba(122,64,189,.34),rgba(56,21,88,.48)); transform: translateY(-1px); }
+.suggestion-cta { min-height: 54px; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; border: 1px solid rgba(240,74,51,.45); border-radius: 11px 11px 11px 3px; color: #fff; background: linear-gradient(135deg,rgba(151,24,16,.48),rgba(66,9,7,.66)); box-shadow: 0 15px 36px rgba(120,13,8,.2),inset 0 1px rgba(255,255,255,.08); font-size: 11px; font-weight: 950; letter-spacing: .02em; transition: transform .22s ease,filter .22s ease,border-color .22s ease; }
+.suggestion-cta:hover { transform: translateY(-3px); filter: brightness(1.1); border-color: rgba(255,108,82,.7); }
+body.auction-open { overflow: hidden; }
+.auction-panel[hidden] { display: none !important; }
+.auction-panel { position: fixed; inset: 0; z-index: 1250; display: grid; place-items: center; overflow: hidden; }
+.auction-backdrop { position: absolute; inset: 0; background: rgba(3,0,0,.88); opacity: 0; backdrop-filter: blur(18px); transition: opacity .55s ease; }
+.auction-dialog { position: relative; display: grid; width: min(920px,calc(100% - 32px)); min-height: min(620px,calc(100vh - 48px)); place-items: center; overflow: hidden; border: 1px solid rgba(230,57,39,.24); border-radius: 34px 34px 34px 10px; background: radial-gradient(circle at 50% 50%,rgba(111,13,9,.34),transparent 44%),linear-gradient(145deg,rgba(25,5,4,.98),rgba(5,1,1,.99)); box-shadow: 0 50px 140px rgba(0,0,0,.7),inset 0 1px rgba(255,255,255,.03); opacity: 0; transform: scale(.94) translateY(24px); transition: opacity .55s ease,transform .7s var(--ease); }
+.auction-panel.is-open .auction-backdrop { opacity: 1; }
+.auction-panel.is-open .auction-dialog { opacity: 1; transform: scale(1) translateY(0); }
+.auction-close { position: absolute; top: 22px; right: 22px; z-index: 3; display: grid; width: 46px; height: 46px; place-items: center; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; color: #fff; background: rgba(255,255,255,.035); font-size: 26px; transition: transform .2s ease,border-color .2s ease,background .2s ease; }
+.auction-close:hover { transform: rotate(8deg); border-color: rgba(237,64,44,.62); background: rgba(211,38,26,.18); }
+.auction-copy { position: relative; z-index: 2; text-align: center; }
+.auction-copy > span { color: #d65a48; font-family: var(--font-accent); font-size: 9px; font-weight: 850; letter-spacing: .22em; text-transform: uppercase; }
+.auction-copy h2 { margin: 18px 0 0; font-family: var(--font-display); font-size: clamp(70px,14vw,170px); line-height: .78; letter-spacing: -.055em; text-shadow: 0 0 42px rgba(215,40,25,.18); }
+.auction-copy h2 span { color: var(--red); letter-spacing: .02em; }
+.auction-copy p { margin: 28px 0 0; color: #a18f8b; font-size: 13px; letter-spacing: .03em; }
+.auction-rings,.auction-rings i { position: absolute; border: 1px solid rgba(226,51,36,.09); border-radius: 50%; }
+.auction-rings { width: min(72vw,680px); aspect-ratio: 1; animation: auction-turn 55s linear infinite; }
+.auction-rings::before,.auction-rings::after { position: absolute; inset: 18%; border: 1px solid rgba(226,51,36,.07); content: ''; transform: rotate(45deg); }
+.auction-rings::after { inset: 32%; transform: rotate(22.5deg); }
+.auction-rings i:nth-child(1) { inset: 10%; }
+.auction-rings i:nth-child(2) { inset: 24%; }
+.auction-rings i:nth-child(3) { inset: 39%; background: radial-gradient(circle,rgba(225,46,29,.08),transparent 68%); box-shadow: 0 0 80px rgba(210,35,22,.1); }
+@keyframes auction-turn { to { transform: rotate(360deg); } }
+@media (max-width: 760px) {
+  .auction-trigger { display: none; }
+  .videos-trigger { display: none; }
+  .twitch-login-trigger { min-width: 38px; margin-left: 7px; padding-inline: 10px; font-size: 0; }
+  .twitch-login-trigger::before { left: -8px; }
+  .twitch-login-trigger img { width: 16px; height: 16px; }
+  .suggestion-cta { width: 100%; }
+  .auction-dialog { min-height: min(520px,calc(100vh - 24px)); border-radius: 24px 24px 24px 8px; }
+  .auction-copy h2 { font-size: clamp(62px,23vw,110px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auction-backdrop,.auction-dialog { transition-duration: .001ms !important; }
+  .auction-rings { animation: none; }
+}
