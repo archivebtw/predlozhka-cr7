@@ -122,6 +122,11 @@
       render();
     }));
 
+    elements.sort.addEventListener('change', event => {
+      state.sort = event.target.value;
+      render();
+    });
+
 
     elements.heroHighlights.addEventListener('click', event => {
       const button = event.target.closest('.quick-game-card');
