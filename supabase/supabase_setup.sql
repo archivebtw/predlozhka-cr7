@@ -74,7 +74,7 @@ drop policy if exists "Admins can delete games" on public.games;
 create policy "Public can read published games"
 on public.games
 for select
-to anon
+to anon, authenticated
 using (published = true);
 
 create policy "Admins can read all games"
