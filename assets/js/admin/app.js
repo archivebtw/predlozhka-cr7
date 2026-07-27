@@ -200,4 +200,5 @@ async function persistGame(payload) {
       }
     });
 
-    boot();
+    if (window.supabase?.createClient) boot();
+    else window.addEventListener('cr7:supabase-ready',boot,{ once: true });
