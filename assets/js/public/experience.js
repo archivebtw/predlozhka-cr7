@@ -1,6 +1,7 @@
 (() => {
   const progress = document.getElementById('scrollProgress');
   const catalog = document.getElementById('catalog');
+  const catalogToolbar = catalog?.querySelector('.catalog-toolbar');
   const catalogLink = document.querySelector('.nav-link[href="#catalog"]');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let frame = 0;
@@ -38,5 +39,8 @@
 
   window.addEventListener('scroll',scheduleUpdate,{ passive: true });
   window.addEventListener('resize',scheduleUpdate,{ passive: true });
+  // Changing the sticky toolbar's height while scrolling shifts the catalog
+  // underneath it and can repeatedly cross the compaction threshold.
+  catalogToolbar?.classList.remove('is-compact');
   updatePageState();
 })();
