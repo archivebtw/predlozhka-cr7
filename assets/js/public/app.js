@@ -1,5 +1,4 @@
     function getConfiguredClient() {
-      if (window.CR7_PUBLIC_CLIENT) return window.CR7_PUBLIC_CLIENT;
       const config = window.CR7_CONFIG || {};
       const url = String(config.supabaseUrl || '');
       const key = String(config.supabasePublishableKey || '');
@@ -9,6 +8,16 @@
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' }
       });
       return window.CR7_PUBLIC_CLIENT;
+    }
+
+    const PUBLIC_GAME_FIELDS = 'id,title,steam_url,cover_url,description,author_comment,created_at,display_order,steam_app_id,release_date,release_date_text,coming_soon,steam_synced_at,is_coop,coop_type,coop_min_players,coop_max_players,coop_source';
+
+    function isMissingLibraryColumn(error) {
+      if (!error) return false;
+      const details = `${error.code || ''} ${error.message || ''} ${error.details || ''}`;
+      return error.code === '42703'
+        || /(?:library_status|is_favorite).*(?:does not exist|schema cache)/i.test(details)
+        || /(?:does not exist|schema cache).*(?:library_status|is_favorite)/i.test(details);
     }
 
     const PUBLIC_GAME_FIELDS = 'id,title,steam_url,cover_url,description,author_comment,created_at,display_order,steam_app_id,release_date,release_date_text,coming_soon,steam_synced_at,is_coop,coop_type,coop_min_players,coop_max_players,coop_source';
