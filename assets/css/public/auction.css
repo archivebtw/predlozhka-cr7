@@ -111,6 +111,9 @@ body.auction-open { overflow: hidden; }
 .auction-spin-settings input[type='number'] { width: 58px; min-height: 30px; padding: 0 7px; border: 1px solid rgba(255,255,255,.1); border-radius: 6px; color: #fff; background: #100404; }
 .auction-spin-settings input[type='checkbox'] { accent-color: var(--red); }
 .auction-manage-grid { display: grid; grid-template-columns: minmax(0,1.45fr) minmax(320px,.55fr); gap: 18px; min-height: 100%; }
+.auction-setup-notice { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 10px 13px; border: 1px solid rgba(238,157,45,.25); border-radius: 9px; color: #bda99f; background: rgba(118,67,13,.12); font-size: 9px; }
+.auction-setup-notice strong { flex: 0 0 auto; color: #efb35e; text-transform: uppercase; }
+.auction-setup-notice code { color: #f2d4cb; }
 .auction-admin,.auction-timer { height: 100%; }
 .auction-manage-list { display: grid; gap: 1px; max-height: calc(100vh - 340px); overflow: auto; background: rgba(215,54,36,.12); }
 .auction-manage-item { display: grid; grid-template-columns: minmax(180px,1fr) auto auto auto; gap: 8px; align-items: center; min-height: 62px; padding: 10px 14px; background: rgba(12,3,3,.96); }

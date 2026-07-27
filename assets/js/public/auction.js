@@ -73,7 +73,7 @@
   }
 
   async function checkAdmin() {
-    if (!client || !schemaReady) return;
+    if (!client) return;
     const { data:sessionData } = await client.auth.getSession();
     if (!sessionData?.session?.user) return;
     const { data,error } = await client.rpc('is_site_admin');
@@ -81,6 +81,8 @@
     manageTab.hidden = !isAdmin;
     byId('auctionSpinDuration').disabled = !isAdmin;
     byId('auctionRandomDuration').disabled = !isAdmin;
+    byId('auctionSetupNotice').hidden = schemaReady || !isAdmin;
+    if (isAdmin) switchTab(manageTab);
   }
 
   function pickWinner() {
@@ -98,16 +100,21 @@
     wheel.style.transitionDuration=`${duration}s`;
     const middle=(winner.start+winner.weight/2)/winner.sum*360;
     rotation += 1800+(360-middle)-(rotation%360); wheel.style.transform=`rotate(${rotation}deg)`;
-    window.setTimeout(async()=>{ spinning=false;result.innerHTML=`Выпал лот: <strong>${escapeHtml(winner.item.title)}</strong>`;await client.from('auction_items').update({ eliminated:true }).eq('id',winner.item.id);await loadItems(); },duration*1000+100);
+    window.setTimeout(async()=>{ spinning=false;result.innerHTML=`Выпал лот: <strong>${escapeHtml(winner.item.title)}</strong>`;if(schemaReady){await client.from('auction_items').update({ eliminated:true }).eq('id',winner.item.id);await loadItems();}else{winner.item.eliminated=true;render();} },duration*1000+100);
   }
 
   async function saveItem(event) {
-    event.preventDefault(); if (!isAdmin || !schemaReady) return;
+    event.preventDefault(); if (!isAdmin) return;
     const title=byId('auctionItemTitle').value.trim(),description=byId('auctionItemDescription').value.trim(),amount=Number(byId('auctionItemAmount').value);
     if (!title || !Number.isFinite(amount) || amount<0) return;
-    const query=editingId ? client.from('auction_items').update({title,description,amount}).eq('id',editingId) : client.from('auction_items').insert({title,description,amount,display_order:items.length});
-    const { error }=await query; if(error){result.textContent=error.message;return;}
-    editingId=null;form.reset();form.hidden=true;byId('auctionAdminToggle').textContent='Добавить лот';await loadItems();
+    if (!schemaReady) {
+      if (editingId) items = items.map(item => String(item.id) === String(editingId) ? { ...item,title,description,amount } : item);
+      else items.push({ id:`preview-${Date.now()}`,title,description,amount,eliminated:false });
+    } else {
+      const query=editingId ? client.from('auction_items').update({title,description,amount}).eq('id',editingId) : client.from('auction_items').insert({title,description,amount,display_order:items.length});
+      const { error }=await query; if(error){result.textContent=error.message;return;}
+    }
+    editingId=null;form.reset();form.hidden=true;byId('auctionAdminToggle').textContent='Добавить лот';if(schemaReady)await loadItems();else render();
   }
 
   function editItem(id) {
@@ -117,9 +124,15 @@
 
   async function mutateItem(target,action) {
     if(!isAdmin)return;const row=target.closest('[data-auction-id]'),id=row?.dataset.auctionId,item=items.find(entry=>String(entry.id)===String(id));if(!item)return;
-    if(action==='delete') await client.from('auction_items').delete().eq('id',id);
-    if(action==='eliminate') await client.from('auction_items').update({eliminated:!item.eliminated}).eq('id',id);
-    await loadItems();
+    if (!schemaReady) {
+      if(action==='delete') items=items.filter(entry=>String(entry.id)!==String(id));
+      if(action==='eliminate') item.eliminated=!item.eliminated;
+      render();
+    } else {
+      if(action==='delete') await client.from('auction_items').delete().eq('id',id);
+      if(action==='eliminate') await client.from('auction_items').update({eliminated:!item.eliminated}).eq('id',id);
+      await loadItems();
+    }
   }
 
   function remainingSeconds() { return timer.running && timer.endsAt ? Math.max(0,Math.ceil((timer.endsAt-Date.now())/1000)) : Math.max(0,timer.remaining); }
@@ -139,31 +152,6 @@
   byId('auctionTimerToggle').addEventListener('click',toggleTimer);document.querySelectorAll('[data-timer-adjust]').forEach(button=>button.addEventListener('click',()=>adjustTimer(Number(button.dataset.timerAdjust))));
   byId('auctionTimerAdd').addEventListener('click',()=>adjustTimer(Math.max(1,Number(byId('auctionTimerStep').value)||1)));byId('auctionTimerSubtract').addEventListener('click',()=>adjustTimer(-Math.max(1,Number(byId('auctionTimerStep').value)||1)));
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden)closeAuction();});window.setInterval(drawTimer,250);drawTimer();
-})();
-
-(() => {
-  const panel = document.getElementById('featurePanel');
-  const buttons = [...document.querySelectorAll('.coming-soon-trigger')];
-  const closeButton = document.getElementById('featureClose');
-  const kicker = document.getElementById('featureKicker');
-  const title = document.getElementById('featureTitle');
-  const description = document.getElementById('featureDescription');
-  if (!panel || !buttons.length || !closeButton || !kicker || !title || !description) return;
-  let activeButton = null;
-  function close() { panel.hidden = true; panel.setAttribute('aria-hidden','true'); activeButton?.setAttribute('aria-expanded','false'); activeButton?.focus(); activeButton = null; }
-  buttons.forEach(button => button.addEventListener('click',() => {
-    activeButton = button;
-    kicker.textContent = button.dataset.comingKicker || 'Новый раздел';
-    title.textContent = button.dataset.comingTitle || 'Скоро';
-    description.textContent = button.dataset.comingDescription || 'Функция находится в разработке.';
-    panel.hidden = false;
-    panel.setAttribute('aria-hidden','false');
-    button.setAttribute('aria-expanded','true');
-    closeButton.focus();
-  }));
-  closeButton.addEventListener('click',close);
-  panel.addEventListener('click',event => { if (event.target.matches('[data-feature-close]')) close(); });
-  document.addEventListener('keydown',event => { if (event.key === 'Escape' && !panel.hidden) close(); });
 })();
 
 (() => {
