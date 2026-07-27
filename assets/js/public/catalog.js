@@ -12,6 +12,7 @@ function buildCard(game, index) {
       return `
         <article class="game-card${favorite ? ' is-favorite' : ''}" data-game-id="${escapeHtml(game.id)}" tabindex="0" role="button" aria-label="Открыть подробности игры ${escapeHtml(game.title)}" style="--delay:${Math.min(index * 45, 260)}ms">
           <span class="card-index" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
+          <span class="game-reputation ${reputation > 0 ? 'is-positive' : reputation < 0 ? 'is-negative' : ''}" aria-label="Голосов за игру: ${reputation}">${reputation > 0 ? '+' : ''}${reputation}</span>
           <div class="card-visual">${cover}</div>
           <div class="card-bottom">
             <h3 class="card-title">${favorite ? '<span class="favorite-star" aria-label="Избранная игра">★</span>' : ''}${escapeHtml(game.title)}</h3>
@@ -27,7 +28,6 @@ function buildCard(game, index) {
             ${libraryStatus === 'ignored' ? '<span class="library-state-chip ignored">Не интересует</span>' : ''}
           </div>
           <div class="card-actions"><span class="card-open-hint"><span>Подробнее</span><b aria-hidden="true">↗</b></span></div>
-          <span class="game-reputation ${reputation > 0 ? 'is-positive' : reputation < 0 ? 'is-negative' : ''}" aria-label="Репутация игры: ${reputation}">${reputation > 0 ? '+' : ''}${reputation}</span>
         </article>`;
     }
 
