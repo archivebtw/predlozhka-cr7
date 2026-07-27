@@ -114,9 +114,10 @@ function openGameModal(gameId) {
     }
 
     function updateReputationControls(game) {
+      if (!elements.modalReputationScore || !elements.modalReputationNotice || !elements.modalVoteActions.length) return;
       const gameId = String(game?.id || '');
-      const score = Number(state.reputationScores[gameId] || 0);
-      const currentVote = Number(state.currentVotes[gameId] || 0);
+      const score = Number(state.reputationScores?.[gameId] || 0);
+      const currentVote = Number(state.currentVotes?.[gameId] || 0);
       elements.modalReputationScore.textContent = formatReputation(score);
       elements.modalReputationScore.className = score > 0 ? 'is-positive' : score < 0 ? 'is-negative' : '';
       elements.modalVoteActions.forEach(button => {
@@ -135,7 +136,7 @@ function openGameModal(gameId) {
 
     async function voteForGame(direction) {
       const game = state.games.find(item => String(item.id) === String(state.activeGameId));
-      if (!game || !state.reputationSchemaReady) return;
+      if (!game || !state.reputationSchemaReady || !elements.modalVoteActions.length) return;
       const gameId = String(game.id);
       elements.modalVoteActions.forEach(button => { button.disabled = true; });
       elements.modalReputationNotice.textContent = 'Сохраняем голос…';
@@ -156,6 +157,8 @@ function openGameModal(gameId) {
         const { data,error } = await client.rpc('vote_game',{ p_game_id: Number(game.id),p_vote: nextVote });
         if (error) throw error;
         const result = Array.isArray(data) ? data[0] : data;
+        state.reputationScores ||= {};
+        state.currentVotes ||= {};
         state.reputationScores[gameId] = Number(result?.score) || 0;
         state.currentVotes[gameId] = Number(result?.current_vote) || 0;
         updateReputationControls(game);
