@@ -60,12 +60,12 @@
       const entry=selectionEntries().find(candidate=>candidate.item===item),chance=entry&&selectionSum ? entry.weight/selectionSum*100 : 0;
       return `<article class="auction-item${item.eliminated ? ' is-eliminated' : ''}" data-auction-id="${escapeHtml(item.id)}">
         <span class="auction-color" style="--lot-color:${colors[index % colors.length]}">${String(index + 1).padStart(2,'0')}</span>
-        <div class="auction-item-copy"><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description || 'Без описания')}</p></div>
+        <div class="auction-item-copy"><h3>${escapeHtml(item.title)}</h3><p>${money(item.amount)}</p></div>
         <div class="auction-item-amount"><span>Собрано</span><strong>${money(item.amount)}</strong></div>
         <div class="auction-item-chance"><span>${item.eliminated ? 'Статус' : auctionMode()==='elimination' ? 'Шанс вылета' : 'Шанс победы'}</span><strong>${item.eliminated ? 'Выбыл' : percent(chance)}</strong></div>
       </article>`;
     }).join('') : '<div class="auction-empty"><strong>Участников пока нет</strong><span>Администратор добавит лоты перед аукционом.</span></div>';
-    manageList.innerHTML = items.map(item => `<article class="auction-manage-item" data-auction-id="${escapeHtml(item.id)}"><div><strong>${escapeHtml(item.title)}</strong><span>${money(item.amount)} · ${item.eliminated ? 'выбыл' : 'участвует'}</span></div><button class="auction-eliminate" type="button">${item.eliminated ? 'Вернуть' : 'Исключить'}</button><button class="auction-edit" type="button">Изменить</button><button class="auction-delete" type="button">Удалить</button></article>`).join('');
+    manageList.innerHTML = items.map(item => `<article class="auction-manage-item" data-auction-id="${escapeHtml(item.id)}"><div><strong>${escapeHtml(item.title)}</strong><span>${money(item.amount)} · ${item.eliminated ? 'выбыл' : 'участвует'}</span></div><label class="auction-funds"><input min="1" placeholder="Добавить ₽" step="1" type="number"><button class="auction-add-funds" type="button">+ ₽</button></label><div class="auction-manage-actions"><button class="auction-eliminate" type="button">${item.eliminated ? 'Вернуть' : 'Исключить'}</button><button class="auction-edit" type="button">Изменить</button><button class="auction-delete" type="button">Удалить</button></div></article>`).join('');
   }
 
   async function loadItems() {
@@ -87,6 +87,8 @@
     byId('auctionSettingsToggle').disabled = !isAdmin;
     byId('auctionSpinDuration').disabled = !isAdmin;
     byId('auctionRandomDuration').disabled = !isAdmin;
+    byId('auctionSpinMin').disabled = !isAdmin;
+    byId('auctionSpinMax').disabled = !isAdmin;
     document.querySelectorAll('[name="auctionMode"]').forEach(input=>{input.disabled=!isAdmin;});
     byId('auctionSetupNotice').hidden = schemaReady || !isAdmin;
   }
@@ -102,7 +104,8 @@
     const winner=pickWinner(); if (!winner) return;
     spinning=true;spinButton.disabled=true;result.textContent='Колесо вращается…';
     const base=Math.max(3,Math.min(60,Number(byId('auctionSpinDuration').value)||8));
-    const duration=byId('auctionRandomDuration').checked ? base*(.65+Math.random()*.7) : base;
+    const minDuration=Math.max(3,Math.min(60,Number(byId('auctionSpinMin').value)||5)),maxDuration=Math.max(minDuration,Math.min(90,Number(byId('auctionSpinMax').value)||15));
+    const duration=byId('auctionRandomDuration').checked ? minDuration+Math.random()*(maxDuration-minDuration) : base;
     wheel.style.transitionDuration=`${duration}s`;
     const middle=(winner.start+winner.weight/2)/winner.sum*360;
     rotation += 1800+(360-middle)-(rotation%360); wheel.style.transform=`rotate(${rotation}deg)`;
@@ -112,13 +115,13 @@
 
   async function saveItem(event) {
     event.preventDefault(); if (!isAdmin) return;
-    const title=byId('auctionItemTitle').value.trim(),description=byId('auctionItemDescription').value.trim(),amount=Number(byId('auctionItemAmount').value);
+    const title=byId('auctionItemTitle').value.trim(),amount=Number(byId('auctionItemAmount').value);
     if (!title || !Number.isFinite(amount) || amount<0) return;
     if (!schemaReady) {
-      if (editingId) items = items.map(item => String(item.id) === String(editingId) ? { ...item,title,description,amount } : item);
-      else items.push({ id:`preview-${Date.now()}`,title,description,amount,eliminated:false });
+      if (editingId) items = items.map(item => String(item.id) === String(editingId) ? { ...item,title,amount } : item);
+      else items.push({ id:`preview-${Date.now()}`,title,description:'',amount,eliminated:false });
     } else {
-      const query=editingId ? client.from('auction_items').update({title,description,amount}).eq('id',editingId) : client.from('auction_items').insert({title,description,amount,display_order:items.length});
+      const query=editingId ? client.from('auction_items').update({title,amount}).eq('id',editingId) : client.from('auction_items').insert({title,amount,display_order:items.length});
       const { error }=await query; if(error){result.textContent=error.message;return;}
     }
     editingId=null;form.reset();form.hidden=true;byId('auctionAdminToggle').textContent='Добавить лот';if(schemaReady)await loadItems();else render();
@@ -126,7 +129,7 @@
 
   function editItem(id) {
     const item=items.find(entry=>String(entry.id)===String(id));if(!item)return;
-    editingId=item.id;byId('auctionItemTitle').value=item.title;byId('auctionItemDescription').value=item.description||'';byId('auctionItemAmount').value=Number(item.amount)||0;form.hidden=false;byId('auctionAdminToggle').textContent='Отменить';
+    editingId=item.id;byId('auctionItemTitle').value=item.title;byId('auctionItemAmount').value=Number(item.amount)||0;form.hidden=false;byId('auctionAdminToggle').textContent='Отменить';
   }
 
   async function mutateItem(target,action) {
@@ -142,6 +145,12 @@
     }
   }
 
+  async function addFunds(target) {
+    if(!isAdmin)return;const row=target.closest('[data-auction-id]'),id=row?.dataset.auctionId,item=items.find(entry=>String(entry.id)===String(id)),amount=Number(row?.querySelector('.auction-funds input')?.value);if(!item||!Number.isFinite(amount)||amount<=0)return;
+    const nextAmount=Number(item.amount)+amount;
+    if(!schemaReady){item.amount=nextAmount;render();}else{const {error}=await client.from('auction_items').update({amount:nextAmount}).eq('id',id);if(error){result.textContent=error.message;return;}await loadItems();}
+  }
+
   function remainingSeconds() { return timer.running && timer.endsAt ? Math.max(0,Math.ceil((timer.endsAt-Date.now())/1000)) : Math.max(0,timer.remaining); }
   function drawTimer() { const seconds=remainingSeconds(),h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;timerDisplay.textContent=[h,m,s].map(x=>String(x).padStart(2,'0')).join(':');if(!seconds&&timer.running){timer.running=false;timer.endsAt=null;byId('auctionTimerToggle').textContent='Запустить';} }
   function adjustTimer(delta) { const next=Math.max(0,remainingSeconds()+delta);timer.remaining=next;if(timer.running)timer.endsAt=Date.now()+next*1000;drawTimer(); }
@@ -154,12 +163,12 @@
   function closeAuction(){panel.classList.remove('is-open');panel.setAttribute('aria-hidden','true');openButton.setAttribute('aria-expanded','false');document.body.classList.remove('auction-open');window.setTimeout(()=>{panel.hidden=true;lastFocusedElement?.focus();},450);}
 
   openButton.addEventListener('click',openAuction);closeButton.addEventListener('click',closeAuction);spinButton.addEventListener('click',spin);form.addEventListener('submit',saveItem);
-  panel.addEventListener('click',event=>{if(event.target.matches('[data-auction-close]'))closeAuction();const row=event.target.closest('[data-auction-id]');if(event.target.closest('.auction-edit'))editItem(row?.dataset.auctionId);if(event.target.closest('.auction-delete'))mutateItem(event.target,'delete');if(event.target.closest('.auction-eliminate'))mutateItem(event.target,'eliminate');});
+  panel.addEventListener('click',event=>{if(event.target.matches('[data-auction-close]'))closeAuction();const row=event.target.closest('[data-auction-id]');if(event.target.closest('.auction-edit'))editItem(row?.dataset.auctionId);if(event.target.closest('.auction-delete'))mutateItem(event.target,'delete');if(event.target.closest('.auction-eliminate'))mutateItem(event.target,'eliminate');if(event.target.closest('.auction-add-funds'))addFunds(event.target);});
   list.addEventListener('mouseover',event=>{const row=event.target.closest('[data-auction-id]');if(row)wheel.style.background=wheelGradient(row.dataset.auctionId);});list.addEventListener('mouseout',()=>wheel.style.background=wheelGradient());
   document.querySelectorAll('[data-auction-tab]').forEach(button=>button.addEventListener('click',()=>switchTab(button)));
   byId('auctionHideEliminated').addEventListener('change',render);byId('auctionAdminToggle').addEventListener('click',()=>{form.hidden=!form.hidden;if(form.hidden){editingId=null;form.reset();}});
   document.querySelectorAll('[name="auctionMode"]').forEach(input=>input.addEventListener('change',render));
-  byId('auctionSettingsToggle').addEventListener('click',()=>{byId('auctionSettings').hidden=!byId('auctionSettings').hidden;});
+  byId('auctionSettingsToggle').addEventListener('click',()=>{byId('auctionSettings').hidden=!byId('auctionSettings').hidden;});byId('auctionRandomDuration').addEventListener('change',()=>{byId('auctionRandomRange').hidden=!byId('auctionRandomDuration').checked;});
   byId('auctionTimerToggle').addEventListener('click',toggleTimer);byId('auctionTimerReset').addEventListener('click',resetTimer);
   byId('auctionTimerAdd').addEventListener('click',()=>adjustTimer(timerStep()));byId('auctionTimerSubtract').addEventListener('click',()=>adjustTimer(-timerStep()));
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden)closeAuction();});window.setInterval(drawTimer,250);drawTimer();
