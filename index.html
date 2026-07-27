@@ -44,6 +44,7 @@
 <a class="nav-link" href="#catalog">Каталог</a>
 <button aria-controls="auctionPanel" aria-expanded="false" class="nav-link auction-trigger" id="auctionOpen" type="button">Аукцион</button>
 <button aria-controls="adminPortal" aria-expanded="false" class="nav-link admin-portal-trigger" id="adminPortalOpen" type="button">Управление</button>
+<button aria-controls="auctionPanel" aria-expanded="false" class="twitch-login-trigger coming-soon-trigger" data-coming-description="Авторизация через Twitch появится в одном из следующих обновлений." data-coming-kicker="Личный профиль" data-coming-title="СКОРО" type="button"><span aria-hidden="true">●</span> Войти через Twitch</button>
 <div class="status connection-status" hidden="" title="Подключение к каталогу">
 <span class="status-dot" id="statusDot"></span>
 <span id="statusText">Подключение…</span>
@@ -63,6 +64,7 @@
 <div class="hero-divider"></div>
 <p class="hero-copy">Здесь собраны игры, которые могут однажды появиться на стримах Sasavot. Каталог обновляется автором проекта, а следующую историю Глеб выбирает сам.</p>
 <div class="hero-actions">
+<button aria-controls="auctionPanel" aria-expanded="false" class="suggestion-cta coming-soon-trigger" data-coming-description="Форма предложений от зрителей уже готовится." data-coming-kicker="Предложить свою игру" data-coming-title="СКОРО" type="button">ПРЕДЛОЖИТЬ ИГРУ ↗</button>
 <a class="channel-cta" href="#catalog">КАТАЛОГ ИГР ↗</a>
 <span class="hero-note">Игры для будущих стримов.</span>
 </div>
@@ -153,9 +155,9 @@
 <div aria-hidden="true" class="auction-panel" hidden="" id="auctionPanel">
 <div class="auction-backdrop" data-auction-close=""></div>
 <section aria-labelledby="auctionTitle" aria-modal="true" class="auction-dialog" role="dialog">
-<button aria-label="Закрыть аукцион" class="auction-close" id="auctionClose" type="button">×</button>
+<button aria-label="Закрыть окно" class="auction-close" id="auctionClose" type="button">×</button>
 <div aria-hidden="true" class="auction-rings"><i></i><i></i><i></i></div>
-<div class="auction-copy"><span>Новый раздел</span><h2 id="auctionTitle">СКОРО<span>...</span></h2><p>Аукцион 141 уже готовится.</p></div>
+<div class="auction-copy"><span id="auctionKicker">Новый раздел</span><h2 id="auctionTitle">СКОРО<span>...</span></h2><p id="auctionDescription">Аукцион 141 уже готовится.</p></div>
 </section>
 </div>
 <div aria-hidden="true" class="admin-portal" hidden="" id="adminPortal">

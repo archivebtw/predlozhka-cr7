@@ -1,4 +1,9 @@
 .auction-trigger { border: 0; background: transparent; }
+.twitch-login-trigger { min-height: 38px; display: inline-flex; align-items: center; gap: 7px; padding: 0 13px; border: 1px solid rgba(145,70,255,.3); border-radius: 9px 9px 9px 3px; color: #ded0f4; background: linear-gradient(135deg,rgba(100,48,153,.2),rgba(39,16,61,.32)); font-size: 10px; font-weight: 900; white-space: nowrap; transition: color .2s ease,border-color .2s ease,background .2s ease,transform .2s ease; }
+.twitch-login-trigger span { color: #a970ff; font-size: 9px; text-shadow: 0 0 10px rgba(169,112,255,.65); }
+.twitch-login-trigger:hover { color: #fff; border-color: rgba(169,112,255,.62); background: linear-gradient(135deg,rgba(122,64,189,.34),rgba(56,21,88,.48)); transform: translateY(-1px); }
+.suggestion-cta { min-height: 54px; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; border: 1px solid rgba(240,74,51,.45); border-radius: 11px 11px 11px 3px; color: #fff; background: linear-gradient(135deg,rgba(151,24,16,.48),rgba(66,9,7,.66)); box-shadow: 0 15px 36px rgba(120,13,8,.2),inset 0 1px rgba(255,255,255,.08); font-size: 11px; font-weight: 950; letter-spacing: .02em; transition: transform .22s ease,filter .22s ease,border-color .22s ease; }
+.suggestion-cta:hover { transform: translateY(-3px); filter: brightness(1.1); border-color: rgba(255,108,82,.7); }
 body.auction-open { overflow: hidden; }
 .auction-panel[hidden] { display: none !important; }
 .auction-panel { position: fixed; inset: 0; z-index: 1250; display: grid; place-items: center; overflow: hidden; }
@@ -23,6 +28,9 @@ body.auction-open { overflow: hidden; }
 @keyframes auction-turn { to { transform: rotate(360deg); } }
 @media (max-width: 760px) {
   .auction-trigger { display: none; }
+  .twitch-login-trigger { min-width: 38px; padding-inline: 10px; font-size: 0; }
+  .twitch-login-trigger span { font-size: 10px; }
+  .suggestion-cta { width: 100%; }
   .auction-dialog { min-height: min(520px,calc(100vh - 24px)); border-radius: 24px 24px 24px 8px; }
   .auction-copy h2 { font-size: clamp(62px,23vw,110px); }
 }

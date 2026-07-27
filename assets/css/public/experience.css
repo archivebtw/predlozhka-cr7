@@ -35,7 +35,7 @@ body.has-scrolled .nav { min-height: 68px; }
 .hero-cta,.channel-cta { min-height: 54px; border-radius: 11px 11px 11px 3px; }
 .hero-cta { padding-inline: 24px; box-shadow: 0 15px 36px rgba(120,13,8,.28),inset 0 1px rgba(255,255,255,.12); }
 .channel-cta { padding-inline: 20px; }
-.hero-note { width: auto; margin-top: 0; }
+.hero-note { width: auto; margin: 0 0 0 4px; }
 .hero-stats { gap: 8px; margin-top: 22px; }
 .stat-chip { min-width: 0 !important; flex: 1 1 0; padding: 15px 16px; border-radius: 13px 13px 13px 4px; background: linear-gradient(145deg,rgba(30,8,7,.7),rgba(9,3,3,.64)) !important; }
 .stat-chip strong { font-size: 22px; }
@@ -97,6 +97,7 @@ footer { padding: 0 !important; background: linear-gradient(180deg,rgba(10,3,3,.
   .hero-copy { font-size: 15px; }
   .hero-actions { align-items: stretch; }
   .hero-cta,.channel-cta { justify-content: center; width: 100%; }
+  .suggestion-cta { justify-content: center; width: 100%; }
   .hero-note { text-align: center; }
   .hero-stats { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); width: 100%; }
   .stat-chip { padding: 12px 8px; }
