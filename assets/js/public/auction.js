@@ -11,6 +11,8 @@
   const spinButton = byId('auctionSpin');
   const result = byId('auctionResult');
   const manageTab = byId('auctionManageTab');
+  const settingsTab = byId('auctionSettingsTab');
+  const workspace = byId('auctionWorkspace');
   const form = byId('auctionForm');
   const timerDisplay = byId('auctionTimer');
   if (!panel || !openButton || !closeButton || !list || !manageList || !wheel || !form || !timerDisplay) return;
@@ -23,6 +25,41 @@
   let items = [],client = null,isAdmin = false,schemaReady = true,spinning = false,rotation = 0,editingId = null,lastFocusedElement = null;
   let timer = { remaining: 0,running: false,endsAt: null };
   let historyEntries = [];
+  const settingsKey = 'predlozhka141-auction-settings';
+  const settingFields = {
+    initialMinutes: byId('auctionInitialMinutes'),addTimeOnLot: byId('auctionAddTimeOnLot'),lotBonus: byId('auctionLotBonus'),
+    addTimeOnFunds: byId('auctionAddTimeOnFunds'),fundsBonus: byId('auctionFundsBonus'),showTotal: byId('auctionShowTotal'),
+    showChances: byId('auctionShowChances'),showAmounts: byId('auctionShowAmounts'),compactRows: byId('auctionCompactRows'),calmMotion: byId('auctionCalmMotion')
+  };
+
+  function readSettings() {
+    return {
+      initialMinutes: Math.max(1,Number(settingFields.initialMinutes.value)||10),
+      addTimeOnLot: settingFields.addTimeOnLot.checked,lotBonus: Math.max(1,Number(settingFields.lotBonus.value)||60),
+      addTimeOnFunds: settingFields.addTimeOnFunds.checked,fundsBonus: Math.max(1,Number(settingFields.fundsBonus.value)||30),
+      showTotal: settingFields.showTotal.checked,showChances: settingFields.showChances.checked,showAmounts: settingFields.showAmounts.checked,
+      compactRows: settingFields.compactRows.checked,calmMotion: settingFields.calmMotion.checked
+    };
+  }
+
+  function applySettings(save = true) {
+    const settings=readSettings();
+    workspace.classList.toggle('is-total-hidden',!settings.showTotal);
+    workspace.classList.toggle('is-chance-hidden',!settings.showChances);
+    workspace.classList.toggle('is-amount-hidden',!settings.showAmounts);
+    workspace.classList.toggle('is-compact-list',settings.compactRows);
+    workspace.classList.toggle('is-calm-motion',settings.calmMotion);
+    if(save)try{localStorage.setItem(settingsKey,JSON.stringify(settings));}catch{}
+  }
+
+  function loadSettings() {
+    let saved={};try{saved=JSON.parse(localStorage.getItem(settingsKey)||'{}')||{};}catch{}
+    Object.entries(settingFields).forEach(([key,field])=>{
+      if(!(key in saved))return;
+      if(field.type==='checkbox')field.checked=Boolean(saved[key]);else field.value=saved[key];
+    });
+    applySettings(false);
+  }
 
   const money = value => `${new Intl.NumberFormat('ru-RU').format(Number(value) || 0)} ₽`;
   const percent = value => `${new Intl.NumberFormat('ru-RU',{ maximumFractionDigits: 1 }).format(value)}%`;
@@ -118,6 +155,8 @@
     const { data,error } = await client.rpc('is_site_admin');
     isAdmin = !error && data === true;
     manageTab.hidden = !isAdmin;
+    settingsTab.hidden = !isAdmin;
+    document.querySelectorAll('[data-auction-shortcut]').forEach(button=>{button.hidden=!isAdmin&&button.dataset.auctionShortcut!=='wheel';});
     byId('auctionSettingsToggle').disabled = !isAdmin;
     byId('auctionSpinDuration').disabled = !isAdmin;
     byId('auctionRandomDuration').disabled = !isAdmin;
@@ -164,6 +203,7 @@
       if(editingId){const {error}=await client.from('auction_items').update({title,amount}).eq('id',editingId);if(error){result.textContent=error.message;return;}recordHistory(`Изменён лот «${title}»`,async()=>{await client.from('auction_items').update({title:previous.title,amount:previous.amount}).eq('id',previous.id);await loadItems();});}
       else {const {data,error}=await client.from('auction_items').insert({title,amount,display_order:items.length}).select('id').single();if(error){result.textContent=error.message;return;}recordHistory(`Создан лот «${title}»`,async()=>{await client.from('auction_items').delete().eq('id',data.id);await loadItems();});}
     }
+    if(!editingId&&readSettings().addTimeOnLot)adjustTimer(readSettings().lotBonus);
     editingId=null;form.reset();form.hidden=true;byId('auctionAdminToggle').textContent='＋';if(schemaReady)await loadItems();else render();
   }
 
@@ -189,16 +229,17 @@
     if(!isAdmin)return;const row=target.closest('[data-auction-id]'),id=row?.dataset.auctionId,item=items.find(entry=>String(entry.id)===String(id)),amount=Number(row?.querySelector('.auction-funds input')?.value);if(!item||!Number.isFinite(amount)||amount<=0)return;
     const previousAmount=Number(item.amount),nextAmount=previousAmount+amount,label=`«${item.title}»: +${money(amount)}`;
     if(!schemaReady){item.amount=nextAmount;recordHistory(label,async()=>{item.amount=previousAmount;render();});render();}else{const {error}=await client.from('auction_items').update({amount:nextAmount}).eq('id',id);if(error){result.textContent=error.message;return;}recordHistory(label,async()=>{await client.from('auction_items').update({amount:previousAmount}).eq('id',id);await loadItems();});await loadItems();}
+    if(readSettings().addTimeOnFunds)adjustTimer(readSettings().fundsBonus);
   }
 
   function remainingSeconds() { return timer.running && timer.endsAt ? Math.max(0,Math.ceil((timer.endsAt-Date.now())/1000)) : Math.max(0,timer.remaining); }
   function drawTimer() { const seconds=remainingSeconds(),h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;timerDisplay.textContent=[h,m,s].map(x=>String(x).padStart(2,'0')).join(':');if(!seconds&&timer.running){timer.running=false;timer.endsAt=null;byId('auctionTimerToggle').textContent='▶';} }
   function adjustTimer(delta) { const next=Math.max(0,remainingSeconds()+delta);timer.remaining=next;if(timer.running)timer.endsAt=Date.now()+next*1000;drawTimer(); }
-  function toggleTimer(){if(timer.running){timer.remaining=remainingSeconds();timer.running=false;timer.endsAt=null;byId('auctionTimerToggle').textContent='▶';}else{if(!timer.remaining)timer.remaining=3600;timer.running=true;timer.endsAt=Date.now()+timer.remaining*1000;byId('auctionTimerToggle').textContent='Ⅱ';}drawTimer();}
-  function resetTimer(){timer={remaining:0,running:false,endsAt:null};byId('auctionTimerToggle').textContent='▶';drawTimer();}
+  function toggleTimer(){if(timer.running){timer.remaining=remainingSeconds();timer.running=false;timer.endsAt=null;byId('auctionTimerToggle').textContent='▶';}else{if(!timer.remaining)timer.remaining=readSettings().initialMinutes*60;timer.running=true;timer.endsAt=Date.now()+timer.remaining*1000;byId('auctionTimerToggle').textContent='Ⅱ';}drawTimer();}
+  function resetTimer(){timer={remaining:readSettings().initialMinutes*60,running:false,endsAt:null};byId('auctionTimerToggle').textContent='▶';drawTimer();}
   function timerStep(){return Math.max(1,Number(byId('auctionTimerStep').value)||1)*Number(byId('auctionTimerUnit').value||1);}
 
-  function switchTab(button){document.querySelectorAll('[data-auction-tab]').forEach(x=>x.classList.toggle('active',x===button));document.querySelectorAll('[data-auction-panel]').forEach(x=>{const active=x.dataset.auctionPanel===button.dataset.auctionTab;x.hidden=!active;x.classList.toggle('active',active);});}
+  function switchTab(button){const target=button.dataset.auctionTab||button.dataset.auctionShortcut;document.querySelectorAll('[data-auction-tab]').forEach(x=>x.classList.toggle('active',x.dataset.auctionTab===target));document.querySelectorAll('[data-auction-shortcut]').forEach(x=>x.classList.toggle('active',x.dataset.auctionShortcut===target));document.querySelectorAll('[data-auction-panel]').forEach(x=>{const active=x.dataset.auctionPanel===target;x.hidden=!active;x.classList.toggle('active',active);});}
   function openAuction(){lastFocusedElement=document.activeElement;panel.hidden=false;panel.setAttribute('aria-hidden','false');openButton.setAttribute('aria-expanded','true');document.body.classList.add('auction-open');loadItems();requestAnimationFrame(()=>{panel.classList.add('is-open');closeButton.focus();});}
   function closeAuction(){panel.classList.remove('is-open');panel.setAttribute('aria-hidden','true');openButton.setAttribute('aria-expanded','false');document.body.classList.remove('auction-open');window.setTimeout(()=>{panel.hidden=true;lastFocusedElement?.focus();},450);}
 
@@ -207,13 +248,15 @@
   list.addEventListener('mouseover',event=>{const row=event.target.closest('[data-auction-id]');if(row)highlightItem(row.dataset.auctionId);});list.addEventListener('mouseout',()=>highlightItem());
   wheel.addEventListener('mousemove',event=>highlightItem(itemAtWheelPoint(event)?.id||''));wheel.addEventListener('mouseleave',()=>highlightItem());
   document.querySelectorAll('[data-auction-tab]').forEach(button=>button.addEventListener('click',()=>switchTab(button)));
+  document.querySelectorAll('[data-auction-shortcut]').forEach(button=>button.addEventListener('click',()=>switchTab(button)));
   byId('auctionHideEliminated').addEventListener('change',render);byId('auctionAdminToggle').addEventListener('click',()=>{form.hidden=!form.hidden;if(form.hidden){editingId=null;form.reset();}});
   document.querySelectorAll('[name="auctionMode"]').forEach(input=>input.addEventListener('change',render));
   byId('auctionSettingsToggle').addEventListener('click',()=>{byId('auctionSettings').hidden=!byId('auctionSettings').hidden;});byId('auctionRandomDuration').addEventListener('change',()=>{byId('auctionRandomRange').hidden=!byId('auctionRandomDuration').checked;});
   byId('auctionTimerToggle').addEventListener('click',toggleTimer);byId('auctionTimerReset').addEventListener('click',resetTimer);
   byId('auctionTimerAdd').addEventListener('click',()=>adjustTimer(timerStep()));byId('auctionTimerSubtract').addEventListener('click',()=>adjustTimer(-timerStep()));
   byId('auctionHistoryClear').addEventListener('click',()=>{historyEntries=[];renderHistory();});
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden)closeAuction();});window.setInterval(drawTimer,250);drawTimer();renderHistory();
+  Object.values(settingFields).forEach(field=>field.addEventListener('change',()=>applySettings()));
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden)closeAuction();});window.setInterval(drawTimer,250);loadSettings();resetTimer();renderHistory();
 })();
 
 (() => {
