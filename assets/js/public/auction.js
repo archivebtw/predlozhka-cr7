@@ -1,204 +1,169 @@
 (() => {
-  const panel = document.getElementById('auctionPanel');
-  const openButton = document.getElementById('auctionOpen');
-  const closeButton = document.getElementById('auctionClose');
-  const list = document.getElementById('auctionList');
-  const total = document.getElementById('auctionTotal');
-  const count = document.getElementById('auctionCount');
-  const wheel = document.getElementById('auctionWheel');
-  const spinButton = document.getElementById('auctionSpin');
-  const result = document.getElementById('auctionResult');
-  const admin = document.getElementById('auctionAdmin');
-  const adminToggle = document.getElementById('auctionAdminToggle');
-  const form = document.getElementById('auctionForm');
-  if (!panel || !openButton || !closeButton || !list || !total || !count || !wheel || !spinButton || !result || !admin || !adminToggle || !form) return;
+  const byId = id => document.getElementById(id);
+  const panel = byId('auctionPanel');
+  const openButton = byId('auctionOpen');
+  const closeButton = byId('auctionClose');
+  const list = byId('auctionList');
+  const manageList = byId('auctionManageList');
+  const total = byId('auctionTotal');
+  const count = byId('auctionCount');
+  const wheel = byId('auctionWheel');
+  const spinButton = byId('auctionSpin');
+  const result = byId('auctionResult');
+  const manageTab = byId('auctionManageTab');
+  const form = byId('auctionForm');
+  const timerDisplay = byId('auctionTimer');
+  if (!panel || !openButton || !closeButton || !list || !manageList || !wheel || !form || !timerDisplay) return;
 
   const colors = ['#e33b28','#8f170f','#f06b45','#5f0d09','#c9291c','#ff8965','#78120c','#b51f15'];
   const fallbackItems = [
-    { id: 'preview-1', title: 'Пример большого лота', description: 'Демонстрационный пункт', amount: 10000 },
-    { id: 'preview-2', title: 'Пример малого лота', description: 'Демонстрационный пункт', amount: 1000 }
+    { id: 'preview-1',title: 'Пример большого лота',description: 'Демонстрационный участник',amount: 10000,eliminated: false },
+    { id: 'preview-2',title: 'Пример малого лота',description: 'Демонстрационный участник',amount: 1000,eliminated: false }
   ];
-  let items = [];
-  let client = null;
-  let schemaReady = true;
-  let spinning = false;
-  let rotation = 0;
-  let lastFocusedElement = null;
-  let editingId = null;
+  let items = [],client = null,isAdmin = false,schemaReady = true,spinning = false,rotation = 0,editingId = null,lastFocusedElement = null;
+  let timer = { remaining: 0,running: false,endsAt: null };
 
   const money = value => `${new Intl.NumberFormat('ru-RU').format(Number(value) || 0)} ₽`;
   const percent = value => `${new Intl.NumberFormat('ru-RU',{ maximumFractionDigits: 1 }).format(value)}%`;
-  const getTotal = () => items.reduce((sum,item) => sum + Math.max(0,Number(item.amount) || 0),0);
+  const activeItems = () => items.filter(item => !item.eliminated && Number(item.amount) > 0);
+  const activeTotal = () => activeItems().reduce((sum,item) => sum + Number(item.amount),0);
 
   function createClient() {
     const config = window.CR7_CONFIG || {};
     if (!window.supabase?.createClient || !String(config.supabaseUrl || '').startsWith('https://')) return null;
-    return window.supabase.createClient(config.supabaseUrl,config.supabasePublishableKey,{ auth: { persistSession: true,autoRefreshToken: true,detectSessionInUrl: false } });
+    return window.supabase.createClient(config.supabaseUrl,config.supabasePublishableKey,{ auth:{ persistSession:true,autoRefreshToken:true,detectSessionInUrl:false } });
   }
 
-  function wheelGradient(totalAmount) {
-    if (!totalAmount) return 'conic-gradient(#35100d 0 100%)';
+  function wheelGradient(highlightId = '') {
+    const active = activeItems(),sum = activeTotal();
+    if (!sum) return 'conic-gradient(#35100d 0 100%)';
     let cursor = 0;
-    const stops = items.map((item,index) => {
-      const start = cursor;
-      cursor += Math.max(0,Number(item.amount) || 0) / totalAmount * 100;
-      return `${colors[index % colors.length]} ${start}% ${cursor}%`;
-    });
-    return `conic-gradient(from -90deg,${stops.join(',')})`;
+    return `conic-gradient(from -90deg,${active.map((item,index) => {
+      const start = cursor; cursor += Number(item.amount) / sum * 100;
+      const color = highlightId && String(item.id) !== String(highlightId) ? '#3b3332' : colors[items.indexOf(item) % colors.length];
+      return `${color} ${start}% ${cursor}%`;
+    }).join(',')})`;
   }
 
   function render() {
-    const totalAmount = getTotal();
-    total.textContent = money(totalAmount);
-    count.textContent = String(items.length);
-    spinButton.disabled = !totalAmount || spinning;
-    wheel.style.background = wheelGradient(totalAmount);
-    if (!items.length) {
-      list.innerHTML = '<div class="auction-empty"><strong>Активных лотов пока нет</strong><span>Администратор добавит их перед началом аукциона.</span></div>';
-      return;
-    }
-    list.innerHTML = items.map((item,index) => {
-      const chance = totalAmount ? Math.max(0,Number(item.amount) || 0) / totalAmount * 100 : 0;
-      return `<article class="auction-item" data-auction-id="${escapeHtml(item.id)}">
+    const active = activeItems(),sum = activeTotal(),hideEliminated = byId('auctionHideEliminated').checked;
+    total.textContent = money(sum); count.textContent = String(active.length);
+    spinButton.disabled = !isAdmin || !sum || spinning;
+    wheel.style.background = wheelGradient();
+    const visible = items.filter(item => !hideEliminated || !item.eliminated);
+    list.innerHTML = visible.length ? visible.map((item,index) => {
+      const chance = !item.eliminated && sum ? Number(item.amount) / sum * 100 : 0;
+      return `<article class="auction-item${item.eliminated ? ' is-eliminated' : ''}" data-auction-id="${escapeHtml(item.id)}">
         <span class="auction-color" style="--lot-color:${colors[index % colors.length]}">${String(index + 1).padStart(2,'0')}</span>
         <div class="auction-item-copy"><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description || 'Без описания')}</p></div>
         <div class="auction-item-amount"><span>Собрано</span><strong>${money(item.amount)}</strong></div>
-        <div class="auction-item-chance"><span>Шанс</span><strong>${percent(chance)}</strong></div>
-        ${admin.hidden ? '' : '<div class="auction-item-actions"><button class="auction-edit" type="button">Изменить</button><button class="auction-delete" type="button" aria-label="Удалить лот">×</button></div>'}
+        <div class="auction-item-chance"><span>${item.eliminated ? 'Статус' : 'Шанс'}</span><strong>${item.eliminated ? 'Выбыл' : percent(chance)}</strong></div>
       </article>`;
-    }).join('');
+    }).join('') : '<div class="auction-empty"><strong>Участников пока нет</strong><span>Администратор добавит лоты перед аукционом.</span></div>';
+    manageList.innerHTML = items.map(item => `<article class="auction-manage-item" data-auction-id="${escapeHtml(item.id)}"><div><strong>${escapeHtml(item.title)}</strong><span>${money(item.amount)} · ${item.eliminated ? 'выбыл' : 'участвует'}</span></div><button class="auction-eliminate" type="button">${item.eliminated ? 'Вернуть' : 'Исключить'}</button><button class="auction-edit" type="button">Изменить</button><button class="auction-delete" type="button">Удалить</button></article>`).join('');
   }
 
   async function loadItems() {
     client ||= createClient();
-    if (!client) { schemaReady = false; items = fallbackItems; render(); return; }
-    const { data,error } = await client.from('auction_items').select('id,title,description,amount,display_order').eq('active',true).order('display_order').order('created_at');
-    if (error) {
-      schemaReady = false;
-      items = fallbackItems;
-      result.textContent = 'Показываем демонстрацию · база аукциона ещё не подключена';
-    } else items = data || [];
-    render();
-    await checkAdmin();
+    if (!client) { schemaReady=false;items=fallbackItems;render();return; }
+    const { data,error } = await client.from('auction_items').select('id,title,description,amount,display_order,eliminated').eq('active',true).order('display_order').order('created_at');
+    if (error) { schemaReady=false;items=fallbackItems;result.textContent='Демонстрация · примените миграцию аукциона'; }
+    else { schemaReady=true;items=data || []; }
+    await checkAdmin(); render();
   }
 
   async function checkAdmin() {
     if (!client || !schemaReady) return;
-    const { data: sessionData } = await client.auth.getSession();
+    const { data:sessionData } = await client.auth.getSession();
     if (!sessionData?.session?.user) return;
     const { data,error } = await client.rpc('is_site_admin');
-    if (!error && data === true) { admin.hidden = false; render(); }
+    isAdmin = !error && data === true;
+    manageTab.hidden = !isAdmin;
+    byId('auctionSpinDuration').disabled = !isAdmin;
+    byId('auctionRandomDuration').disabled = !isAdmin;
   }
 
   function pickWinner() {
-    const totalAmount = getTotal();
-    let target = Math.random() * totalAmount;
-    let start = 0;
-    for (const item of items) {
-      const weight = Math.max(0,Number(item.amount) || 0);
-      if (target < weight) return { item,start,weight,totalAmount };
-      target -= weight;
-      start += weight;
-    }
+    const active=activeItems(),sum=activeTotal(); let target=Math.random()*sum,start=0;
+    for (const item of active) { const weight=Number(item.amount); if (target < weight) return { item,start,weight,sum }; target-=weight;start+=weight; }
     return null;
   }
 
-  function spin() {
-    if (spinning) return;
-    const winner = pickWinner();
-    if (!winner) return;
-    spinning = true;
-    spinButton.disabled = true;
-    result.textContent = 'Колесо вращается…';
-    const middle = (winner.start + winner.weight / 2) / winner.totalAmount * 360;
-    rotation += 1800 + (360 - middle) - (rotation % 360);
-    wheel.style.transform = `rotate(${rotation}deg)`;
-    window.setTimeout(() => {
-      spinning = false;
-      spinButton.disabled = false;
-      result.innerHTML = `Выпал лот: <strong>${escapeHtml(winner.item.title)}</strong>`;
-    },4300);
+  async function spin() {
+    if (spinning || !isAdmin) return;
+    const winner=pickWinner(); if (!winner) return;
+    spinning=true;spinButton.disabled=true;result.textContent='Колесо вращается…';
+    const base=Math.max(3,Math.min(60,Number(byId('auctionSpinDuration').value)||8));
+    const duration=byId('auctionRandomDuration').checked ? base*(.65+Math.random()*.7) : base;
+    wheel.style.transitionDuration=`${duration}s`;
+    const middle=(winner.start+winner.weight/2)/winner.sum*360;
+    rotation += 1800+(360-middle)-(rotation%360); wheel.style.transform=`rotate(${rotation}deg)`;
+    window.setTimeout(async()=>{ spinning=false;result.innerHTML=`Выпал лот: <strong>${escapeHtml(winner.item.title)}</strong>`;await client.from('auction_items').update({ eliminated:true }).eq('id',winner.item.id);await loadItems(); },duration*1000+100);
   }
 
-  async function addItem(event) {
-    event.preventDefault();
-    if (!client || admin.hidden || !schemaReady) return;
-    const title = document.getElementById('auctionItemTitle').value.trim();
-    const description = document.getElementById('auctionItemDescription').value.trim();
-    const amount = Number(document.getElementById('auctionItemAmount').value);
-    if (!title || !Number.isFinite(amount) || amount < 0) return;
-    const payload = { title,description,amount,display_order: items.length };
-    const query = editingId
-      ? client.from('auction_items').update({ title,description,amount }).eq('id',editingId)
-      : client.from('auction_items').insert(payload);
-    const { error } = await query;
-    if (error) { result.textContent = `Не удалось сохранить лот: ${error.message}`; return; }
-    form.reset();
-    editingId = null;
-    adminToggle.textContent = 'Добавить лот';
-    form.hidden = true;
+  async function saveItem(event) {
+    event.preventDefault(); if (!isAdmin || !schemaReady) return;
+    const title=byId('auctionItemTitle').value.trim(),description=byId('auctionItemDescription').value.trim(),amount=Number(byId('auctionItemAmount').value);
+    if (!title || !Number.isFinite(amount) || amount<0) return;
+    const query=editingId ? client.from('auction_items').update({title,description,amount}).eq('id',editingId) : client.from('auction_items').insert({title,description,amount,display_order:items.length});
+    const { error }=await query; if(error){result.textContent=error.message;return;}
+    editingId=null;form.reset();form.hidden=true;byId('auctionAdminToggle').textContent='Добавить лот';await loadItems();
+  }
+
+  function editItem(id) {
+    const item=items.find(entry=>String(entry.id)===String(id));if(!item)return;
+    editingId=item.id;byId('auctionItemTitle').value=item.title;byId('auctionItemDescription').value=item.description||'';byId('auctionItemAmount').value=Number(item.amount)||0;form.hidden=false;byId('auctionAdminToggle').textContent='Отменить';
+  }
+
+  async function mutateItem(target,action) {
+    if(!isAdmin)return;const row=target.closest('[data-auction-id]'),id=row?.dataset.auctionId,item=items.find(entry=>String(entry.id)===String(id));if(!item)return;
+    if(action==='delete') await client.from('auction_items').delete().eq('id',id);
+    if(action==='eliminate') await client.from('auction_items').update({eliminated:!item.eliminated}).eq('id',id);
     await loadItems();
   }
 
-  async function deleteItem(button) {
-    if (!client || admin.hidden || !schemaReady) return;
-    const id = button.closest('[data-auction-id]')?.dataset.auctionId;
-    if (!id) return;
-    const { error } = await client.from('auction_items').delete().eq('id',id);
-    if (error) { result.textContent = `Не удалось удалить лот: ${error.message}`; return; }
-    await loadItems();
-  }
+  function remainingSeconds() { return timer.running && timer.endsAt ? Math.max(0,Math.ceil((timer.endsAt-Date.now())/1000)) : Math.max(0,timer.remaining); }
+  function drawTimer() { const seconds=remainingSeconds(),h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;timerDisplay.textContent=[h,m,s].map(x=>String(x).padStart(2,'0')).join(':');if(!seconds&&timer.running){timer.running=false;timer.endsAt=null;byId('auctionTimerToggle').textContent='Запустить';} }
+  function adjustTimer(delta) { const next=Math.max(0,remainingSeconds()+delta);timer.remaining=next;if(timer.running)timer.endsAt=Date.now()+next*1000;drawTimer(); }
+  function toggleTimer(){if(timer.running){timer.remaining=remainingSeconds();timer.running=false;timer.endsAt=null;byId('auctionTimerToggle').textContent='Возобновить';}else{if(!timer.remaining)timer.remaining=3600;timer.running=true;timer.endsAt=Date.now()+timer.remaining*1000;byId('auctionTimerToggle').textContent='Пауза';}drawTimer();}
 
-  function editItem(button) {
-    if (admin.hidden) return;
-    const id = button.closest('[data-auction-id]')?.dataset.auctionId;
-    const item = items.find(entry => String(entry.id) === String(id));
-    if (!item) return;
-    editingId = item.id;
-    document.getElementById('auctionItemTitle').value = item.title || '';
-    document.getElementById('auctionItemDescription').value = item.description || '';
-    document.getElementById('auctionItemAmount').value = Number(item.amount) || 0;
-    form.hidden = false;
-    adminToggle.textContent = 'Отменить';
-    form.querySelector('input')?.focus();
-  }
+  function switchTab(button){document.querySelectorAll('[data-auction-tab]').forEach(x=>x.classList.toggle('active',x===button));document.querySelectorAll('[data-auction-panel]').forEach(x=>{const active=x.dataset.auctionPanel===button.dataset.auctionTab;x.hidden=!active;x.classList.toggle('active',active);});}
+  function openAuction(){lastFocusedElement=document.activeElement;panel.hidden=false;panel.setAttribute('aria-hidden','false');openButton.setAttribute('aria-expanded','true');document.body.classList.add('auction-open');loadItems();requestAnimationFrame(()=>{panel.classList.add('is-open');closeButton.focus();});}
+  function closeAuction(){panel.classList.remove('is-open');panel.setAttribute('aria-hidden','true');openButton.setAttribute('aria-expanded','false');document.body.classList.remove('auction-open');window.setTimeout(()=>{panel.hidden=true;lastFocusedElement?.focus();},450);}
 
-  function openAuction() {
-    lastFocusedElement = document.activeElement;
+  openButton.addEventListener('click',openAuction);closeButton.addEventListener('click',closeAuction);spinButton.addEventListener('click',spin);form.addEventListener('submit',saveItem);
+  panel.addEventListener('click',event=>{if(event.target.matches('[data-auction-close]'))closeAuction();const row=event.target.closest('[data-auction-id]');if(event.target.closest('.auction-edit'))editItem(row?.dataset.auctionId);if(event.target.closest('.auction-delete'))mutateItem(event.target,'delete');if(event.target.closest('.auction-eliminate'))mutateItem(event.target,'eliminate');});
+  list.addEventListener('mouseover',event=>{const row=event.target.closest('[data-auction-id]');if(row)wheel.style.background=wheelGradient(row.dataset.auctionId);});list.addEventListener('mouseout',()=>wheel.style.background=wheelGradient());
+  document.querySelectorAll('[data-auction-tab]').forEach(button=>button.addEventListener('click',()=>switchTab(button)));
+  byId('auctionHideEliminated').addEventListener('change',render);byId('auctionAdminToggle').addEventListener('click',()=>{form.hidden=!form.hidden;if(form.hidden){editingId=null;form.reset();}});
+  byId('auctionTimerToggle').addEventListener('click',toggleTimer);document.querySelectorAll('[data-timer-adjust]').forEach(button=>button.addEventListener('click',()=>adjustTimer(Number(button.dataset.timerAdjust))));
+  byId('auctionTimerAdd').addEventListener('click',()=>adjustTimer(Math.max(1,Number(byId('auctionTimerStep').value)||1)));byId('auctionTimerSubtract').addEventListener('click',()=>adjustTimer(-Math.max(1,Number(byId('auctionTimerStep').value)||1)));
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden)closeAuction();});window.setInterval(drawTimer,250);drawTimer();
+})();
+
+(() => {
+  const panel = document.getElementById('featurePanel');
+  const buttons = [...document.querySelectorAll('.coming-soon-trigger')];
+  const closeButton = document.getElementById('featureClose');
+  const kicker = document.getElementById('featureKicker');
+  const title = document.getElementById('featureTitle');
+  const description = document.getElementById('featureDescription');
+  if (!panel || !buttons.length || !closeButton || !kicker || !title || !description) return;
+  let activeButton = null;
+  function close() { panel.hidden = true; panel.setAttribute('aria-hidden','true'); activeButton?.setAttribute('aria-expanded','false'); activeButton?.focus(); activeButton = null; }
+  buttons.forEach(button => button.addEventListener('click',() => {
+    activeButton = button;
+    kicker.textContent = button.dataset.comingKicker || 'Новый раздел';
+    title.textContent = button.dataset.comingTitle || 'Скоро';
+    description.textContent = button.dataset.comingDescription || 'Функция находится в разработке.';
     panel.hidden = false;
     panel.setAttribute('aria-hidden','false');
-    openButton.setAttribute('aria-expanded','true');
-    document.body.classList.add('auction-open');
-    loadItems();
-    requestAnimationFrame(() => { panel.classList.add('is-open'); closeButton.focus(); });
-  }
-
-  function closeAuction() {
-    panel.classList.remove('is-open');
-    panel.setAttribute('aria-hidden','true');
-    openButton.setAttribute('aria-expanded','false');
-    document.body.classList.remove('auction-open');
-    window.setTimeout(() => { panel.hidden = true; lastFocusedElement?.focus(); },550);
-  }
-
-  openButton.addEventListener('click',openAuction);
-  closeButton.addEventListener('click',closeAuction);
-  panel.addEventListener('click',event => {
-    if (event.target.matches('[data-auction-close]')) closeAuction();
-    const deleteButton = event.target.closest('.auction-delete');
-    if (deleteButton) deleteItem(deleteButton);
-    const editButton = event.target.closest('.auction-edit');
-    if (editButton) editItem(editButton);
-  });
-  spinButton.addEventListener('click',spin);
-  adminToggle.addEventListener('click',() => {
-    const willOpen = form.hidden;
-    form.hidden = !willOpen;
-    if (!willOpen) { editingId = null; form.reset(); adminToggle.textContent = 'Добавить лот'; }
-    else form.querySelector('input')?.focus();
-  });
-  form.addEventListener('submit',addItem);
-  document.addEventListener('keydown',event => { if (event.key === 'Escape' && !panel.hidden) closeAuction(); });
+    button.setAttribute('aria-expanded','true');
+    closeButton.focus();
+  }));
+  closeButton.addEventListener('click',close);
+  panel.addEventListener('click',event => { if (event.target.matches('[data-feature-close]')) close(); });
+  document.addEventListener('keydown',event => { if (event.key === 'Escape' && !panel.hidden) close(); });
 })();
 
 (() => {

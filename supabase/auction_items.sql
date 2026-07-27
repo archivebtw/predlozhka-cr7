@@ -20,3 +20,5 @@ create policy "auction items are public" on public.auction_items for select to a
 
 drop policy if exists "admins manage auction items" on public.auction_items;
 create policy "admins manage auction items" on public.auction_items for all to authenticated using (public.is_site_admin()) with check (public.is_site_admin());
+
+alter table public.auction_items add column if not exists eliminated boolean not null default false;
