@@ -84,11 +84,11 @@
     const { data,error } = await client.rpc('is_site_admin');
     isAdmin = !error && data === true;
     manageTab.hidden = !isAdmin;
+    byId('auctionSettingsToggle').disabled = !isAdmin;
     byId('auctionSpinDuration').disabled = !isAdmin;
     byId('auctionRandomDuration').disabled = !isAdmin;
     document.querySelectorAll('[name="auctionMode"]').forEach(input=>{input.disabled=!isAdmin;});
     byId('auctionSetupNotice').hidden = schemaReady || !isAdmin;
-    if (isAdmin) switchTab(manageTab);
   }
 
   function pickWinner() {
@@ -159,6 +159,7 @@
   document.querySelectorAll('[data-auction-tab]').forEach(button=>button.addEventListener('click',()=>switchTab(button)));
   byId('auctionHideEliminated').addEventListener('change',render);byId('auctionAdminToggle').addEventListener('click',()=>{form.hidden=!form.hidden;if(form.hidden){editingId=null;form.reset();}});
   document.querySelectorAll('[name="auctionMode"]').forEach(input=>input.addEventListener('change',render));
+  byId('auctionSettingsToggle').addEventListener('click',()=>{byId('auctionSettings').hidden=!byId('auctionSettings').hidden;});
   byId('auctionTimerToggle').addEventListener('click',toggleTimer);byId('auctionTimerReset').addEventListener('click',resetTimer);
   byId('auctionTimerAdd').addEventListener('click',()=>adjustTimer(timerStep()));byId('auctionTimerSubtract').addEventListener('click',()=>adjustTimer(-timerStep()));
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden)closeAuction();});window.setInterval(drawTimer,250);drawTimer();
