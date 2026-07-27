@@ -3,7 +3,7 @@
     const elements = {
       grid: document.getElementById('gameGrid'),
       search: document.getElementById('searchInput'),
-      sort: document.getElementById('catalogSort'),
+      sort: document.getElementById('publicCatalogSort'),
       subtitle: document.getElementById('catalogSubtitle'),
       statusDot: document.getElementById('statusDot'),
       statusText: document.getElementById('statusText'),

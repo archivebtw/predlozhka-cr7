@@ -137,7 +137,7 @@
 <button class="filter-btn" data-filter="completed" type="button">Пройденные</button>
 <button class="filter-btn" data-filter="ignored" type="button">Неинтересно</button>
 </div>
-<label class="catalog-sort" for="catalogSort"><span>Сортировка</span><select id="catalogSort"><option value="newest">По новизне</option><option value="votes">По голосам</option></select></label>
+<label class="catalog-sort" for="publicCatalogSort"><span>Сортировка</span><select id="publicCatalogSort"><option value="newest">По новизне</option><option value="votes">По голосам</option></select></label>
 </div>
 </div>
 <div aria-live="polite" class="catalog-stream" id="gameGrid"><div class="message"><strong>Загружаем каталог</strong>Подключаемся к базе игр…</div></div>
@@ -159,8 +159,13 @@
 <div class="auction-backdrop" data-auction-close=""></div>
 <section aria-labelledby="auctionTitle" aria-modal="true" class="auction-dialog" role="dialog">
 <button aria-label="Закрыть окно" class="auction-close" id="auctionClose" type="button">×</button>
-<div aria-hidden="true" class="auction-rings"><i></i><i></i><i></i></div>
-<div class="auction-copy"><span id="auctionKicker">Новый раздел</span><h2 id="auctionTitle">СКОРО<span>...</span></h2><p id="auctionDescription">Аукцион 141 уже готовится.</p></div>
+<div class="auction-workspace" id="auctionWorkspace">
+<header class="auction-head"><div><span class="auction-eyebrow">Аукцион 141</span><h2 id="auctionTitle">Банк вариантов</h2><p>Чем больше сумма пункта, тем выше его шанс выпасть при розыгрыше.</p></div><span class="auction-dev-badge"><i aria-hidden="true"></i> В активной разработке</span></header>
+<div class="auction-summary"><div><span>Общий банк</span><strong id="auctionTotal">0 ₽</strong></div><p>Вероятности автоматически пересчитываются от внесённых сумм.</p></div>
+<div aria-live="polite" class="auction-list" id="auctionList"></div>
+<footer class="auction-footnote"><span>Черновая версия</span><p>Пункты и суммы пока добавляются вручную в конфигурации раздела.</p></footer>
+</div>
+<div class="auction-coming" hidden id="auctionComing"><div aria-hidden="true" class="auction-rings"><i></i><i></i><i></i></div><div class="auction-copy"><span id="auctionKicker">Новый раздел</span><h2 id="auctionComingTitle">СКОРО<span>...</span></h2><p id="auctionDescription">Новый раздел уже готовится.</p></div></div>
 </section>
 </div>
 <div aria-hidden="true" class="admin-portal" hidden="" id="adminPortal">
