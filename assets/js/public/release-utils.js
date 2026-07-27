@@ -138,11 +138,11 @@ function escapeHtml(value) {
         const groupRank = { upcoming: 0, unknown: 1, released: 2 };
         const rankDiff = groupRank[aMeta.group] - groupRank[bMeta.group];
         if (rankDiff) return rankDiff;
-        // Будущие релизы всегда идут от ближайшего к дальнему: голоса не должны
-        // отодвигать игру, которая выйдет раньше. Счётчик при этом остаётся виден.
+        // Будущие релизы всегда идут от ближайшего к дальнему. Если несколько игр
+        // выходят в один день, режим «По голосам» упорядочивает их внутри этой даты.
         if (aMeta.group === 'upcoming' && aMeta.timestamp !== bMeta.timestamp) return aMeta.timestamp - bMeta.timestamp;
         const sortByVotes = typeof state !== 'undefined' && state.sort === 'votes';
-        if (sortByVotes && aMeta.group !== 'upcoming') {
+        if (sortByVotes) {
           const aReputation = Number(state.reputationScores?.[String(a.id)] || 0);
           const bReputation = Number(state.reputationScores?.[String(b.id)] || 0);
           if (aReputation !== bReputation) return bReputation - aReputation;
