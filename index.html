@@ -42,10 +42,10 @@
 <div class="nav-right">
 <button aria-controls="gangPanel" aria-expanded="false" class="twitch-nav gang-trigger" id="gangOpen" type="button">141 GANG <span aria-hidden="true">↗</span></button>
 <a class="nav-link" href="#catalog">Каталог</a>
-<button aria-controls="auctionPanel" aria-expanded="false" class="nav-link videos-trigger coming-soon-trigger" data-coming-description="Здесь зрители смогут предлагать видео для будущих просмотров на стриме." data-coming-kicker="Видео от зрителей" data-coming-title="СКОРО" type="button">Видосы</button>
+<button aria-controls="featurePanel" aria-expanded="false" class="nav-link videos-trigger coming-soon-trigger" data-coming-description="Здесь зрители смогут предлагать видео для будущих просмотров на стриме." data-coming-kicker="Видео от зрителей" data-coming-title="СКОРО" type="button">Видосы</button>
 <button aria-controls="auctionPanel" aria-expanded="false" class="nav-link auction-trigger" id="auctionOpen" type="button">Аукцион</button>
 <button aria-controls="adminPortal" aria-expanded="false" class="nav-link admin-portal-trigger" id="adminPortalOpen" type="button">Управление</button>
-<button aria-controls="auctionPanel" aria-expanded="false" class="twitch-login-trigger coming-soon-trigger" data-coming-description="Авторизация через Twitch появится в одном из следующих обновлений." data-coming-kicker="Личный профиль" data-coming-title="СКОРО" type="button"><img alt="" aria-hidden="true" src="./assets/images/twitch-logo.webp"/> Войти через Twitch</button>
+<button aria-controls="featurePanel" aria-expanded="false" class="twitch-login-trigger coming-soon-trigger" data-coming-description="Авторизация через Twitch появится в одном из следующих обновлений." data-coming-kicker="Личный профиль" data-coming-title="СКОРО" type="button"><img alt="" aria-hidden="true" src="./assets/images/twitch-logo.webp"/> Войти через Twitch</button>
 <div class="status connection-status" hidden="" title="Подключение к каталогу">
 <span class="status-dot" id="statusDot"></span>
 <span id="statusText">Подключение…</span>
@@ -65,8 +65,8 @@
 <div class="hero-divider"></div>
 <p class="hero-copy">Здесь собраны игры, которые могут однажды появиться на стримах Sasavot. Каталог обновляется автором проекта, а следующую историю Глеб выбирает сам.</p>
 <div class="hero-actions">
-<button aria-controls="auctionPanel" aria-expanded="false" class="suggestion-cta coming-soon-trigger" data-coming-description="Форма предложений от зрителей уже готовится." data-coming-kicker="Предложить свою игру" data-coming-title="СКОРО" type="button">ПРЕДЛОЖИТЬ ИГРУ ↗</button>
-<button aria-controls="auctionPanel" aria-expanded="false" class="suggestion-cta coming-soon-trigger" data-coming-description="Здесь зрители смогут предлагать видео для будущих просмотров на стриме." data-coming-kicker="Предложить видео" data-coming-title="СКОРО" type="button">ПРЕДЛОЖИТЬ ВИДЕО ↗</button>
+<button aria-controls="featurePanel" aria-expanded="false" class="suggestion-cta coming-soon-trigger" data-coming-description="Форма предложений от зрителей уже готовится." data-coming-kicker="Предложить свою игру" data-coming-title="СКОРО" type="button">ПРЕДЛОЖИТЬ ИГРУ ↗</button>
+<button aria-controls="featurePanel" aria-expanded="false" class="suggestion-cta coming-soon-trigger" data-coming-description="Здесь зрители смогут предлагать видео для будущих просмотров на стриме." data-coming-kicker="Предложить видео" data-coming-title="СКОРО" type="button">ПРЕДЛОЖИТЬ ВИДЕО ↗</button>
 <a class="channel-cta" href="#catalog">КАТАЛОГ ИГР ↗</a>
 <span class="hero-note">Игры для будущих стримов.</span>
 </div>
@@ -137,6 +137,7 @@
 <button class="filter-btn" data-filter="completed" type="button">Пройденные</button>
 <button class="filter-btn" data-filter="ignored" type="button">Неинтересно</button>
 </div>
+<label class="catalog-sort" for="publicCatalogSort"><span>Сортировка</span><select id="publicCatalogSort"><option value="newest">По новизне</option><option value="votes">По голосам</option></select></label>
 </div>
 </div>
 <div aria-live="polite" class="catalog-stream" id="gameGrid"><div class="message"><strong>Загружаем каталог</strong>Подключаемся к базе игр…</div></div>
@@ -158,10 +159,17 @@
 <div class="auction-backdrop" data-auction-close=""></div>
 <section aria-labelledby="auctionTitle" aria-modal="true" class="auction-dialog" role="dialog">
 <button aria-label="Закрыть окно" class="auction-close" id="auctionClose" type="button">×</button>
-<div aria-hidden="true" class="auction-rings"><i></i><i></i><i></i></div>
-<div class="auction-copy"><span id="auctionKicker">Новый раздел</span><h2 id="auctionTitle">СКОРО<span>...</span></h2><p id="auctionDescription">Аукцион 141 уже готовится.</p></div>
+<div class="auction-workspace" id="auctionWorkspace">
+<h2 class="visually-hidden" id="auctionTitle">Центр аукциона</h2><aside class="auction-sidebar"><strong>141</strong><nav aria-label="Разделы аукциона" class="auction-tabs"><button aria-label="Рулетка" class="active" data-auction-tab="wheel" type="button"><span>◉</span><b>Рулетка</b></button><button aria-label="Лоты и таймер" data-auction-tab="manage" hidden id="auctionManageTab" type="button"><span>⚙</span><b>Управление</b></button></nav><span class="auction-dev-badge"><i aria-hidden="true"></i> Разработка</span></aside>
+<main class="auction-content"><section class="auction-tab-panel active" data-auction-panel="wheel"><header class="auction-wheel-toolbar"><div><span>Общий банк</span><strong id="auctionTotal">0 ₽</strong></div><div><span>Участников</span><strong id="auctionCount">0</strong></div><label class="auction-hide"><input id="auctionHideEliminated" type="checkbox"> Скрыть выбывших</label><button class="auction-settings-toggle" disabled id="auctionSettingsToggle" type="button">⚙ Настройки рулетки</button></header><div class="auction-layout"><section class="auction-board"><div aria-live="polite" class="auction-list" id="auctionList"></div></section>
+<aside class="auction-wheel-panel"><div class="auction-pointer" aria-hidden="true"></div><div class="auction-wheel" id="auctionWheel"><div><b>141</b><span>Аукцион</span></div></div><button class="auction-spin" disabled id="auctionSpin" type="button">Прокрутить колесо</button><p aria-live="polite" class="auction-result" id="auctionResult">Колесо готово к розыгрышу</p></aside><aside class="auction-settings-popover" hidden id="auctionSettings"><h3>Настройки рулетки</h3><div class="auction-mode"><span>Режим</span><label><input checked disabled name="auctionMode" type="radio" value="winner"> Победитель</label><label><input disabled name="auctionMode" type="radio" value="elimination"> Выбывание</label></div><div class="auction-spin-settings"><label>Длительность, сек. <input disabled id="auctionSpinDuration" max="60" min="3" type="number" value="8"></label><label><input disabled id="auctionRandomDuration" type="checkbox"> Случайная длительность</label><div class="auction-random-range" hidden id="auctionRandomRange"><label>От, сек. <input disabled id="auctionSpinMin" max="60" min="3" type="number" value="5"></label><label>До, сек. <input disabled id="auctionSpinMax" max="90" min="3" type="number" value="15"></label></div></div></aside></div></section>
+<section class="auction-tab-panel" data-auction-panel="manage" hidden><div class="auction-setup-notice" hidden id="auctionSetupNotice"><strong>Демонстрационный режим</strong><span>Изменения работают до перезагрузки страницы. Для постоянного хранения примените <code>supabase/auction_items.sql</code>.</span></div><div class="auction-manage-grid"><section class="auction-admin" id="auctionAdmin"><header><div><span>Управление лотами</span><p>Добавление и изменение доступно только администратору.</p></div><button class="auction-admin-toggle" id="auctionAdminToggle" type="button">Добавить лот</button></header><form class="auction-form" hidden id="auctionForm"><input id="auctionItemTitle" maxlength="120" placeholder="Название лота" required><input id="auctionItemAmount" min="0" placeholder="Начальная сумма, ₽" required step="1" type="number"><button type="submit">Сохранить лот</button></form><div class="auction-manage-list" id="auctionManageList"></div></section>
+<aside class="auction-timer"><span>До завершения аукциона</span><strong id="auctionTimer">00:00:00</strong><div class="auction-timer-actions"><button id="auctionTimerToggle" type="button">Запустить</button><button id="auctionTimerReset" type="button">Сбросить</button></div><label>Величина изменения <span class="auction-step-field"><input id="auctionTimerStep" min="1" type="number" value="10"><select id="auctionTimerUnit"><option value="1">секунд</option><option value="60">минут</option></select></span></label><div><button id="auctionTimerSubtract" type="button">Убавить</button><button id="auctionTimerAdd" type="button">Прибавить</button></div></aside></div></section>
+<footer class="auction-footnote"><span>Вероятность</span><p>Вес участника равен сумме его лота. Выбывшие участники не попадают в следующее вращение.</p></footer>
+</main></div>
 </section>
 </div>
+<div aria-hidden="true" class="feature-panel" hidden id="featurePanel"><div class="feature-backdrop" data-feature-close=""></div><section aria-labelledby="featureTitle" aria-modal="true" class="feature-dialog" role="dialog"><button aria-label="Закрыть окно" class="feature-close" id="featureClose" type="button">×</button><span id="featureKicker">Новый раздел</span><h2 id="featureTitle">Скоро</h2><p id="featureDescription">Функция находится в разработке.</p></section></div>
 <div aria-hidden="true" class="admin-portal" hidden="" id="adminPortal">
 <div class="admin-portal-backdrop" data-admin-portal-close=""></div>
 <section aria-labelledby="adminPortalTitle" aria-modal="true" class="admin-portal-dialog" role="dialog">
