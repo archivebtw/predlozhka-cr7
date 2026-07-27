@@ -31,7 +31,7 @@ body.has-scrolled .nav { min-height: 68px; }
 .hero-link { font-size: clamp(17px,1.6vw,23px); color: #ff7865; }
 .hero-link:hover { color: #fff; }
 .hero-copy { max-width: 610px; color: #c4b5b0; font-size: clamp(15px,1.35vw,18px); line-height: 1.65; }
-.hero-actions { margin-top: 24px; gap: 10px; }
+.hero-actions { flex-wrap: wrap; margin-top: 24px; gap: 10px; }
 .hero-cta,.channel-cta { min-height: 54px; border-radius: 11px 11px 11px 3px; }
 .hero-cta { padding-inline: 24px; box-shadow: 0 15px 36px rgba(120,13,8,.28),inset 0 1px rgba(255,255,255,.12); }
 .channel-cta { padding-inline: 20px; }
