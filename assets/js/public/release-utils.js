@@ -138,12 +138,22 @@ function escapeHtml(value) {
         const groupRank = { upcoming: 0, unknown: 1, released: 2 };
         const rankDiff = groupRank[aMeta.group] - groupRank[bMeta.group];
         if (rankDiff) return rankDiff;
-        const aReputation = typeof state === 'undefined' ? 0 : Number(state.reputationScores?.[String(a.id)] || 0);
-        const bReputation = typeof state === 'undefined' ? 0 : Number(state.reputationScores?.[String(b.id)] || 0);
-        if (aReputation !== bReputation) return bReputation - aReputation;
-        if (aMeta.group === 'upcoming') return aMeta.timestamp - bMeta.timestamp;
+        // Будущие релизы всегда идут от ближайшего к дальнему: голоса не должны
+        // отодвигать игру, которая выйдет раньше. Счётчик при этом остаётся виден.
+        if (aMeta.group === 'upcoming' && aMeta.timestamp !== bMeta.timestamp) return aMeta.timestamp - bMeta.timestamp;
+        const sortByVotes = typeof state !== 'undefined' && state.sort === 'votes';
+        if (sortByVotes && aMeta.group !== 'upcoming') {
+          const aReputation = Number(state.reputationScores?.[String(a.id)] || 0);
+          const bReputation = Number(state.reputationScores?.[String(b.id)] || 0);
+          if (aReputation !== bReputation) return bReputation - aReputation;
+        }
         if (aMeta.group === 'released' && aMeta.timestamp !== bMeta.timestamp) {
           return bMeta.timestamp - aMeta.timestamp;
+        }
+        // Для игр без точной даты новизна определяется датой добавления.
+        if (aMeta.group === 'unknown') {
+          const createdDiff = new Date(b.created_at || 0) - new Date(a.created_at || 0);
+          if (createdDiff) return createdDiff;
         }
         const orderDiff = (Number(a.display_order) || 0) - (Number(b.display_order) || 0);
         if (orderDiff) return orderDiff;
