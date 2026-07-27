@@ -22,7 +22,7 @@ function escapeHtml(value) {
       const url = String(config.supabaseUrl || '');
       const key = String(config.supabasePublishableKey || '');
       const configured = url.startsWith('https://') && !url.includes('YOUR-PROJECT') && key && !key.includes('YOUR-PUBLISHABLE');
-      if (!configured) return null;
+      if (!configured || !window.supabase?.createClient) return null;
       return window.supabase.createClient(url, key, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
       });

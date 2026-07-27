@@ -18,13 +18,17 @@
       heroHighlights: document.getElementById('heroHighlights'),
       quickLatest: document.getElementById('quickLatest'),
       quickNearest: document.getElementById('quickNearest'),
-      quickCoop: document.getElementById('quickCoop'),
       modal: document.getElementById('gameModal'),
       modalClose: document.getElementById('modalClose'),
       modalMedia: document.getElementById('modalMedia'),
       modalBadges: document.getElementById('modalBadges'),
       modalTitle: document.getElementById('modalTitle'),
       modalRelease: document.getElementById('modalRelease'),
+      modalLibraryNotice: document.getElementById('modalLibraryNotice'),
+      modalLibraryActions: [...document.querySelectorAll('[data-library-action]')],
+      modalReputationScore: document.getElementById('modalReputationScore'),
+      modalReputationNotice: document.getElementById('modalReputationNotice'),
+      modalVoteActions: [...document.querySelectorAll('[data-vote]')],
       modalDescription: document.getElementById('modalDescription'),
       modalCommentSection: document.getElementById('modalCommentSection'),
       modalComment: document.getElementById('modalComment'),
@@ -33,6 +37,7 @@
       filters: [...document.querySelectorAll('[data-filter]')]
     };
 
-    const state = { games: [], query: '', filter: 'all', channel: null, activeGameId: null };
+    const state = { games: [], query: '', filter: 'all', channel: null, activeGameId: null, librarySchemaReady: true, reputationSchemaReady: true, reputationScores: {}, currentVotes: {} };
     const TWITCH_LOGO_DATA = './assets/images/bloodseeker.webp';
+    const EMPTY_AUTHOR_COMMENT = '\u2063';
     let lastFocusedElement = null;

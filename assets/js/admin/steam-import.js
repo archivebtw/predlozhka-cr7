@@ -65,6 +65,7 @@ function setImportReady(ready, focusComment = false) {
       elements.coopMinPlayers.value = data.coopMinPlayers || '';
       elements.coopMaxPlayers.value = data.coopMaxPlayers || '';
       elements.coopSource.value = data.coopSource || '';
+      updateCoopEditor();
       state.steamComingSoonFallback = Boolean(data.comingSoon);
       updateAutomaticReleaseStatus();
       setSteamPreview(data);
