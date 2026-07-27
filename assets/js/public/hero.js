@@ -37,14 +37,15 @@ function setConnection(status, text) {
         <span class="quick-arrow" aria-hidden="true">→</span>`;
     }
 
-    function renderQuickGames(newest, nearest, bestCoop) {
+    function renderQuickGames(latestReleased, nearest) {
+      const latestMeta = latestReleased ? getReleaseMeta(latestReleased) : null;
       setQuickGame(
         elements.quickLatest,
-        newest,
-        'ПОСЛЕДНЯЯ ДОБАВЛЕННАЯ',
-        newest ? `Добавлена ${formatDate(newest.created_at, { short: true })}` : '',
-        'Каталог пока пуст',
-        'Добавь первую игру через админ-панель'
+        latestReleased,
+        'ПОСЛЕДНИЙ РЕЛИЗ',
+        latestMeta ? `Вышла ${latestMeta.line}` : '',
+        'Вышедших игр пока нет',
+        'Здесь появится последний состоявшийся релиз'
       );
 
       const nearestMeta = nearest ? getReleaseMeta(nearest) : null;
@@ -57,14 +58,6 @@ function setConnection(status, text) {
         'Новая дата появится после синхронизации Steam'
       );
 
-      setQuickGame(
-        elements.quickCoop,
-        bestCoop,
-        'ЛУЧШИЙ КООП',
-        bestCoop ? (coopLabel(bestCoop) || 'Кооперативная игра') : '',
-        'Кооп пока не найден',
-        'Добавь игру с кооперативным режимом'
-      );
     }
 
     function renderHero(sortedGames) {
@@ -75,16 +68,12 @@ function setConnection(status, text) {
       });
       const nearest = upcoming[0] || null;
       const newest = [...state.games].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0] || null;
-      const bestCoop = [...state.games]
-        .filter(game => Boolean(game.is_coop))
-        .sort((a, b) => {
-          const playersDiff = (Number(b.coop_max_players) || 0) - (Number(a.coop_max_players) || 0);
-          if (playersDiff) return playersDiff;
-          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
-        })[0] || null;
+      const latestReleased = [...state.games]
+        .filter(game => getReleaseMeta(game).group === 'released' && game.release_date)
+        .sort((a, b) => new Date(b.release_date) - new Date(a.release_date))[0] || null;
       const featured = nearest || newest;
 
-      renderQuickGames(newest, nearest, bestCoop);
+      renderQuickGames(latestReleased, nearest);
       elements.totalCount.textContent = String(state.games.length);
       elements.upcomingCount.textContent = String(upcoming.length);
       elements.nearestDate.textContent = nearest ? formatDate(nearest.release_date, { short: true }) : '—';

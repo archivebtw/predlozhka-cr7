@@ -1,4 +1,4 @@
-function getConfiguredClient() {
+    function getConfiguredClient() {
       const config = window.CR7_CONFIG || {};
       const url = String(config.supabaseUrl || '');
       const key = String(config.supabasePublishableKey || '');
@@ -9,14 +9,41 @@ function getConfiguredClient() {
       });
     }
 
+    const PUBLIC_GAME_FIELDS = 'id,title,steam_url,cover_url,description,author_comment,created_at,display_order,steam_app_id,release_date,release_date_text,coming_soon,steam_synced_at,is_coop,coop_type,coop_min_players,coop_max_players,coop_source';
+
+    function isMissingLibraryColumn(error) {
+      if (!error) return false;
+      const details = `${error.code || ''} ${error.message || ''} ${error.details || ''}`;
+      return error.code === '42703'
+        || /(?:library_status|is_favorite).*(?:does not exist|schema cache)/i.test(details)
+        || /(?:does not exist|schema cache).*(?:library_status|is_favorite)/i.test(details);
+    }
+
     async function loadGames(client) {
-      const { data, error } = await client
+      let result = await client
         .from('games')
-        .select('id,title,steam_url,cover_url,description,author_comment,created_at,display_order,steam_app_id,release_date,release_date_text,coming_soon,steam_synced_at,is_coop,coop_type,coop_min_players,coop_max_players,coop_source')
+        .select(`${PUBLIC_GAME_FIELDS},library_status,is_favorite`)
         .eq('published', true);
 
-      if (error) throw error;
-      state.games = Array.isArray(data) ? data : [];
+      // Не скрываем весь каталог, если frontend опубликован раньше SQL-миграции.
+      // После выполнения game_library_status.sql следующий Realtime/reload вернёт отметки.
+      if (isMissingLibraryColumn(result.error)) {
+        state.librarySchemaReady = false;
+        console.warn('Отметки библиотеки ещё не добавлены в Supabase; загружаем каталог без них.');
+        result = await client
+          .from('games')
+          .select(PUBLIC_GAME_FIELDS)
+          .eq('published', true);
+      } else {
+        state.librarySchemaReady = true;
+      }
+
+      if (result.error) throw result.error;
+      state.games = (Array.isArray(result.data) ? result.data : []).map(game => ({
+        library_status: '',
+        is_favorite: false,
+        ...game
+      }));
       render();
     }
 
