@@ -1,0 +1,80 @@
+body.admin-portal-open { overflow: hidden; }
+.admin-portal-trigger { appearance: none; position: relative; gap: 7px; margin-left: 3px; padding: 9px 13px !important; border: 1px solid rgba(240,76,53,.13) !important; color: #bba9a4 !important; background: linear-gradient(145deg,rgba(43,10,8,.52),rgba(10,3,3,.62)) !important; box-shadow: inset 0 1px rgba(255,255,255,.025); font: inherit; font-size: 11px !important; font-weight: 850 !important; }
+.admin-portal-trigger::before { width: 6px; height: 6px; border-radius: 50%; background: #8d2720; box-shadow: 0 0 9px rgba(226,59,40,.28); content: ''; transition: background .2s ease,box-shadow .2s ease; }
+.admin-portal-trigger:hover,.admin-portal-trigger[aria-expanded="true"] { border-color: rgba(240,76,53,.4) !important; color: #fff1ec !important; background: linear-gradient(145deg,rgba(105,18,12,.34),rgba(24,5,4,.72)) !important; }
+.admin-portal-trigger:hover::before,.admin-portal-trigger[aria-expanded="true"]::before { background: #f04c35; box-shadow: 0 0 13px rgba(240,76,53,.7); }
+.admin-portal[hidden] { display: none !important; }
+.admin-portal { position: fixed; inset: 0; z-index: 1450; display: grid; justify-items: end; color: #fff4ef; }
+.admin-portal-backdrop { position: absolute; inset: 0; background: rgba(3,0,0,.82); opacity: 0; backdrop-filter: blur(12px); transition: opacity .3s ease; }
+.admin-portal-dialog { position: relative; width: min(1440px,calc(100% - 34px)); height: 100%; overflow-y: auto; border-left: 1px solid rgba(240,72,49,.25); background: radial-gradient(circle at 8% 0,rgba(151,24,16,.16),transparent 32%),linear-gradient(rgba(240,72,49,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(240,72,49,.018) 1px,transparent 1px),linear-gradient(145deg,rgba(22,5,4,.99),rgba(5,1,1,.995)); background-size: auto,64px 64px,64px 64px,auto; box-shadow: -36px 0 120px rgba(0,0,0,.72); opacity: 0; transform: translateX(48px); transition: opacity .35s ease,transform .42s var(--ease); }
+.admin-portal-dialog::before { position: fixed; inset: 0 0 auto; z-index: 40; height: 2px; background: linear-gradient(90deg,transparent,#8d0e08 28%,#ff4e36 60%,transparent); box-shadow: 0 0 18px rgba(240,68,46,.5); content: ''; pointer-events: none; }
+.admin-portal.is-open .admin-portal-backdrop { opacity: 1; }
+.admin-portal.is-open .admin-portal-dialog { opacity: 1; transform: translateX(0); }
+.admin-portal-head { position: sticky; top: 0; z-index: 30; min-height: 118px; display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 24px clamp(22px,4vw,58px); border-bottom: 1px solid rgba(240,72,49,.15); background: rgba(8,2,2,.9) !important; opacity: 1 !important; transform: none !important; backdrop-filter: blur(20px); }
+.admin-portal-head > div > span { color: #e86f5c; font-size: 8px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+.admin-portal-head h2 { margin: 7px 0 0; font-family: var(--font-display); font-size: clamp(30px,4vw,52px); line-height: .9; }
+.admin-portal-head p { max-width: 740px; margin: 9px 0 0; color: #a8948f; font-size: 12px; }
+.admin-portal-close { flex: 0 0 auto; width: 46px; height: 46px; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; color: #fff; background: rgba(255,255,255,.035); font-size: 25px; }
+.admin-portal-session { display: flex; min-height: 54px; align-items: center; justify-content: flex-end; gap: 12px; padding: 8px clamp(22px,4vw,58px); border-bottom: 1px solid rgba(255,255,255,.05); color: #a99691; font-size: 11px; }
+.admin-portal-body { width: min(1320px,calc(100% - 44px)); margin: 0 auto; padding: 34px 0 80px; }
+.admin-portal .panel { overflow: hidden; border: 1px solid rgba(240,72,49,.16); border-radius: 22px 22px 22px 7px; background: linear-gradient(145deg,rgba(25,7,6,.94),rgba(8,2,2,.96)); box-shadow: 0 28px 75px rgba(0,0,0,.34); }
+.admin-portal .panel-head { padding: 22px 24px; border-bottom: 1px solid rgba(240,72,49,.13); }
+.admin-portal .panel-head h2 { margin: 0; font-family: var(--font-display); font-size: 25px; }
+.admin-portal .panel-head p { margin: 7px 0 0; color: #a99590; font-size: 12px; line-height: 1.5; }
+.admin-portal .panel-body { padding: 23px 24px; }
+.admin-portal .login-panel { width: min(540px,100%); margin: 60px auto; }
+.admin-portal .layout { display: grid; grid-template-columns: minmax(400px,.9fr) minmax(540px,1.1fr); gap: 22px; align-items: start; }
+.admin-portal form,.admin-portal .field { display: grid; gap: 10px; }
+.admin-portal form { gap: 16px; }
+.admin-portal label { color: #ddcbc6; font-size: 11px; font-weight: 900; }
+.admin-portal input,.admin-portal textarea,.admin-portal select { width: 100%; padding: 13px 14px; outline: 0; border: 1px solid rgba(240,72,49,.17); border-radius: 12px 12px 12px 4px; color: #fff; background: rgba(4,1,1,.78); font: inherit; }
+.admin-portal textarea { min-height: 130px; resize: vertical; }
+.admin-portal input:focus,.admin-portal textarea:focus,.admin-portal select:focus { border-color: rgba(255,103,78,.65); box-shadow: 0 0 0 3px rgba(226,59,40,.1); }
+.admin-portal .btn { min-height: 43px; padding: 10px 14px; border: 1px solid rgba(240,72,49,.18); border-radius: 11px 11px 11px 3px; color: #fff; background: rgba(255,255,255,.05); font-weight: 900; }
+.admin-portal .btn-primary { border: 0; background: linear-gradient(135deg,#e23b28,#8e130d); }
+.admin-portal .btn-danger { color: #ffafa2; background: rgba(226,59,40,.08); }
+.admin-portal .steam-row { display: grid; grid-template-columns: 1fr auto; gap: 9px; }
+.admin-portal .hint { margin: 0; color: #81736f; font-size: 10px; }
+.admin-portal .connection-card { margin-bottom: 20px; padding: 14px 16px; border: 1px solid rgba(85,224,157,.2); border-radius: 14px; color: #c9f5dc; background: rgba(85,224,157,.06); font-size: 12px; }
+.admin-portal .machine-fields { display: none !important; }
+.admin-portal .steam-step { max-height: 260px; overflow: hidden; opacity: 1; transition: max-height .5s ease,opacity .3s ease; }
+.admin-portal .details-stage { max-height: 0; overflow: hidden; opacity: 0; pointer-events: none; transition: max-height .65s ease,opacity .35s ease; }
+.admin-portal #gameForm.import-ready .steam-step { max-height: 0; opacity: 0; pointer-events: none; }
+.admin-portal #gameForm.import-ready .details-stage { max-height: 1050px; opacity: 1; pointer-events: auto; }
+.admin-portal .steam-preview { display: none; overflow: hidden; border: 1px solid rgba(240,72,49,.17); border-radius: 16px; }
+.admin-portal .steam-preview.show { display: grid; grid-template-columns: 145px 1fr; }
+.admin-portal .steam-preview img { width: 100%; height: 100%; object-fit: cover; }
+.admin-portal .steam-preview-body { padding: 15px; }
+.admin-portal .preview-chips,.admin-portal .form-actions,.admin-portal .admin-meta,.admin-portal .admin-game-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.admin-portal .comment-focus,.admin-portal .coop-editor { display: grid; gap: 13px; margin-top: 15px; padding: 17px; border: 1px solid rgba(240,72,49,.15); border-radius: 16px; background: rgba(120,18,12,.06); }
+.admin-portal .coop-editor-head { display: flex; justify-content: space-between; gap: 14px; }
+.admin-portal .coop-player-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.admin-portal .coop-toggle { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+.admin-portal .coop-toggle input { width: auto; }
+.admin-portal .catalog-head { display: flex; justify-content: space-between; gap: 12px; }
+.admin-portal .count { color: #ff8c78; font-weight: 900; }
+.admin-portal .catalog-controls { display: grid; grid-template-columns: 1fr minmax(200px,.42fr); gap: 12px; padding: 16px 20px; border-bottom: 1px solid rgba(240,72,49,.13); }
+.admin-portal .catalog-search,.admin-portal .catalog-sort { display: grid; gap: 7px; }
+.admin-portal .catalog-search-field { position: relative; }
+.admin-portal .catalog-search input { padding-right: 42px; }
+.admin-portal .catalog-search-clear { position: absolute; top: 50%; right: 7px; width: 30px; height: 30px; padding: 0; transform: translateY(-50%); }
+.admin-portal .game-list { display: grid; gap: 11px; }
+.admin-portal .admin-game { overflow: hidden; display: grid; grid-template-columns: 128px 1fr; border: 1px solid rgba(240,72,49,.13); border-radius: 15px 15px 15px 5px; background: rgba(255,255,255,.025); }
+.admin-portal .admin-cover { min-height: 126px; background: #100404; }
+.admin-portal .admin-cover img { width: 100%; height: 100%; object-fit: cover; }
+.admin-portal .admin-game-body { padding: 14px; }
+.admin-portal .admin-game-top { display: flex; justify-content: space-between; gap: 14px; }
+.admin-portal .admin-game h3 { margin: 0 0 7px; font-size: 18px; }
+.admin-portal .admin-game p { margin: 0; color: #a99590; font-size: 11px; line-height: 1.5; }
+.admin-portal .icon-btn,.admin-portal .meta-pill { padding: 7px 9px; border: 1px solid rgba(240,72,49,.15); border-radius: 9px; color: #fff; background: rgba(255,255,255,.04); font-size: 9px; font-weight: 900; }
+.admin-portal .meta-pill.coop { color: #c9ffe2; }.admin-portal .meta-pill.draft,.admin-portal .icon-btn.delete { color: #ff9f92; }
+.admin-portal .notice { display: none; position: sticky; top: 120px; z-index: 25; margin-bottom: 15px; padding: 13px 15px; border-radius: 12px; backdrop-filter: blur(12px); }
+.admin-portal .notice.show { display: block; }.admin-portal .notice.success { background: rgba(85,224,157,.12); }.admin-portal .notice.error { background: rgba(226,59,40,.14); }.admin-portal .notice.info { background: rgba(240,115,80,.12); }
+.admin-portal .duplicate-modal { position: fixed; inset: 0; z-index: 1600; display: grid; place-items: center; padding: 18px; }.admin-portal .duplicate-modal[hidden] { display: none !important; }
+.admin-portal .duplicate-backdrop { position: absolute; inset: 0; background: rgba(3,0,0,.85); }.admin-portal .duplicate-dialog { position: relative; width: min(500px,100%); padding: 28px; border: 1px solid rgba(240,72,49,.3); border-radius: 22px; background: #160504; }
+.admin-portal .duplicate-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+@media (min-width: 961px) { .admin-portal .layout > .panel:first-child { position: sticky; top: 142px; } }
+@media (max-width: 960px) { .admin-portal-dialog { width: 100%; } .admin-portal .layout { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .admin-portal-trigger { display: inline-flex !important; margin-left: 0; padding-inline: 10px !important; font-size: 9px !important; } }
+@media (max-width: 650px) { .admin-portal-head { align-items: flex-start; padding: 20px 16px; }.admin-portal-head p { display: none; }.admin-portal-body { width: calc(100% - 20px); padding-top: 18px; }.admin-portal-session { padding-inline: 14px; }.admin-portal .steam-row,.admin-portal .catalog-controls,.admin-portal .coop-player-fields { grid-template-columns: 1fr; }.admin-portal .admin-game { grid-template-columns: 1fr; }.admin-portal .admin-cover { max-height: 210px; }.admin-portal .admin-game-top,.admin-portal .coop-editor-head { flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { .admin-portal-backdrop,.admin-portal-dialog { transition-duration: .001ms; } }
