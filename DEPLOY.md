@@ -45,3 +45,14 @@
 ## Пройденные, неинтересные и избранные игры
 
 Перед публикацией frontend один раз выполни `supabase/game_library_status.sql` в Supabase SQL Editor. Миграция добавляет `library_status` и `is_favorite`; существующие игры останутся в основном каталоге. Изменять отметки может только администратор благодаря действующим RLS-политикам таблицы `games`.
+
+## Авторизация зрителей через Twitch
+
+1. Создай приложение в Twitch Developer Console.
+2. Один раз выполни `supabase/twitch_viewer_auth.sql` в SQL Editor: он разрешает авторизованным зрителям читать опубликованные игры, но не даёт им административных прав.
+3. В Supabase открой Authentication → Providers → Twitch и сохрани Client ID и Client Secret. Client Secret нельзя добавлять в GitHub или `config.js`.
+4. В качестве OAuth callback в Twitch укажи callback URL, который показывает Supabase для Twitch Provider (`https://<project-ref>.supabase.co/auth/v1/callback`).
+5. В Supabase Authentication → URL Configuration укажи Site URL `https://archivebtw.github.io/predlozhka-cr7/` и добавь этот же адрес в Redirect URLs.
+6. После сохранения настроек кнопка «Войти через Twitch» запускает PKCE OAuth, возвращает пользователя на сайт, показывает Twitch-имя/аватар и позволяет выйти повторным нажатием.
+
+Вход через Twitch не выдаёт права администратора: административные операции по-прежнему требуют наличие UUID пользователя в `public.site_admins` и успешный `is_site_admin()`.
