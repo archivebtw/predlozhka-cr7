@@ -2,6 +2,7 @@
 (function setupSiteLoader() {
   const loader = document.getElementById('siteLoader');
   if (!loader) return;
+  document.body.classList.add('is-ready');
 
   const startedAt = performance.now();
   const minimumVisibleMs = 380;
