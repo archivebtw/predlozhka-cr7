@@ -110,6 +110,12 @@ body.auction-open { overflow: hidden; }
 .auction-spin-settings label { display: flex; align-items: center; justify-content: center; gap: 7px; }
 .auction-spin-settings input[type='number'] { width: 58px; min-height: 30px; padding: 0 7px; border: 1px solid rgba(255,255,255,.1); border-radius: 6px; color: #fff; background: #100404; }
 .auction-spin-settings input[type='checkbox'] { accent-color: var(--red); }
+.auction-mode { display: grid; grid-template-columns: auto 1fr 1fr; gap: 7px; align-items: center; width: 100%; padding: 8px; border: 1px solid rgba(255,255,255,.07); border-radius: 9px; background: rgba(0,0,0,.2); color: #9c8883; font-size: 8px; }
+.auction-mode > span { font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.auction-mode label { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px; border: 1px solid rgba(255,255,255,.07); border-radius: 6px; }
+.auction-mode label:has(input:checked) { border-color: rgba(234,70,49,.4); color: #fff; background: rgba(160,28,19,.16); }
+.auction-mode input { accent-color: var(--red); }
+.auction-wheel-panel .auction-pointer { top: 72px; }
 .auction-manage-grid { display: grid; grid-template-columns: minmax(0,1.45fr) minmax(320px,.55fr); gap: 18px; min-height: 100%; }
 .auction-setup-notice { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 10px 13px; border: 1px solid rgba(238,157,45,.25); border-radius: 9px; color: #bda99f; background: rgba(118,67,13,.12); font-size: 9px; }
 .auction-setup-notice strong { flex: 0 0 auto; color: #efb35e; text-transform: uppercase; }
@@ -127,6 +133,9 @@ body.auction-open { overflow: hidden; }
 .auction-timer button { min-height: 38px; padding: 0 13px; border: 1px solid rgba(235,75,54,.25); border-radius: 8px; color: #f2d8d3; background: rgba(151,28,19,.15); font-size: 9px; font-weight: 900; }
 .auction-timer label { display: grid; gap: 7px; color: #8d7b77; font-size: 8px; text-align: center; }
 .auction-timer input { width: 110px; min-height: 36px; padding: 0 9px; border: 1px solid rgba(255,255,255,.1); border-radius: 7px; color: #fff; background: #100404; text-align: center; }
+.auction-step-field { display: grid; grid-template-columns: 100px 100px; gap: 6px; }
+.auction-step-field input { width: 100%; }
+.auction-step-field select { min-height: 36px; padding: 0 8px; border: 1px solid rgba(255,255,255,.1); border-radius: 7px; color: #fff; background: #100404; color-scheme: dark; }
 @keyframes auction-tab-in { from { opacity: 0; transform: translateY(6px); } }
 @media (max-width: 900px) {
   .auction-workspace { overflow: auto; }
