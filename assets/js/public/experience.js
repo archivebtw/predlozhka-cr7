@@ -12,6 +12,11 @@
     const ratio = Math.min(1,Math.max(0,window.scrollY / scrollable));
     if (progress) progress.style.transform = `scaleX(${ratio})`;
     document.body.classList.toggle('has-scrolled',window.scrollY > 24);
+    if (catalog && catalogToolbar) {
+      const compactStart = catalog.offsetTop + 140;
+      const compactEnd = catalog.offsetTop + catalog.offsetHeight - catalogToolbar.offsetHeight;
+      catalogToolbar.classList.toggle('is-compact',window.scrollY > compactStart && window.scrollY < compactEnd);
+    }
   }
 
   function scheduleUpdate() {
