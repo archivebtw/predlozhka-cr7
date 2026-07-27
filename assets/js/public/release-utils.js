@@ -138,6 +138,9 @@ function escapeHtml(value) {
         const groupRank = { upcoming: 0, unknown: 1, released: 2 };
         const rankDiff = groupRank[aMeta.group] - groupRank[bMeta.group];
         if (rankDiff) return rankDiff;
+        const aReputation = typeof state === 'undefined' ? 0 : Number(state.reputationScores?.[String(a.id)] || 0);
+        const bReputation = typeof state === 'undefined' ? 0 : Number(state.reputationScores?.[String(b.id)] || 0);
+        if (aReputation !== bReputation) return bReputation - aReputation;
         if (aMeta.group === 'upcoming') return aMeta.timestamp - bMeta.timestamp;
         if (aMeta.group === 'released' && aMeta.timestamp !== bMeta.timestamp) {
           return bMeta.timestamp - aMeta.timestamp;

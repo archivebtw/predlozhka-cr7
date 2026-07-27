@@ -7,6 +7,7 @@ function buildCard(game, index) {
       const coop = coopLabel(game);
       const favorite = Boolean(game.is_favorite);
       const libraryStatus = String(game.library_status || '');
+      const reputation = Number(state.reputationScores[String(game.id)] || 0);
 
       return `
         <article class="game-card${favorite ? ' is-favorite' : ''}" data-game-id="${escapeHtml(game.id)}" tabindex="0" role="button" aria-label="Открыть подробности игры ${escapeHtml(game.title)}" style="--delay:${Math.min(index * 45, 260)}ms">
@@ -26,6 +27,7 @@ function buildCard(game, index) {
             ${libraryStatus === 'ignored' ? '<span class="library-state-chip ignored">Не интересует</span>' : ''}
           </div>
           <div class="card-actions"><span class="card-open-hint"><span>Подробнее</span><b aria-hidden="true">↗</b></span></div>
+          <span class="game-reputation ${reputation > 0 ? 'is-positive' : reputation < 0 ? 'is-negative' : ''}" aria-label="Репутация игры: ${reputation}">${reputation > 0 ? '+' : ''}${reputation}</span>
         </article>`;
     }
 

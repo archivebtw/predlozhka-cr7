@@ -26,6 +26,7 @@ function openGameModal(gameId) {
       elements.modalSteam.hidden = !steamUrl;
       if (steamUrl) elements.modalSteam.href = steamUrl;
       updateLibraryControls(game);
+      updateReputationControls(game);
 
       elements.modal.hidden = false;
       elements.modal.setAttribute('aria-hidden', 'false');
@@ -106,6 +107,72 @@ function openGameModal(gameId) {
     }
 
     elements.modalLibraryActions.forEach(button => button.addEventListener('click',() => updateGameLibrary(button.dataset.libraryAction)));
+
+    function formatReputation(score) {
+      const value = Number(score) || 0;
+      return value > 0 ? `+${value}` : String(value);
+    }
+
+    function updateReputationControls(game) {
+      const gameId = String(game?.id || '');
+      const score = Number(state.reputationScores[gameId] || 0);
+      const currentVote = Number(state.currentVotes[gameId] || 0);
+      elements.modalReputationScore.textContent = formatReputation(score);
+      elements.modalReputationScore.className = score > 0 ? 'is-positive' : score < 0 ? 'is-negative' : '';
+      elements.modalVoteActions.forEach(button => {
+        const active = Number(button.dataset.vote) === currentVote;
+        button.classList.toggle('is-active',active);
+        button.setAttribute('aria-pressed',String(active));
+        button.disabled = !state.reputationSchemaReady;
+      });
+      elements.modalReputationNotice.textContent = state.reputationSchemaReady
+        ? ''
+        : 'Сначала выполни supabase/game_reputation.sql в Supabase SQL Editor.';
+      elements.modalReputationNotice.className = state.reputationSchemaReady
+        ? 'modal-library-notice'
+        : 'modal-library-notice is-error';
+    }
+
+    async function voteForGame(direction) {
+      const game = state.games.find(item => String(item.id) === String(state.activeGameId));
+      if (!game || !state.reputationSchemaReady) return;
+      const gameId = String(game.id);
+      elements.modalVoteActions.forEach(button => { button.disabled = true; });
+      elements.modalReputationNotice.textContent = 'Сохраняем голос…';
+      elements.modalReputationNotice.className = 'modal-library-notice is-info';
+      try {
+        const client = getConfiguredClient();
+        if (!client) throw new Error('Supabase не настроен.');
+        const { data: sessionData,error: sessionError } = await client.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!sessionData.session?.user) throw new Error('Войди через вкладку «Управление», чтобы голосовать.');
+        const { data: isAdmin,error: adminError } = await client.rpc('is_site_admin');
+        if (adminError) throw adminError;
+        if (isAdmin !== true) throw new Error('Голосовать могут только администраторы.');
+        const { data: myVotes,error: votesError } = await client.rpc('get_my_game_votes');
+        if (votesError) throw votesError;
+        const previousVote = Number((myVotes || []).find(item => String(item.game_id) === gameId)?.vote || 0);
+        const nextVote = previousVote === direction ? 0 : direction;
+        const { data,error } = await client.rpc('vote_game',{ p_game_id: Number(game.id),p_vote: nextVote });
+        if (error) throw error;
+        const result = Array.isArray(data) ? data[0] : data;
+        state.reputationScores[gameId] = Number(result?.score) || 0;
+        state.currentVotes[gameId] = Number(result?.current_vote) || 0;
+        updateReputationControls(game);
+        elements.modalReputationNotice.textContent = nextVote === 1
+          ? 'Игра поднята в рейтинге.'
+          : nextVote === -1 ? 'Игра опущена в рейтинге.' : 'Голос отменён.';
+        elements.modalReputationNotice.className = 'modal-library-notice is-success';
+        render();
+      } catch (error) {
+        console.error(error);
+        elements.modalReputationNotice.textContent = error.message || 'Не удалось сохранить голос.';
+        elements.modalReputationNotice.className = 'modal-library-notice is-error';
+        elements.modalVoteActions.forEach(button => { button.disabled = false; });
+      }
+    }
+
+    elements.modalVoteActions.forEach(button => button.addEventListener('click',() => voteForGame(Number(button.dataset.vote))));
 
     function closeGameModal() {
       if (elements.modal.hidden) return;

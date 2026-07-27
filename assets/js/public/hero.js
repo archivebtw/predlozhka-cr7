@@ -65,7 +65,7 @@ function setConnection(status, text) {
         const meta = getReleaseMeta(game);
         const days = daysUntil(game.release_date);
         return meta.group === 'upcoming' && days !== null && days >= 0;
-      });
+      }).sort((a,b) => getReleaseMeta(a).timestamp - getReleaseMeta(b).timestamp);
       const nearest = upcoming[0] || null;
       const newest = [...state.games].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0] || null;
       const latestReleased = [...state.games]
