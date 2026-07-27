@@ -31,9 +31,11 @@ create table if not exists public.games (
   steam_url text not null check (char_length(steam_url) <= 500),
   cover_url text not null default '' check (char_length(cover_url) <= 1000),
   description text not null check (char_length(description) between 1 and 2000),
-  author_comment text not null check (char_length(author_comment) between 1 and 1200),
+  author_comment text not null default '' check (char_length(author_comment) <= 1200),
   display_order integer not null default 0 check (display_order between 0 and 9999),
   published boolean not null default true,
+  library_status text not null default '' check (library_status in ('', 'completed', 'ignored')),
+  is_favorite boolean not null default false,
   created_by uuid not null default auth.uid() references auth.users(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -72,7 +74,7 @@ drop policy if exists "Admins can delete games" on public.games;
 create policy "Public can read published games"
 on public.games
 for select
-to anon
+to anon, authenticated
 using (published = true);
 
 create policy "Admins can read all games"
