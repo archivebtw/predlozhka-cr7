@@ -5,24 +5,29 @@ function buildCard(game, index) {
         : `<div class="cover-fallback"><img src="${TWITCH_LOGO_DATA}" alt="" aria-hidden="true"></div>`;
       const meta = getReleaseMeta(game);
       const coop = coopLabel(game);
+      const favorite = Boolean(game.is_favorite);
+      const libraryStatus = String(game.library_status || '');
+      const reputation = Number(state.reputationScores?.[String(game.id)] || 0);
 
       return `
-        <article class="game-card" data-game-id="${escapeHtml(game.id)}" tabindex="0" role="button" aria-label="Открыть подробности игры ${escapeHtml(game.title)}" style="--delay:${Math.min(index * 45, 260)}ms">
+        <article class="game-card${favorite ? ' is-favorite' : ''}" data-game-id="${escapeHtml(game.id)}" tabindex="0" role="button" aria-label="Открыть подробности игры ${escapeHtml(game.title)}" style="--delay:${Math.min(index * 45, 260)}ms">
+          <span class="card-index" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
           <div class="card-visual">${cover}</div>
-          <div class="card-shade"></div>
           <div class="card-bottom">
-            <h3 class="card-title">${escapeHtml(game.title)}</h3>
+            <h3 class="card-title">${favorite ? '<span class="favorite-star" aria-label="Избранная игра">★</span>' : ''}${escapeHtml(game.title)}</h3>
             <p class="card-summary">${escapeHtml(game.description)}</p>
           </div>
           <div class="card-top">
             <span class="release-badge ${meta.badgeClass}">${escapeHtml(meta.badge)}</span>
-            <span class="card-index">${String(index + 1).padStart(2, '0')}</span>
           </div>
           <div class="card-chips">
-            <span class="date-chip">▣ ${escapeHtml(meta.line)}</span>
+            <span class="date-chip"><span class="chip-label">Релиз</span>${escapeHtml(meta.line)}</span>
             ${coop ? `<span class="coop-badge">${escapeHtml(coop)}</span>` : ''}
+            ${libraryStatus === 'completed' ? '<span class="library-state-chip completed">Пройдено</span>' : ''}
+            ${libraryStatus === 'ignored' ? '<span class="library-state-chip ignored">Не интересует</span>' : ''}
           </div>
-          <div class="card-actions"><span class="card-open-hint">Подробнее →</span></div>
+          <div class="card-actions"><span class="card-open-hint"><span>Подробнее</span><b aria-hidden="true">↗</b></span></div>
+          <span class="game-reputation ${reputation > 0 ? 'is-positive' : reputation < 0 ? 'is-negative' : ''}" aria-label="Репутация игры: ${reputation}">${reputation > 0 ? '+' : ''}${reputation}</span>
         </article>`;
     }
 
@@ -33,7 +38,17 @@ function buildCard(game, index) {
       const query = state.query.trim().toLocaleLowerCase('ru');
       const games = sorted.filter(game => {
         const meta = getReleaseMeta(game);
-        const matchesFilter = state.filter === 'all' || meta.group === state.filter;
+        const libraryStatus = String(game.library_status || '');
+        const isActive = !libraryStatus;
+        const matchesFilter = state.filter === 'all'
+          ? isActive
+          : state.filter === 'completed'
+            ? libraryStatus === 'completed'
+            : state.filter === 'ignored'
+              ? libraryStatus === 'ignored'
+              : state.filter === 'favorite'
+                ? Boolean(game.is_favorite)
+                : isActive && meta.group === state.filter;
         if (!matchesFilter) return false;
         if (!query) return true;
         return [game.title, game.description, game.author_comment, game.release_date_text, coopLabel(game)]
@@ -43,7 +58,7 @@ function buildCard(game, index) {
       elements.subtitle.textContent = state.games.length
         ? query || state.filter !== 'all'
           ? `${games.length} найдено из ${state.games.length}`
-          : `${state.games.length} ${state.games.length === 1 ? 'игра' : state.games.length < 5 ? 'игры' : 'игр'} · разделены по статусу релиза`
+          : `${games.length} ${games.length === 1 ? 'игра' : games.length < 5 ? 'игры' : 'игр'} в основном каталоге${state.games.length > games.length ? ` · ${state.games.length - games.length} в библиотеке` : ''}`
         : 'Каталог пока пуст';
 
       if (!games.length) {
@@ -53,11 +68,17 @@ function buildCard(game, index) {
         return;
       }
 
-      const order = state.filter === 'all' ? ['upcoming', 'released', 'unknown'] : [state.filter];
+      const libraryGroups = {
+        favorite: { kicker: 'Личный выбор', title: 'Избранные игры', description: 'Игры, отмеченные администратором звёздочкой.' },
+        completed: { kicker: 'Архив прохождений', title: 'Пройденные игры', description: 'Игры, прохождение которых уже завершено.' },
+        ignored: { kicker: 'Вне основного каталога', title: 'Неинтересные игры', description: 'Игры, которые больше не рассматриваются для стримов.' }
+      };
+      const libraryFilter = libraryGroups[state.filter];
+      const order = libraryFilter ? [state.filter] : state.filter === 'all' ? ['upcoming', 'released', 'unknown'] : [state.filter];
       const sections = order.map(group => {
-        const groupGames = games.filter(game => getReleaseMeta(game).group === group);
+        const groupGames = libraryFilter ? games : games.filter(game => getReleaseMeta(game).group === group);
         if (!groupGames.length) return '';
-        const info = groupInfo[group];
+        const info = libraryFilter || groupInfo[group];
         const cards = groupGames.map((game, index) => buildCard(game, index)).join('');
         return `
           <section class="catalog-group" data-group="${group}">
