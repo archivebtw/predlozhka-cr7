@@ -165,3 +165,28 @@
   panel.addEventListener('click',event => { if (event.target.matches('[data-feature-close]')) close(); });
   document.addEventListener('keydown',event => { if (event.key === 'Escape' && !panel.hidden) close(); });
 })();
+
+(() => {
+  const panel = document.getElementById('featurePanel');
+  const buttons = [...document.querySelectorAll('.coming-soon-trigger')];
+  const closeButton = document.getElementById('featureClose');
+  const kicker = document.getElementById('featureKicker');
+  const title = document.getElementById('featureTitle');
+  const description = document.getElementById('featureDescription');
+  if (!panel || !buttons.length || !closeButton || !kicker || !title || !description) return;
+  let activeButton = null;
+  function close() { panel.hidden = true; panel.setAttribute('aria-hidden','true'); activeButton?.setAttribute('aria-expanded','false'); activeButton?.focus(); activeButton = null; }
+  buttons.forEach(button => button.addEventListener('click',() => {
+    activeButton = button;
+    kicker.textContent = button.dataset.comingKicker || 'Новый раздел';
+    title.textContent = button.dataset.comingTitle || 'Скоро';
+    description.textContent = button.dataset.comingDescription || 'Функция находится в разработке.';
+    panel.hidden = false;
+    panel.setAttribute('aria-hidden','false');
+    button.setAttribute('aria-expanded','true');
+    closeButton.focus();
+  }));
+  closeButton.addEventListener('click',close);
+  panel.addEventListener('click',event => { if (event.target.matches('[data-feature-close]')) close(); });
+  document.addEventListener('keydown',event => { if (event.key === 'Escape' && !panel.hidden) close(); });
+})();
