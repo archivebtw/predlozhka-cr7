@@ -53,7 +53,9 @@
   function createClient() {
     const config = window.CR7_CONFIG || {};
     if (!window.supabase?.createClient || !String(config.supabaseUrl || '').startsWith('https://')) return null;
-    return window.supabase.createClient(config.supabaseUrl,config.supabasePublishableKey,{ auth:{ persistSession:true,autoRefreshToken:true,detectSessionInUrl:false } });
+    if (window.CR7_SUPABASE_CLIENT) return window.CR7_SUPABASE_CLIENT;
+    window.CR7_SUPABASE_CLIENT = window.supabase.createClient(config.supabaseUrl,config.supabasePublishableKey,{ auth:{ persistSession:true,autoRefreshToken:true,detectSessionInUrl:false } });
+    return window.CR7_SUPABASE_CLIENT;
   }
 
   function wheelGradient(highlightId = '') {
