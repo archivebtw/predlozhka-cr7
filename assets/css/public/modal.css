@@ -155,3 +155,15 @@ body.tier-open { overflow: hidden; }
 .tier-row-save { min-height: 44px; border: 1px solid rgba(240,68,46,.48); border-radius: 9px; color: #fff; background: linear-gradient(135deg,#a92117,#59100b); font-weight: 900; }
 @media (max-width:650px) { .tier-row { grid-template-columns: 58px minmax(0,1fr) 40px; } .tier-row.is-pool { grid-template-columns:1fr; } .tier-game { flex-basis: 128px; width:128px; } }
 .tier-row[data-tier] > strong { background: var(--tier-color); }
+
+/* Compact horizontal row controls and site-colored selection. */
+.tier-panel ::selection { color: #fff; background: #b52318; }
+.tier-row { grid-template-columns: 94px minmax(0,1fr) 92px; }
+.tier-row.is-pool { grid-template-columns: 1fr; }
+.tier-row-actions { display: grid; place-items: center; align-content: center; gap: 9px; padding: 6px; }
+.tier-row-actions > span { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.tier-row-actions > span i { width: 7px; height: 7px; border-radius: 50%; background: #a72016; box-shadow: 0 0 8px rgba(221,48,33,.45); }
+.tier-row-actions button { width: 32px; height: 30px; padding: 0; color: #bb3024; }
+.tier-row-actions > button:first-child { color: #ddd2cf; }
+.tier-row-actions button:hover { color: #ff6656; background: rgba(181,35,24,.12); }
+@media (max-width:650px) { .tier-row { grid-template-columns:58px minmax(0,1fr) 82px; } .tier-row.is-pool { grid-template-columns:1fr; } }
