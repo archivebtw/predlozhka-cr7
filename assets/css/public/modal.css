@@ -167,3 +167,26 @@ body.tier-open { overflow: hidden; }
 .tier-row-actions > button:first-child { color: #ddd2cf; }
 .tier-row-actions button:hover { color: #ff6656; background: rgba(181,35,24,.12); }
 @media (max-width:650px) { .tier-row { grid-template-columns:58px minmax(0,1fr) 82px; } .tier-row.is-pool { grid-template-columns:1fr; } }
+
+/* Full-screen tier workspace and corrected admin controls. */
+#catalog .tier-list-trigger,#catalog #tierListOpen { display: none !important; }
+.tier-panel { place-items: stretch; }
+.tier-dialog { width: 100%; height: 100%; max-height: none; padding: 24px 30px 30px; border: 0; border-left: 3px solid #a92117; border-radius: 0; }
+.tier-dialog > header { position: relative; display: grid; min-height: 118px; align-content: center; padding: 8px 180px 18px 6px; border-bottom: 1px solid rgba(240,68,46,.16); }
+.tier-header-actions { position: absolute; top: 50%; right: 64px; display: flex; align-items: center; gap: 8px; transform: translateY(-50%); }
+.tier-header-actions small { margin: 0 !important; }
+.tier-header-actions button { min-height: 36px; padding: 0 12px; border: 1px solid rgba(240,68,46,.32); border-radius: 8px; color: #e8c6c0; background: rgba(169,33,23,.12); font-size: 9px; font-weight: 900; }
+.tier-board { margin-top: 14px; }
+.tier-row > .tier-row-actions { display: grid; place-items: center; align-content: center; gap: 9px; padding: 6px; overflow: visible; background: #080404; }
+.tier-row > .tier-row-actions > span { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0; overflow: visible; }
+.tier-row > .tier-row-actions > span i { flex: 0 0 auto; }
+.tier-confirm-dialog { width: min(520px,calc(100% - 28px)); padding: 0; border: 1px solid rgba(240,68,46,.32); border-radius: 16px; color: #fff; background: linear-gradient(145deg,#200807,#090303); box-shadow: 0 35px 110px rgba(0,0,0,.85); }
+.tier-confirm-dialog::backdrop { background: rgba(0,0,0,.78); backdrop-filter: blur(9px); }
+.tier-confirm-dialog form { display: grid; gap: 13px; padding: 28px; }
+.tier-confirm-dialog span { color: #e76d5b; font-size: 9px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+.tier-confirm-dialog h3 { margin: 0; font-family: var(--font-display); font-size: 28px; line-height: 1.08; }
+.tier-confirm-dialog p { margin: 0; color: #a18e89; font-size: 11px; line-height: 1.55; }
+.tier-confirm-dialog form > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.tier-confirm-dialog button { min-height: 42px; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; color: #d8cecb; background: rgba(255,255,255,.035); font-size: 10px; font-weight: 900; }
+.tier-confirm-dialog button.is-danger { border-color: rgba(240,68,46,.5); color: #fff; background: linear-gradient(135deg,#aa2117,#5b100b); }
+@media (max-width:650px) { .tier-dialog { padding: 12px 8px; } .tier-dialog > header { padding-right: 54px; } .tier-header-actions { position: static; margin-top: 10px; transform: none; } }
