@@ -134,7 +134,10 @@ declare
   v_comment text := btrim(coalesce(p_comment, ''));
 begin
   if v_user_id is null then
-    raise exception 'Требуется авторизация зрителя.';
+    raise exception 'Требуется авторизация администратора.';
+  end if;
+  if not public.is_site_admin() then
+    raise exception 'Предлагать игры может только администратор.';
   end if;
   if p_steam_app_id is null or p_steam_app_id <= 0 then
     raise exception 'Некорректный Steam App ID.';
@@ -190,7 +193,7 @@ begin
   if v_comment <> '' and v_suggestion.status in ('pending', 'approved', 'selected') then
     insert into public.suggestion_comments (suggestion_id, user_id, body)
     values (v_suggestion.id, v_user_id, v_comment)
-    on conflict (suggestion_id, user_id)
+    on conflict on constraint suggestion_comments_suggestion_id_user_id_key
     do update set body = excluded.body, is_hidden = false, updated_at = now();
   end if;
 
@@ -290,7 +293,8 @@ declare
   v_user_id uuid := auth.uid();
   v_active boolean;
 begin
-  if v_user_id is null then raise exception 'Требуется авторизация зрителя.'; end if;
+  if v_user_id is null then raise exception 'Требуется авторизация администратора.'; end if;
+  if not public.is_site_admin() then raise exception 'Голосовать может только администратор.'; end if;
   if not exists (
     select 1 from public.game_suggestions
     where id = p_suggestion_id and status = 'approved'
