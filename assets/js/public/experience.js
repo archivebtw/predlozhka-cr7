@@ -5,6 +5,7 @@
   const catalogLink = document.querySelector('.nav-link[href="#catalog"]');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let frame = 0;
+  let catalogCompact = false;
 
   function updatePageState() {
     frame = 0;
@@ -13,9 +14,14 @@
     if (progress) progress.style.transform = `scaleX(${ratio})`;
     document.body.classList.toggle('has-scrolled',window.scrollY > 24);
     if (catalog && catalogToolbar) {
-      const compactStart = catalog.offsetTop + 140;
-      const compactEnd = catalog.offsetTop + catalog.offsetHeight - catalogToolbar.offsetHeight;
-      catalogToolbar.classList.toggle('is-compact',window.scrollY > compactStart && window.scrollY < compactEnd);
+      // Two different thresholds prevent the toolbar's own height change from
+      // repeatedly crossing the boundary and producing a visible scroll jump.
+      const enterAt = catalog.offsetTop + 180;
+      const leaveAt = catalog.offsetTop + 72;
+      const catalogEnded = window.scrollY > catalog.offsetTop + catalog.offsetHeight - window.innerHeight * .35;
+      if (!catalogCompact && window.scrollY > enterAt && !catalogEnded) catalogCompact = true;
+      if (catalogCompact && (window.scrollY < leaveAt || catalogEnded)) catalogCompact = false;
+      catalogToolbar.classList.toggle('is-compact',catalogCompact);
     }
   }
 
