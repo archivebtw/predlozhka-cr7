@@ -125,3 +125,17 @@ end $$;
 -- 1. Скопируй его UUID.
 -- 2. Выполни отдельно строку ниже, заменив UUID:
 -- insert into public.site_admins (user_id) values ('ТВОЙ-UUID-ПОЛЬЗОВАТЕЛЯ');
+
+create table if not exists public.tier_list_settings (
+  id smallint primary key default 1 check (id = 1),
+  config jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.tier_list_settings enable row level security;
+drop policy if exists "tier settings public read" on public.tier_list_settings;
+create policy "tier settings public read" on public.tier_list_settings for select using (true);
+drop policy if exists "tier settings admin insert" on public.tier_list_settings;
+create policy "tier settings admin insert" on public.tier_list_settings for insert with check (public.is_site_admin());
+drop policy if exists "tier settings admin update" on public.tier_list_settings;
+create policy "tier settings admin update" on public.tier_list_settings for update using (public.is_site_admin()) with check (public.is_site_admin());
+insert into public.tier_list_settings (id,config) values (1,'[]'::jsonb) on conflict (id) do nothing;
