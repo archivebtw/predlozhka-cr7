@@ -25,6 +25,7 @@ function buildCard(game, index) {
             <span class="date-chip"><span class="chip-label">Релиз</span>${escapeHtml(meta.line)}</span>
             ${coop ? `<span class="coop-badge">${escapeHtml(coop)}</span>` : ''}
             ${libraryStatus === 'completed' ? '<span class="library-state-chip completed">Пройдено</span>' : ''}
+            ${libraryStatus === 'dropped' ? '<span class="library-state-chip dropped">Дроп</span>' : ''}
             ${libraryStatus === 'ignored' ? '<span class="library-state-chip ignored">Не интересует</span>' : ''}
           </div>
           <div class="card-actions"><span class="card-open-hint"><span>Подробнее</span><b aria-hidden="true">↗</b></span></div>
@@ -44,6 +45,8 @@ function buildCard(game, index) {
           ? isActive
           : state.filter === 'completed'
             ? libraryStatus === 'completed'
+            : state.filter === 'dropped'
+              ? libraryStatus === 'dropped'
             : state.filter === 'ignored'
               ? libraryStatus === 'ignored'
               : state.filter === 'favorite'
@@ -71,6 +74,7 @@ function buildCard(game, index) {
       const libraryGroups = {
         favorite: { kicker: 'Личный выбор', title: 'Избранные игры', description: 'Игры, отмеченные администратором звёздочкой.' },
         completed: { kicker: 'Архив прохождений', title: 'Пройденные игры', description: 'Игры, прохождение которых уже завершено.' },
+        dropped: { kicker: 'Остановленные прохождения', title: 'Дропнутые игры', description: 'Игры, прохождение которых было остановлено.' },
         ignored: { kicker: 'Вне основного каталога', title: 'Неинтересные игры', description: 'Игры, которые больше не рассматриваются для стримов.' }
       };
       const libraryFilter = libraryGroups[state.filter];
