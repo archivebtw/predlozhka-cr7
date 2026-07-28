@@ -58,9 +58,9 @@
 
   function wheelGradient(highlightId = '') {
     const entries=selectionEntries(),sum=selectionTotal();
-    if (!sum) return 'conic-gradient(#35100d 0 100%)';
+    if (!sum) return 'conic-gradient(from 0deg,#35100d 0 100%)';
     let cursor = 0;
-    return `conic-gradient(from -90deg,${entries.map(({item,weight},index) => {
+    return `conic-gradient(from 0deg,${entries.map(({item,weight},index) => {
       const start = cursor; cursor += weight / sum * 100;
       const color = highlightId && String(item.id) !== String(highlightId) ? '#3b3332' : colors[items.indexOf(item) % colors.length];
       return `${color} ${start}% ${cursor}%`;
@@ -77,6 +77,7 @@
   }
 
   function itemAtWheelPoint(event) {
+    if(spinning)return null;
     const rect=wheel.getBoundingClientRect(),x=event.clientX-(rect.left+rect.width/2),y=event.clientY-(rect.top+rect.height/2);
     const radius=Math.hypot(x,y);if(radius<rect.width*.17||radius>rect.width*.5)return null;
     const matrix=new DOMMatrixReadOnly(getComputedStyle(wheel).transform);
