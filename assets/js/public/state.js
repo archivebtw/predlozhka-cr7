@@ -38,7 +38,7 @@
       filters: [...document.querySelectorAll('[data-filter]')]
     };
 
-    const state = { games: [], query: '', filter: 'all', sort: 'newest', channel: null, activeGameId: null, librarySchemaReady: true, reputationSchemaReady: true, reputationScores: {}, currentVotes: {} };
+    const state = { games: [], query: '', filter: 'all', sort: 'newest', channel: null, activeGameId: null, librarySchemaReady: true, tierSchemaReady: true, reputationSchemaReady: true, reputationScores: {}, currentVotes: {} };
     const TWITCH_LOGO_DATA = './assets/images/bloodseeker.webp';
     const EMPTY_AUTHOR_COMMENT = '\u2063';
     let lastFocusedElement = null;
