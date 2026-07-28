@@ -10,8 +10,8 @@
 
 .hero-data-source {
   position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
+  width: 1rem !important;
+  height: 1rem !important;
   overflow: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
@@ -22,19 +22,19 @@
   --stage-red: 234, 45, 28;
   position: relative;
   isolation: isolate;
-  width: min(100%, 650px);
-  min-height: clamp(440px, 42vw, 590px);
+  width: min(100%, 650rem);
+  min-height: clamp(440rem, 42vw, 590rem);
   overflow: hidden;
-  border-radius: 34px;
+  border-radius: 34rem;
   background:
     radial-gradient(circle at 62% 47%, rgba(220, 39, 25, .25), transparent 34%),
     radial-gradient(circle at 78% 70%, rgba(255, 91, 38, .13), transparent 26%),
     linear-gradient(145deg, rgba(30, 5, 4, .42), rgba(4, 1, 1, .16));
   transform: translateZ(0);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 95, 70, .16),
-    inset 0 -80px 100px rgba(0, 0, 0, .34),
-    0 34px 80px rgba(0, 0, 0, .28);
+    inset 0 0 0 1rem rgba(255, 95, 70, .16),
+    inset 0 -80rem 100rem rgba(0, 0, 0, .34),
+    0 34rem 80rem rgba(0, 0, 0, .28);
 }
 
 .bloodseeker-stage::before {
@@ -51,12 +51,12 @@
 .bloodseeker-stage::after {
   content: '';
   position: absolute;
-  inset: 10px;
+  inset: 10rem;
   z-index: 8;
   pointer-events: none;
-  border: 1px solid rgba(255, 96, 69, .13);
-  border-radius: 27px;
-  box-shadow: inset 0 0 40px rgba(255, 40, 20, .05);
+  border: 1rem solid rgba(255, 96, 69, .13);
+  border-radius: 27rem;
+  box-shadow: inset 0 0 40rem rgba(255, 40, 20, .05);
 }
 
 .bloodseeker-stage__backdrop {
@@ -85,7 +85,7 @@
 .bloodseeker-stage__rune--outer {
   width: 90%;
   opacity: .17;
-  filter: saturate(1.4) drop-shadow(0 0 28px rgba(var(--stage-red), .22));
+  filter: saturate(1.4) drop-shadow(0 0 28rem rgba(var(--stage-red), .22));
   animation: bloodRuneOuter 24s linear infinite;
 }
 
@@ -102,7 +102,7 @@
   height: 42%;
   z-index: 1;
   border-radius: 50%;
-  filter: blur(34px);
+  filter: blur(34rem);
   opacity: .22;
   pointer-events: none;
   background: radial-gradient(ellipse, rgba(222, 44, 23, .48), rgba(130, 9, 9, .12) 48%, transparent 72%);
@@ -143,7 +143,7 @@
 .bloodseeker-stage__shadow {
   z-index: -1;
   opacity: .52;
-  filter: blur(18px) brightness(.18) saturate(1.8) drop-shadow(0 34px 34px rgba(0, 0, 0, .72));
+  filter: blur(18rem) brightness(.18) saturate(1.8) drop-shadow(0 34rem 34rem rgba(0, 0, 0, .72));
   transform: translate3d(1.6%, 4%, 0) scale(1.015);
   animation: bloodShadow 5.8s ease-in-out infinite;
 }
@@ -154,8 +154,8 @@
     saturate(1.16)
     contrast(1.08)
     brightness(.91)
-    drop-shadow(0 26px 22px rgba(0, 0, 0, .5))
-    drop-shadow(0 0 18px rgba(215, 40, 22, .14));
+    drop-shadow(0 26rem 22rem rgba(0, 0, 0, .5))
+    drop-shadow(0 0 18rem rgba(215, 40, 22, .14));
   animation: bloodBreathing 5.8s ease-in-out infinite;
 }
 
@@ -168,7 +168,7 @@
   opacity: .08;
   border-radius: 50%;
   background: linear-gradient(90deg, transparent, rgba(255, 135, 80, .75), transparent);
-  filter: blur(11px);
+  filter: blur(11rem);
   mix-blend-mode: screen;
   animation: bloodBladePulse 3.4s ease-in-out infinite;
 }
@@ -200,33 +200,33 @@
   height: var(--size);
   border-radius: 50%;
   background: rgb(255, 94, 48);
-  box-shadow: 0 0 10px rgba(255, 69, 32, .8);
+  box-shadow: 0 0 10rem rgba(255, 69, 32, .8);
   opacity: 0;
   animation: bloodEmberRise var(--duration) linear var(--delay) infinite;
 }
 
 .bloodseeker-stage__caption {
   position: absolute;
-  right: 24px;
-  bottom: 22px;
+  right: 24rem;
+  bottom: 22rem;
   z-index: 9;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 3px;
+  gap: 3rem;
   text-align: right;
-  text-shadow: 0 2px 10px rgba(0,0,0,.8);
+  text-shadow: 0 2rem 10rem rgba(0,0,0,.8);
 }
 
 .bloodseeker-stage__caption span {
   color: rgba(240, 207, 199, .72);
-  font: 600 10px/1 var(--font-accent);
+  font: 600 10rem/1 var(--font-accent);
   letter-spacing: .18em;
 }
 
 .bloodseeker-stage__caption strong {
   color: #ff563f;
-  font: 700 18px/1.1 var(--font-display);
+  font: 700 18rem/1.1 var(--font-display);
   letter-spacing: .06em;
 }
 
@@ -244,11 +244,11 @@
 }
 @keyframes bloodCharacterFloat {
   0%, 100% { transform: translate3d(0, 0, 0) rotate(-.35deg); }
-  50% { transform: translate3d(0, -9px, 0) rotate(.35deg); }
+  50% { transform: translate3d(0, -9rem, 0) rotate(.35deg); }
 }
 @keyframes bloodBreathing {
-  0%, 100% { transform: scale(1) translateY(0); filter: saturate(1.12) contrast(1.08) brightness(.89) drop-shadow(0 26px 22px rgba(0,0,0,.5)); }
-  48% { transform: scale(1.018, 1.012) translateY(-2px); filter: saturate(1.2) contrast(1.1) brightness(.97) drop-shadow(0 31px 24px rgba(0,0,0,.54)) drop-shadow(0 0 24px rgba(222,43,25,.18)); }
+  0%, 100% { transform: scale(1) translateY(0); filter: saturate(1.12) contrast(1.08) brightness(.89) drop-shadow(0 26rem 22rem rgba(0,0,0,.5)); }
+  48% { transform: scale(1.018, 1.012) translateY(-2rem); filter: saturate(1.2) contrast(1.1) brightness(.97) drop-shadow(0 31rem 24rem rgba(0,0,0,.54)) drop-shadow(0 0 24rem rgba(222,43,25,.18)); }
 }
 @keyframes bloodShadow {
   0%, 100% { transform: translate3d(1.6%, 4%, 0) scale(1.015); opacity: .48; }
@@ -271,25 +271,25 @@
   0% { transform: translate3d(0, 0, 0) scale(.6); opacity: 0; }
   12% { opacity: var(--opacity); }
   70% { opacity: calc(var(--opacity) * .7); }
-  100% { transform: translate3d(var(--drift), -610px, 0) scale(1.4); opacity: 0; }
+  100% { transform: translate3d(var(--drift), -610rem, 0) scale(1.4); opacity: 0; }
 }
 
 @media (max-width: 1060px) {
   .bloodseeker-motion-wrap { grid-column: 1 / -1; }
   .bloodseeker-stage {
-    width: min(100%, 760px);
-    min-height: 500px;
+    width: min(100%, 760rem);
+    min-height: 500rem;
     margin-inline: auto;
   }
 }
 
 @media (max-width: 720px) {
   .bloodseeker-stage {
-    min-height: 400px;
-    border-radius: 24px;
+    min-height: 400rem;
+    border-radius: 24rem;
   }
   .bloodseeker-stage__character { inset: 2% -14% -3% -12%; }
-  .bloodseeker-stage__caption { right: 17px; bottom: 16px; }
+  .bloodseeker-stage__caption { right: 17rem; bottom: 16rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -313,8 +313,8 @@
 }
 
 .bloodseeker-stage {
-  width: min(118%, 780px);
-  min-height: clamp(520px, 47vw, 650px);
+  width: min(118%, 780rem);
+  min-height: clamp(520rem, 47vw, 650rem);
   overflow: visible;
   border-radius: 0;
   background: transparent;
@@ -358,8 +358,8 @@
 
 @media (max-width: 1180px) {
   .bloodseeker-stage {
-    width: min(112%, 720px);
-    min-height: 560px;
+    width: min(112%, 720rem);
+    min-height: 560rem;
   }
   .bloodseeker-stage__character {
     inset: -5% -15% -7% -10%;
@@ -368,8 +368,8 @@
 
 @media (max-width: 1060px) {
   .bloodseeker-stage {
-    width: min(100%, 760px);
-    min-height: 520px;
+    width: min(100%, 760rem);
+    min-height: 520rem;
   }
   .bloodseeker-stage__character {
     inset: -2% -9% -4% -8%;
@@ -378,7 +378,7 @@
 
 @media (max-width: 720px) {
   .bloodseeker-stage {
-    min-height: 430px;
+    min-height: 430rem;
   }
   .bloodseeker-stage__character {
     inset: -2% -18% -4% -18%;
@@ -400,8 +400,8 @@
 .bloodseeker-stage {
   position: relative;
   z-index: 4;
-  width: min(118%, 790px);
-  min-height: clamp(540px, 48vw, 670px);
+  width: min(118%, 790rem);
+  min-height: clamp(540rem, 48vw, 670rem);
   overflow: visible;
   opacity: 1;
   visibility: visible;
@@ -428,8 +428,8 @@
 
 @media (max-width: 1180px) {
   .bloodseeker-stage {
-    width: min(112%, 740px);
-    min-height: 570px;
+    width: min(112%, 740rem);
+    min-height: 570rem;
   }
   .bloodseeker-stage__character {
     inset: -5% -14% -7% -12%;
@@ -445,8 +445,8 @@
 
 @media (max-width: 1060px) {
   .bloodseeker-stage {
-    width: min(100%, 760px);
-    min-height: 520px;
+    width: min(100%, 760rem);
+    min-height: 520rem;
   }
   .bloodseeker-stage__character {
     inset: -2% -8% -4% -8%;

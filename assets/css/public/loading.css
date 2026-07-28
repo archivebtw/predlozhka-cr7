@@ -5,7 +5,7 @@
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: 22px;
+  gap: 22rem;
   color: #fff4ec;
   background:
     radial-gradient(circle at 50% 42%, rgba(185,27,18,.23), transparent 28%),
@@ -20,9 +20,9 @@
   inset: 0;
   opacity: .08;
   background-image:
-    linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
-  background-size: 52px 52px;
+    linear-gradient(rgba(255,255,255,.04) 1rem, transparent 1rem),
+    linear-gradient(90deg, rgba(255,255,255,.04) 1rem, transparent 1rem);
+  background-size: 52rem 52rem;
   mask-image: radial-gradient(circle at center, #000, transparent 70%);
 }
 .site-loader.is-hidden {
@@ -31,31 +31,31 @@
   pointer-events: none;
 }
 .loader-ring {
-  width: 76px;
-  height: 76px;
-  border: 6px solid rgba(255,255,255,.09);
+  width: 76rem;
+  height: 76rem;
+  border: 6rem solid rgba(255,255,255,.09);
   border-top-color: #ef4930;
   border-right-color: #a71911;
   border-radius: 50%;
-  box-shadow: 0 0 38px rgba(223,46,30,.24);
+  box-shadow: 0 0 38rem rgba(223,46,30,.24);
   animation: loaderSpin .9s linear infinite;
 }
 .loader-emblem {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 210px;
-  height: 210px;
+  width: 210rem;
+  height: 210rem;
   transform: translate(-50%, -62%);
   opacity: .13;
 }
 .loader-emblem span {
   position: absolute;
   left: 50%;
-  top: 14px;
-  width: 14px;
-  height: 180px;
-  border-radius: 999px;
+  top: 14rem;
+  width: 14rem;
+  height: 180rem;
+  border-radius: 999rem;
   background: linear-gradient(to bottom, transparent, #ed3f2b 18%, #6e0d09 80%, transparent);
   transform-origin: center;
 }
@@ -66,7 +66,7 @@
   position: relative;
   margin: 0;
   color: #bca7a0;
-  font-size: 11px;
+  font-size: 11rem;
   font-weight: 850;
   letter-spacing: .08em;
   text-align: center;
@@ -80,12 +80,12 @@
 
 
 .loader-emblem {
-  width: 260px;
-  height: 260px;
+  width: 260rem;
+  height: 260rem;
   transform: translate(-50%, -58%);
   opacity: .14;
   background: url('../../images/theme/rune-emblem.png') center / contain no-repeat;
-  filter: saturate(1.22) drop-shadow(0 0 24px rgba(232, 67, 45, .1));
+  filter: saturate(1.22) drop-shadow(0 0 24rem rgba(232, 67, 45, .1));
 }
 .loader-emblem span {
   display: none;
@@ -93,8 +93,8 @@
 .loader-spinner-asset {
   position: relative;
   z-index: 2;
-  width: 112px;
-  height: 112px;
+  width: 112rem;
+  height: 112rem;
   display: grid;
   place-items: center;
 }
@@ -103,16 +103,16 @@
   height: 100%;
   object-fit: contain;
   animation: loaderSpin 1.15s linear infinite;
-  filter: drop-shadow(0 0 20px rgba(239, 73, 48, .22));
+  filter: drop-shadow(0 0 20rem rgba(239, 73, 48, .22));
 }
 .loader-ring {
   position: absolute;
-  width: 94px;
-  height: 94px;
-  border: 2px solid rgba(255,255,255,.06);
+  width: 94rem;
+  height: 94rem;
+  border: 2rem solid rgba(255,255,255,.06);
   border-top-color: rgba(239, 73, 48, .35);
   border-right-color: rgba(239, 73, 48, .15);
-  box-shadow: 0 0 28px rgba(223,46,30,.16);
+  box-shadow: 0 0 28rem rgba(223,46,30,.16);
 }
 .site-loader {
   background:
@@ -123,7 +123,7 @@
   opacity: .06;
 }
 .site-loader p {
-  max-width: 440px;
+  max-width: 440rem;
   color: #d6b1a8;
   line-height: 1.6;
 }
@@ -133,23 +133,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 24rem;
 }
 .loader-content {
   position: relative;
   z-index: 2;
-  width: min(92vw, 520px);
+  width: min(92vw, 520rem);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 22px;
+  gap: 22rem;
   transform: translateY(-1vh);
 }
 .loader-visual {
   position: relative;
-  width: 230px;
-  height: 230px;
+  width: 230rem;
+  height: 230rem;
   display: grid;
   place-items: center;
 }
@@ -164,23 +164,23 @@
 .loader-spinner-asset {
   position: absolute;
   inset: 50% auto auto 50%;
-  width: 112px;
-  height: 112px;
+  width: 112rem;
+  height: 112rem;
   transform: translate(-50%, -50%);
 }
 .loader-ring {
   position: absolute;
   inset: 50% auto auto 50%;
-  width: 88px;
-  height: 88px;
+  width: 88rem;
+  height: 88rem;
   transform: translate(-50%, -50%);
   animation: loaderSpinCentered .95s linear infinite;
 }
 .site-loader p {
   position: static;
-  margin: -10px 0 0;
+  margin: -10rem 0 0;
   width: 100%;
-  max-width: 520px;
+  max-width: 520rem;
   text-align: center;
 }
 @keyframes loaderSpinCentered {
@@ -188,8 +188,8 @@
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 @media (max-width: 560px) {
-  .loader-visual { width: 190px; height: 190px; }
-  .loader-spinner-asset { width: 92px; height: 92px; }
-  .loader-ring { width: 72px; height: 72px; }
-  .site-loader p { font-size: 9px; }
+  .loader-visual { width: 190rem; height: 190rem; }
+  .loader-spinner-asset { width: 92rem; height: 92rem; }
+  .loader-ring { width: 72rem; height: 72rem; }
+  .site-loader p { font-size: 9rem; }
 }
