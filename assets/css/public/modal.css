@@ -73,3 +73,54 @@ body.modal-open { overflow: hidden; }.game-modal[hidden] { display: none !import
 .modal-vote-button.is-up.is-active { border-color: rgba(82,218,139,.5); color: #caffdf; background: rgba(41,140,83,.2); }
 .modal-vote-button.is-down.is-active { border-color: rgba(240,75,52,.5); color: #ffd3ca; background: rgba(157,30,20,.22); }
 .modal-vote-button:disabled { cursor: wait; opacity: .55; }
+
+/* Public tier list for completed and dropped games. */
+body.tier-open { overflow: hidden; }
+.tier-panel[hidden] { display: none !important; }
+.tier-panel { position: fixed; inset: 0; z-index: 1300; display: grid; place-items: center; }
+.tier-backdrop { position: absolute; inset: 0; background: rgba(3,0,0,.9); backdrop-filter: blur(16px); opacity: 0; transition: opacity .28s ease; }
+.tier-dialog { position: relative; width: min(1180px,calc(100% - 28px)); max-height: calc(100vh - 28px); overflow: auto; padding: 30px; border: 1px solid rgba(230,57,39,.3); border-radius: 22px 22px 22px 7px; background: linear-gradient(145deg,#1c0706,#070202 72%); box-shadow: 0 40px 120px rgba(0,0,0,.75); opacity: 0; transform: translateY(15px); transition: opacity .28s ease,transform .28s ease; }
+.tier-panel.is-open .tier-backdrop,.tier-panel.is-open .tier-dialog { opacity: 1; transform: none; }
+.tier-close { position: absolute; top: 18px; right: 18px; width: 42px; height: 42px; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; color: #fff; background: rgba(255,255,255,.04); font-size: 24px; }
+.tier-dialog > header { padding-right: 60px; }
+.tier-dialog > header > span { color: #e56e5b; font-size: 9px; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+.tier-dialog h2 { margin: 7px 0; font-family: var(--font-display); font-size: clamp(38px,5vw,64px); }
+.tier-dialog header p { margin: 0; color: #9b8984; font-size: 11px; }
+.tier-dialog header small { display: inline-block; margin-top: 12px; padding: 5px 8px; border: 1px solid rgba(255,255,255,.09); border-radius: 999px; color: #9f8c87; }
+.tier-board { display: grid; gap: 7px; margin-top: 24px; }
+.tier-row { display: grid; grid-template-columns: 130px minmax(0,1fr); min-height: 105px; overflow: hidden; border: 1px solid rgba(255,255,255,.07); border-radius: 11px; background: rgba(0,0,0,.24); }
+.tier-row > strong { display: grid; place-items: center; padding: 12px; color: #fff; background: rgba(204,48,32,.22); font-size: 16px; text-align: center; }
+.tier-row > div { display: flex; align-items: stretch; gap: 8px; padding: 9px; overflow-x: auto; }
+.tier-row > div > p { margin: auto 8px; color: #796b67; font-size: 10px; }
+.tier-game { position: relative; display: grid; flex: 0 0 150px; grid-template-rows: 62px auto auto; overflow: hidden; border: 1px solid rgba(255,255,255,.08); border-radius: 8px; background: #100505; }
+.tier-game img { width: 100%; height: 62px; object-fit: cover; }
+.tier-game span { overflow: hidden; padding: 7px 8px 2px; font-size: 10px; font-weight: 850; text-overflow: ellipsis; white-space: nowrap; }
+.tier-game small { padding: 0 8px 7px; color: #8e7c78; font-size: 8px; }
+.tier-game select { width: calc(100% - 12px); margin: 0 6px 6px; padding: 5px; border: 1px solid rgba(255,255,255,.1); border-radius: 5px; color: #fff; background: #190807; font-size: 8px; color-scheme: dark; }
+.library-state-chip.dropped { color: #ffc38f; border-color: rgba(240,145,52,.25); background: rgba(240,145,52,.08); }
+.modal-tabs-list { grid-template-columns: repeat(4,minmax(0,1fr)); }
+.modal-collection-tab.is-dropped.is-active i { color: #2b1600; background: #f0a034; }
+@media (max-width: 650px) { .tier-dialog { padding: 18px 10px; } .tier-row { grid-template-columns: 72px minmax(0,1fr); } .tier-row > strong { font-size: 11px; } }
+
+/* TierMaker-inspired board: color-coded ranks and a separate unranked tray. */
+.tier-board { gap: 3px; padding: 3px; border-radius: 12px; background: #050303; }
+.tier-row { grid-template-columns: 94px minmax(0,1fr); min-height: 118px; border: 0; border-radius: 0; background: #171313; }
+.tier-row > strong { color: #170b09; background: #ff7f7f; font-family: var(--font-display); font-size: 30px; }
+.tier-row[data-tier='A'] > strong { background: #ffbf7f; }
+.tier-row[data-tier='B'] > strong { background: #ffdf7f; }
+.tier-row[data-tier='C'] > strong { background: #ffff7f; }
+.tier-row[data-tier='D'] > strong { background: #bfff7f; }
+.tier-row.is-pool { grid-template-columns: 1fr; margin-top: 18px; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; background: rgba(0,0,0,.28); }
+.tier-row.is-pool > strong { min-height: 38px; padding: 7px; color: #aa9994; background: rgba(255,255,255,.035); font-family: inherit; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.tier-dropzone { display: flex; min-height: 118px; align-items: center; align-content: center; flex-wrap: wrap; gap: 5px; padding: 6px; transition: background .16s ease,box-shadow .16s ease; }
+.tier-row.is-over .tier-dropzone { background: rgba(240,68,46,.12); box-shadow: inset 0 0 0 2px rgba(240,68,46,.55); }
+.tier-game { flex: 0 0 104px; width: 104px; grid-template-rows: 78px auto auto; border-radius: 4px; cursor: default; transition: opacity .16s ease,transform .16s ease; }
+.tier-game[draggable='true'] { cursor: grab; }
+.tier-game[draggable='true']:active { cursor: grabbing; }
+.tier-game.is-dragging { opacity: .35; transform: scale(.94); }
+.tier-game img { height: 78px; }
+.tier-game span { font-size: 8px; }
+.tier-game label { position: absolute; inset: 0; overflow: hidden; opacity: 0; pointer-events: none; }
+.tier-game:focus-within label { inset: auto 3px 3px; z-index: 2; opacity: 1; pointer-events: auto; }
+.tier-game select { width: 98px; margin: 0; }
+@media (max-width: 650px) { .tier-row { grid-template-columns: 58px minmax(0,1fr); } .tier-row > strong { font-size: 20px; } .tier-row.is-pool { grid-template-columns: 1fr; } .tier-game { flex-basis: 88px; width: 88px; } }
