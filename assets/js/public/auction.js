@@ -24,6 +24,7 @@
   let timer = { remaining: 0,running: false,endsAt: null };
   let historyEntries = [];
   const settingsKey = 'predlozhka141.auctionSettings';
+  const rulesKey = 'predlozhka141.auctionRules';
   const defaultSettings = { initialMinutes:60,showTimer:false,showChances:true,compactList:false,autoHide:false,accent:'#e33b28' };
   let userSettings = { ...defaultSettings };
   try { userSettings={...defaultSettings,...JSON.parse(localStorage.getItem(settingsKey)||'{}')}; } catch (_) { userSettings={...defaultSettings}; }
@@ -77,10 +78,13 @@
 
   function itemAtWheelPoint(event) {
     const rect=wheel.getBoundingClientRect(),x=event.clientX-(rect.left+rect.width/2),y=event.clientY-(rect.top+rect.height/2);
-    const radius=Math.hypot(x,y);if(radius<rect.width*.17||radius>rect.width*.52)return null;
-    const angle=(Math.atan2(y,x)*180/Math.PI+90-(rotation%360)+360)%360,entries=selectionEntries(),sum=selectionTotal();let cursor=0;
-    for(const {item,weight} of entries){cursor+=weight/sum*360;if(angle<=cursor)return item;}
-    return null;
+    const radius=Math.hypot(x,y);if(radius<rect.width*.17||radius>rect.width*.5)return null;
+    const matrix=new DOMMatrixReadOnly(getComputedStyle(wheel).transform);
+    const renderedRotation=Math.atan2(matrix.b,matrix.a)*180/Math.PI;
+    const angle=(Math.atan2(y,x)*180/Math.PI+90-renderedRotation+360)%360,entries=selectionEntries(),sum=selectionTotal();let cursor=0;
+    if(!sum)return null;
+    for(const {item,weight} of entries){cursor+=weight/sum*360;if(angle<cursor)return item;}
+    return entries.at(-1)?.item||null;
   }
 
   function render() {
@@ -222,6 +226,13 @@
   function openAuction(){lastFocusedElement=document.activeElement;panel.hidden=false;panel.setAttribute('aria-hidden','false');openButton.setAttribute('aria-expanded','true');document.body.classList.add('auction-open');loadItems();requestAnimationFrame(()=>{panel.classList.add('is-open');closeButton.focus();});}
   function closeAuction(){panel.classList.remove('is-open');panel.setAttribute('aria-hidden','true');openButton.setAttribute('aria-expanded','false');document.body.classList.remove('auction-open');window.setTimeout(()=>{panel.hidden=true;lastFocusedElement?.focus();},450);}
 
+  const rulesEditor=byId('auctionRulesEditor'),rulesStatus=byId('auctionRulesStatus');
+  const savedRules=localStorage.getItem(rulesKey);
+  if(savedRules)rulesEditor.innerHTML=savedRules;
+  let rulesSaveTimer=0;
+  function saveRules(){localStorage.setItem(rulesKey,rulesEditor.innerHTML);rulesStatus.textContent='Сохранено';}
+  function scheduleRulesSave(){rulesStatus.textContent='Сохранение…';window.clearTimeout(rulesSaveTimer);rulesSaveTimer=window.setTimeout(saveRules,350);}
+
   openButton.addEventListener('click',openAuction);closeButton.addEventListener('click',closeAuction);spinButton.addEventListener('click',spin);form.addEventListener('submit',saveItem);
   panel.addEventListener('click',async event=>{if(event.target.matches('[data-auction-close]'))closeAuction();const row=event.target.closest('[data-auction-id]');if(event.target.closest('.auction-edit'))editItem(row?.dataset.auctionId);if(event.target.closest('.auction-delete'))mutateItem(event.target,'delete');if(event.target.closest('.auction-eliminate'))mutateItem(event.target,'eliminate');if(event.target.closest('.auction-add-funds'))addFunds(event.target);const undo=event.target.closest('[data-history-index]');if(undo){const entry=historyEntries[Number(undo.dataset.historyIndex)];if(entry){await entry.undo();historyEntries=historyEntries.filter(item=>item!==entry);renderHistory();}}});
   list.addEventListener('mouseover',event=>{const row=event.target.closest('[data-auction-id]');if(row)highlightItem(row.dataset.auctionId);});list.addEventListener('mouseout',()=>highlightItem());
@@ -244,6 +255,10 @@
   byId('auctionTimerToggle').addEventListener('click',toggleTimer);byId('auctionTimerReset').addEventListener('click',resetTimer);
   byId('auctionTimerAdd').addEventListener('click',()=>adjustTimer(timerStep()));byId('auctionTimerSubtract').addEventListener('click',()=>adjustTimer(-timerStep()));
   byId('auctionHistoryClear').addEventListener('click',()=>{historyEntries=[];renderHistory();});
+  document.querySelectorAll('[data-manage-view]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-manage-view]').forEach(item=>item.classList.toggle('active',item===button));document.querySelectorAll('[data-manage-panel]').forEach(view=>{const active=view.dataset.managePanel===button.dataset.manageView;view.hidden=!active;view.classList.toggle('active',active);});if(button.dataset.manageView==='rules')rulesEditor.focus();}));
+  byId('auctionRulesEditor').addEventListener('input',scheduleRulesSave);
+  byId('auctionRulesEditor').addEventListener('paste',event=>{event.preventDefault();document.execCommand('insertText',false,event.clipboardData.getData('text/plain'));});
+  panel.querySelector('.auction-editor-toolbar').addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;rulesEditor.focus();if(button.hasAttribute('data-editor-clear'))document.execCommand('removeFormat');else document.execCommand(button.dataset.editorCommand,false,button.dataset.editorValue||null);scheduleRulesSave();});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden)closeAuction();});window.setInterval(drawTimer,250);drawTimer();renderHistory();applySettings();
 })();
 
