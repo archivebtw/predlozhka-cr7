@@ -101,3 +101,26 @@ body.tier-open { overflow: hidden; }
 .modal-tabs-list { grid-template-columns: repeat(4,minmax(0,1fr)); }
 .modal-collection-tab.is-dropped.is-active i { color: #2b1600; background: #f0a034; }
 @media (max-width: 650px) { .tier-dialog { padding: 18px 10px; } .tier-row { grid-template-columns: 72px minmax(0,1fr); } .tier-row > strong { font-size: 11px; } }
+
+/* TierMaker-inspired board: color-coded ranks and a separate unranked tray. */
+.tier-board { gap: 3px; padding: 3px; border-radius: 12px; background: #050303; }
+.tier-row { grid-template-columns: 94px minmax(0,1fr); min-height: 118px; border: 0; border-radius: 0; background: #171313; }
+.tier-row > strong { color: #170b09; background: #ff7f7f; font-family: var(--font-display); font-size: 30px; }
+.tier-row[data-tier='A'] > strong { background: #ffbf7f; }
+.tier-row[data-tier='B'] > strong { background: #ffdf7f; }
+.tier-row[data-tier='C'] > strong { background: #ffff7f; }
+.tier-row[data-tier='D'] > strong { background: #bfff7f; }
+.tier-row.is-pool { grid-template-columns: 1fr; margin-top: 18px; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; background: rgba(0,0,0,.28); }
+.tier-row.is-pool > strong { min-height: 38px; padding: 7px; color: #aa9994; background: rgba(255,255,255,.035); font-family: inherit; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.tier-dropzone { display: flex; min-height: 118px; align-items: center; align-content: center; flex-wrap: wrap; gap: 5px; padding: 6px; transition: background .16s ease,box-shadow .16s ease; }
+.tier-row.is-over .tier-dropzone { background: rgba(240,68,46,.12); box-shadow: inset 0 0 0 2px rgba(240,68,46,.55); }
+.tier-game { flex: 0 0 104px; width: 104px; grid-template-rows: 78px auto auto; border-radius: 4px; cursor: default; transition: opacity .16s ease,transform .16s ease; }
+.tier-game[draggable='true'] { cursor: grab; }
+.tier-game[draggable='true']:active { cursor: grabbing; }
+.tier-game.is-dragging { opacity: .35; transform: scale(.94); }
+.tier-game img { height: 78px; }
+.tier-game span { font-size: 8px; }
+.tier-game label { position: absolute; inset: 0; overflow: hidden; opacity: 0; pointer-events: none; }
+.tier-game:focus-within label { inset: auto 3px 3px; z-index: 2; opacity: 1; pointer-events: auto; }
+.tier-game select { width: 98px; margin: 0; }
+@media (max-width: 650px) { .tier-row { grid-template-columns: 58px minmax(0,1fr); } .tier-row > strong { font-size: 20px; } .tier-row.is-pool { grid-template-columns: 1fr; } .tier-game { flex-basis: 88px; width: 88px; } }

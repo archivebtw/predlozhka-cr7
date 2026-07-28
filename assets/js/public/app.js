@@ -52,7 +52,7 @@
     async function loadGames(client) {
       let result = await client
         .from('games')
-        .select(`${PUBLIC_GAME_FIELDS},library_status,is_favorite,tier_rank`)
+        .select(`${PUBLIC_GAME_FIELDS},library_status,is_favorite,tier_rank,tier_order`)
         .eq('published', true);
 
       // Не скрываем весь каталог, если frontend опубликован раньше SQL-миграции.
@@ -75,6 +75,7 @@
         library_status: '',
         is_favorite: false,
         tier_rank: '',
+        tier_order: 0,
         ...game
       }));
       // Каталог не должен ждать необязательную RPC репутации: сначала показываем игры,

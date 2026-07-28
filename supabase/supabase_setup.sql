@@ -37,6 +37,7 @@ create table if not exists public.games (
   library_status text not null default '' check (library_status in ('', 'completed', 'dropped', 'ignored')),
   is_favorite boolean not null default false,
   tier_rank text not null default '' check (tier_rank in ('', 'S', 'A', 'B', 'C', 'D')),
+  tier_order integer not null default 0,
   created_by uuid not null default auth.uid() references auth.users(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

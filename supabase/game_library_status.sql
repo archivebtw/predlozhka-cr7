@@ -4,7 +4,8 @@
 alter table public.games
   add column if not exists library_status text not null default '',
   add column if not exists is_favorite boolean not null default false,
-  add column if not exists tier_rank text not null default '';
+  add column if not exists tier_rank text not null default '',
+  add column if not exists tier_order integer not null default 0;
 
 alter table public.games drop constraint if exists games_library_status_check;
 alter table public.games

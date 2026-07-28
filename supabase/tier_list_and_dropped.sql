@@ -1,5 +1,6 @@
 -- Дропнутые игры и публичный тир-лист. Выполнить один раз в Supabase SQL Editor.
 alter table public.games add column if not exists tier_rank text not null default '';
+alter table public.games add column if not exists tier_order integer not null default 0;
 alter table public.games drop constraint if exists games_library_status_check;
 alter table public.games add constraint games_library_status_check
   check (library_status in ('', 'completed', 'dropped', 'ignored'));
