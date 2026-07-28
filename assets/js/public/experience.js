@@ -44,8 +44,5 @@
 
   window.addEventListener('scroll',scheduleUpdate,{ passive: true });
   window.addEventListener('resize',scheduleUpdate,{ passive: true });
-  // Changing the sticky toolbar's height while scrolling shifts the catalog
-  // underneath it and can repeatedly cross the compaction threshold.
-  catalogToolbar?.classList.remove('is-compact');
   updatePageState();
 })();
