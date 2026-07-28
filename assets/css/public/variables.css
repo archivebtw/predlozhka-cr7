@@ -1,7 +1,11 @@
 html {
-  /* 1rem equals 1px at the 1920px reference width. */
-  font-size: max(.7px, .0520833333vw);
-  font-size: max(.7px, calc(100vw / 1920));
+  /*
+    1rem equals at least 1px. The old .7px floor made 7–10rem labels render
+    at 5–7px on 125–150% Windows display scaling, while their containers kept
+    a different line box. That caused clipped and vertically shifted text.
+  */
+  font-size: max(1px, .0520833333vw);
+  font-size: max(1px, calc(100vw / 1920));
   -webkit-text-size-adjust: 100%;
 }
 
