@@ -203,3 +203,8 @@
   .card-summary, .featured .card-summary { margin-top: 4px; font-size: 9px; -webkit-line-clamp: 1; }
   .card-open-hint b { width: 28px; height: 28px; }
 }
+
+/* A fixed sentinel controls compact mode without measuring the resizing toolbar. */
+.catalog-compact-sentinel { display: block; width: 1px; height: 1px; pointer-events: none; }
+#catalog .catalog-toolbar { overflow-anchor: none; will-change: padding,grid-template-columns; }
+@media (min-width: 1081px) { #catalog .catalog-toolbar.is-compact .filters { grid-template-columns: repeat(9,minmax(0,1fr)); } }
