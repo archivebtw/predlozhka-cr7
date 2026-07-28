@@ -7,6 +7,7 @@ create table if not exists public.site_admins (
 );
 
 alter table public.site_admins enable row level security;
+revoke all on table public.site_admins from anon, authenticated;
 
 create or replace function public.is_site_admin()
 returns boolean
@@ -62,7 +63,23 @@ for each row execute function public.set_updated_at();
 alter table public.games enable row level security;
 
 revoke all on table public.games from anon, authenticated;
-grant select on table public.games to anon, authenticated;
+revoke select on table public.games from anon, authenticated;
+grant select (
+  id,
+  title,
+  steam_url,
+  cover_url,
+  description,
+  author_comment,
+  display_order,
+  published,
+  library_status,
+  is_favorite,
+  tier_rank,
+  tier_order,
+  created_at,
+  updated_at
+) on table public.games to anon, authenticated;
 grant insert, update, delete on table public.games to authenticated;
 grant usage, select on sequence public.games_id_seq to authenticated;
 
