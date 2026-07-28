@@ -4,9 +4,11 @@
       const key = String(config.supabasePublishableKey || '');
       const configured = url.startsWith('https://') && !url.includes('YOUR-PROJECT') && key && !key.includes('YOUR-PUBLISHABLE');
       if (!configured || !window.supabase?.createClient) return null;
-      return window.supabase.createClient(url, key, {
+      if (window.CR7_SUPABASE_CLIENT) return window.CR7_SUPABASE_CLIENT;
+      window.CR7_SUPABASE_CLIENT = window.supabase.createClient(url, key, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
       });
+      return window.CR7_SUPABASE_CLIENT;
     }
 
     const PUBLIC_GAME_FIELDS = 'id,title,steam_url,cover_url,description,author_comment,created_at,display_order,steam_app_id,release_date,release_date_text,coming_soon,steam_synced_at,is_coop,coop_type,coop_min_players,coop_max_players,coop_source';

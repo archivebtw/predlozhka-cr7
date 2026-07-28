@@ -104,9 +104,11 @@ function escapeHtml(value) {
       const key = String(config.supabasePublishableKey || '');
       const configured = url.startsWith('https://') && !url.includes('YOUR-PROJECT') && key && !key.includes('YOUR-PUBLISHABLE');
       if (!configured || !window.supabase?.createClient) return null;
-      return window.supabase.createClient(url, key, {
+      if (window.CR7_SUPABASE_CLIENT) return window.CR7_SUPABASE_CLIENT;
+      window.CR7_SUPABASE_CLIENT = window.supabase.createClient(url, key, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
       });
+      return window.CR7_SUPABASE_CLIENT;
     }
 
     function normalizeUrl(value, steamOnly = false) {
@@ -572,6 +574,12 @@ async function showLoggedOut() {
     }
 
     async function showLoggedIn(user) {
+      // Анонимная Supabase-сессия принадлежит зрительской предложке. Она не
+      // считается входом в админку и не должна сбрасываться при открытии сайта.
+      if (user?.is_anonymous) {
+        await showLoggedOut();
+        return;
+      }
       const isAdmin = await verifyAdmin();
       if (!isAdmin) {
         await state.client.auth.signOut();

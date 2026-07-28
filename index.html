@@ -11,7 +11,7 @@
 <link href="./assets/images/theme/site-logo.png" rel="icon" type="image/png"/>
 <link href="./assets/css/public/fonts.css" rel="stylesheet"/>
 <link href="./assets/css/public/variables.css" rel="stylesheet"/>
-<link href="./assets/css/public/bloodseeker-motion.css" rel="stylesheet"/><link href="./assets/css/public/base.css" rel="stylesheet"/><link href="./assets/css/public/animated-background.css" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css" rel="stylesheet"/><link href="./assets/css/public/auction.css" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/twitch-theme.css" rel="stylesheet"/><link href="./assets/css/public/loading.css" rel="stylesheet"/><link href="./assets/css/public/experience.css" rel="stylesheet"/><link href="./assets/css/public/admin-portal.css" rel="stylesheet"/></head>
+<link href="./assets/css/public/bloodseeker-motion.css" rel="stylesheet"/><link href="./assets/css/public/base.css" rel="stylesheet"/><link href="./assets/css/public/animated-background.css" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css" rel="stylesheet"/><link href="./assets/css/public/auction.css" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/twitch-theme.css" rel="stylesheet"/><link href="./assets/css/public/loading.css" rel="stylesheet"/><link href="./assets/css/public/experience.css" rel="stylesheet"/><link href="./assets/css/public/admin-portal.css" rel="stylesheet"/><link href="./assets/css/public/suggestions.css" rel="stylesheet"/></head>
 <body><a class="skip-link" href="#catalog">Перейти к каталогу</a><div aria-hidden="true" class="scroll-progress" id="scrollProgress"></div><div aria-label="Загрузка сайта" aria-live="polite" class="site-loader" id="siteLoader" role="status">
 <div class="loader-content">
 <div aria-hidden="true" class="loader-visual">
@@ -41,6 +41,7 @@
 </a>
 <div class="nav-right">
 <button aria-controls="gangPanel" aria-expanded="false" class="twitch-nav gang-trigger" id="gangOpen" type="button">141 GANG <span aria-hidden="true">↗</span></button>
+<button aria-controls="suggestionsPanel" aria-expanded="false" class="nav-link suggestions-trigger" data-suggestions-view="rating" type="button">Рейтинг предложки</button>
 <a class="nav-link" href="#catalog">Каталог</a>
 <button aria-controls="featurePanel" aria-expanded="false" class="nav-link videos-trigger coming-soon-trigger" data-coming-description="Здесь зрители смогут предлагать видео для будущих просмотров на стриме." data-coming-kicker="Видео от зрителей" data-coming-title="СКОРО" type="button">Видосы</button>
 <button aria-controls="tierListPanel" aria-expanded="false" class="nav-link tier-list-trigger" id="tierListOpen" type="button">Тир-лист</button>
@@ -66,7 +67,7 @@
 <div class="hero-divider"></div>
 <p class="hero-copy">Здесь собраны игры, которые могут однажды появиться на стримах Sasavot. Каталог обновляется автором проекта, а следующую историю Глеб выбирает сам.</p>
 <div class="hero-actions">
-<button aria-controls="featurePanel" aria-expanded="false" class="suggestion-cta coming-soon-trigger" data-coming-description="Форма предложений от зрителей уже готовится." data-coming-kicker="Предложить свою игру" data-coming-title="СКОРО" type="button">ПРЕДЛОЖИТЬ ИГРУ ↗</button>
+<button aria-controls="suggestionsPanel" aria-expanded="false" class="suggestion-cta suggestions-trigger" data-suggestions-view="submit" type="button">ПРЕДЛОЖИТЬ ИГРУ ↗</button>
 <button aria-controls="featurePanel" aria-expanded="false" class="suggestion-cta coming-soon-trigger" data-coming-description="Здесь зрители смогут предлагать видео для будущих просмотров на стриме." data-coming-kicker="Предложить видео" data-coming-title="СКОРО" type="button">ПРЕДЛОЖИТЬ ВИДЕО ↗</button>
 <a class="channel-cta" href="#catalog">КАТАЛОГ ИГР ↗</a>
 <span class="hero-note">Игры для будущих стримов.</span>
@@ -173,6 +174,59 @@
 </main></div>
 </section>
 </div>
+<div aria-hidden="true" class="suggestions-panel" hidden id="suggestionsPanel">
+<div class="suggestions-backdrop" data-suggestions-close=""></div>
+<section aria-labelledby="suggestionsTitle" aria-modal="true" class="suggestions-dialog" role="dialog">
+<header class="suggestions-head">
+<div><span>Выбор сообщества</span><h2 id="suggestionsTitle">Рейтинг предложки</h2><p>Предлагай игры, поддерживай идеи сообщества и голосуй за следующую игру на стриме.</p></div>
+<button aria-label="Закрыть рейтинг предложки" class="suggestions-close" id="suggestionsClose" type="button">×</button>
+</header>
+<nav aria-label="Разделы предложки" class="suggestions-tabs">
+<button class="active" data-suggestions-tab="rating" type="button">Рейтинг</button>
+<button data-suggestions-tab="submit" type="button">Предложить игру</button>
+</nav>
+<div class="suggestions-notice" id="suggestionsNotice" role="status"></div>
+<section class="suggestions-view active" data-suggestions-panel="rating">
+<div class="suggestions-rating-head">
+<div><span>Один зритель — один голос за игру</span><h3>Следующая игра на стриме</h3></div>
+<label>Сортировка<select id="suggestionsSort"><option value="votes">По голосам</option><option value="newest">Сначала новые</option><option value="comments">По обсуждениям</option></select></label>
+</div>
+<div aria-live="polite" class="suggestions-grid" id="suggestionsGrid"><div class="suggestions-empty">Загружаем рейтинг…</div></div>
+</section>
+<section class="suggestions-view" data-suggestions-panel="submit" hidden>
+<div class="suggestion-submit-layout">
+<form class="suggestion-form" id="suggestionForm" novalidate>
+<span class="suggestion-step">Шаг 1 · Steam</span>
+<h3>Предложить игру</h3>
+<p>Вставь ссылку на страницу игры. Если её уже предложили, твоя поддержка добавится к существующей заявке.</p>
+<label for="suggestionSteamUrl">Ссылка на Steam</label>
+<div class="suggestion-steam-row"><input id="suggestionSteamUrl" maxlength="500" placeholder="https://store.steampowered.com/app/..." required type="url"><button id="suggestionPreviewButton" type="button">Проверить</button></div>
+<div class="suggestion-preview" hidden id="suggestionPreview">
+<img alt="" id="suggestionPreviewImage">
+<div><span>Найдена в Steam</span><strong id="suggestionPreviewTitle">—</strong><p id="suggestionPreviewText">—</p></div>
+</div>
+<label for="suggestionComment">Комментарий <small>необязательно, до 300 символов</small></label>
+<textarea disabled id="suggestionComment" maxlength="300" placeholder="Почему эту игру стоит показать на стриме?"></textarea>
+<div class="suggestion-form-actions"><button disabled id="suggestionSubmitButton" type="submit">Отправить предложение</button><small>Отправляя игру, ты также поддерживаешь её заявку.</small></div>
+</form>
+<aside class="suggestion-rules">
+<span>Как это работает</span>
+<ol><li>Steam ID защищает список от дубликатов.</li><li>Повторная заявка увеличивает число поддержавших.</li><li>Администратор проверяет игру перед публикацией.</li><li>После одобрения игра появляется в рейтинге.</li></ol>
+<p>Для голоса или комментария сайт создаст безопасную анонимную сессию на этом устройстве.</p>
+</aside>
+</div>
+</section>
+</section>
+</div>
+<div aria-hidden="true" class="suggestion-comments-panel" hidden id="suggestionCommentsPanel">
+<div class="suggestion-comments-backdrop" data-suggestion-comments-close=""></div>
+<section aria-labelledby="suggestionCommentsTitle" aria-modal="true" class="suggestion-comments-dialog" role="dialog">
+<button aria-label="Закрыть комментарии" class="suggestions-close" id="suggestionCommentsClose" type="button">×</button>
+<span>Обсуждение игры</span><h2 id="suggestionCommentsTitle">Комментарии</h2>
+<div class="suggestion-comments-list" id="suggestionCommentsList"></div>
+<form class="suggestion-comment-form" id="suggestionCommentForm"><textarea id="suggestionCommentBody" maxlength="300" placeholder="Оставить комментарий…" required></textarea><div><button class="suggestion-comment-delete" hidden id="suggestionCommentDelete" type="button">Удалить мой</button><button type="submit">Сохранить комментарий</button></div></form>
+</section>
+</div>
 <div aria-hidden="true" class="feature-panel" hidden id="featurePanel"><div class="feature-backdrop" data-feature-close=""></div><section aria-labelledby="featureTitle" aria-modal="true" class="feature-dialog" role="dialog"><button aria-label="Закрыть окно" class="feature-close" id="featureClose" type="button">×</button><span id="featureKicker">Новый раздел</span><h2 id="featureTitle">Скоро</h2><p id="featureDescription">Функция находится в разработке.</p></section></div>
 <div aria-hidden="true" class="admin-portal" hidden="" id="adminPortal">
 <div class="admin-portal-backdrop" data-admin-portal-close=""></div>
@@ -206,6 +260,21 @@
 </section>
 <section hidden="" id="adminSection">
 <div class="connection-card">Steam-данные загружаются через защищённую Supabase Edge Function. Игры и даты сразу синхронизируются с публичным каталогом.</div>
+<article class="panel suggestion-moderation">
+<div class="panel-head suggestion-moderation-head">
+<div><span class="suggestion-step">Предложения зрителей</span><h2>Очередь модерации</h2><p>Поддержки поднимают заявку в очереди. После одобрения игра появляется в публичном рейтинге.</p></div>
+<button class="btn" id="suggestionModerationRefresh" type="button">Обновить</button>
+</div>
+<div class="suggestion-moderation-filters" role="group" aria-label="Статус заявок">
+<button class="active" data-suggestion-status="pending" type="button">На рассмотрении <span id="suggestionPendingCount">0</span></button>
+<button data-suggestion-status="approved" type="button">В рейтинге</button>
+<button data-suggestion-status="selected" type="button">Выбрана</button>
+<button data-suggestion-status="rejected" type="button">Отклонённые</button>
+<button data-suggestion-status="completed" type="button">Пройденные</button>
+<button data-suggestion-status="archived" type="button">Архив</button>
+</div>
+<div aria-live="polite" class="suggestion-moderation-list" id="suggestionModerationList"><div class="suggestions-empty">Войди, чтобы загрузить очередь.</div></div>
+</article>
 <div class="layout">
 <article class="panel">
 <div class="panel-head">
@@ -363,5 +432,5 @@
 </div>
 </div>
 <footer><div class="shell footer-inner"><div class="footer-brand"><strong>ПРЕДЛОЖКА<span>141</span></strong><small>Сделано сообществом для сообщества</small></div><div class="footer-credits"><span>Создатели сайта</span><div><b>@tankzor</b><b>@archivebtw</b><b>@obwectbo141</b></div></div><a class="footer-top" href="#top">Наверх ↑</a></div></footer>
-<script src="./assets/js/public/loading.js"></script><script>document.body.classList.add('is-ready');</script><script src="./assets/js/public/supabase-loader.js"></script><script src="./config.js"></script><script src="./assets/js/public/state.js"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js"></script><script src="./assets/js/public/hero.js"></script><script src="./assets/js/public/catalog.js"></script><script src="./assets/js/public/modal-effects.js"></script><script src="./assets/js/public/tier-list.js"></script><script src="./assets/js/public/bloodseeker-motion.js"></script><script src="./assets/js/public/animated-background.js"></script><script async src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js"></script><script src="./assets/js/public/auction.js"></script><script src="./assets/js/public/admin-portal.js"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js"></script><script src="./assets/js/public/app.js"></script></body>
+<script src="./assets/js/public/loading.js"></script><script>document.body.classList.add('is-ready');</script><script src="./assets/js/public/supabase-loader.js"></script><script src="./config.js"></script><script src="./assets/js/public/state.js"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js"></script><script src="./assets/js/public/hero.js"></script><script src="./assets/js/public/catalog.js"></script><script src="./assets/js/public/modal-effects.js"></script><script src="./assets/js/public/tier-list.js"></script><script src="./assets/js/public/suggestions.js"></script><script src="./assets/js/public/bloodseeker-motion.js"></script><script src="./assets/js/public/animated-background.js"></script><script async src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js"></script><script src="./assets/js/public/auction.js"></script><script src="./assets/js/public/admin-portal.js"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js"></script><script src="./assets/js/public/app.js"></script></body>
 </html>

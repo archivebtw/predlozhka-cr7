@@ -390,7 +390,7 @@ Deno.serve(async (req) => {
 
     const authorization = req.headers.get("Authorization") ?? "";
     const token = authorization.replace(/^Bearer\s+/i, "").trim();
-    if (!token) return jsonResponse({ error: "Требуется вход администратора." }, 401);
+    if (!token) return jsonResponse({ error: "Требуется авторизованная сессия." }, 401);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
@@ -404,11 +404,17 @@ Deno.serve(async (req) => {
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
     if (userError || !userData.user) return jsonResponse({ error: "Сессия истекла. Войди заново." }, 401);
 
-    const { data: isAdmin, error: adminError } = await supabase.rpc("is_site_admin");
-    if (adminError || isAdmin !== true) return jsonResponse({ error: "У аккаунта нет прав администратора." }, 403);
-
     const appId = extractAppId(body?.steamUrl ?? body?.appId);
     if (!appId) return jsonResponse({ error: "Не удалось определить Steam App ID из ссылки." }, 400);
+
+    // Зрители используют ту же проверенную Steam-интеграцию только для предпросмотра
+    // предложения. Любые административные действия по-прежнему требуют site_admin.
+    if (body?.action === "suggestion-preview") {
+      return jsonResponse(await getSteamData(appId));
+    }
+
+    const { data: isAdmin, error: adminError } = await supabase.rpc("is_site_admin");
+    if (adminError || isAdmin !== true) return jsonResponse({ error: "У аккаунта нет прав администратора." }, 403);
 
     return jsonResponse(await getSteamData(appId));
   } catch (error) {
