@@ -1,5 +1,4 @@
 -- ПРЕДЛОЖКА CR7 — схема Supabase
--- Запусти весь файл один раз в Supabase → SQL Editor.
 
 create table if not exists public.site_admins (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -117,7 +116,3 @@ begin
   end if;
 end $$;
 
--- ПОСЛЕ создания пользователя в Authentication → Users:
--- 1. Скопируй его UUID.
--- 2. Выполни отдельно строку ниже, заменив UUID:
--- insert into public.site_admins (user_id) values ('ТВОЙ-UUID-ПОЛЬЗОВАТЕЛЯ');
