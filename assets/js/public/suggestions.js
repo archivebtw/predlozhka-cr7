@@ -27,7 +27,8 @@
     moderationList: document.getElementById('suggestionModerationList'),
     moderationRefresh: document.getElementById('suggestionModerationRefresh'),
     moderationFilters: [...document.querySelectorAll('[data-suggestion-status]')],
-    pendingCount: document.getElementById('suggestionPendingCount')
+    pendingCount: document.getElementById('suggestionPendingCount'),
+    adminOnly: [...document.querySelectorAll('[data-suggestions-admin-only]')]
   };
 
   if (!elements.panel) return;
@@ -86,6 +87,9 @@
     if (/get_public_game_suggestions|submit_game_suggestion|schema cache|PGRST202|42883/i.test(message)) {
       return 'Система предложений ещё не подключена к базе. Выполни supabase/game_suggestions.sql.';
     }
+    if (/только администратор|недостаточно прав|site_admin/i.test(message)) {
+      return 'Это действие доступно только администратору.';
+    }
     return message;
   }
 
@@ -106,7 +110,7 @@
   }
 
   function setTab(name) {
-    const target = name === 'submit' ? 'submit' : 'rating';
+    const target = name === 'submit' && suggestionState.isAdmin ? 'submit' : 'rating';
     elements.tabs.forEach(button => button.classList.toggle('active', button.dataset.suggestionsTab === target));
     elements.views.forEach(view => {
       const active = view.dataset.suggestionsPanel === target;
@@ -117,12 +121,14 @@
   }
 
   function openPanel(view = 'rating') {
+    const requestedAdminView = view === 'submit' && !suggestionState.isAdmin;
     elements.panel.hidden = false;
     elements.panel.setAttribute('aria-hidden', 'false');
     elements.triggers.forEach(trigger => trigger.setAttribute('aria-expanded', 'true'));
     document.documentElement.classList.add('suggestions-open');
     setTab(view);
-    window.setTimeout(() => (view === 'submit' ? elements.steamUrl : elements.close)?.focus(), 30);
+    if (requestedAdminView) showNotice('Предлагать игры может только администратор.', 'error');
+    window.setTimeout(() => (view === 'submit' && suggestionState.isAdmin ? elements.steamUrl : elements.close)?.focus(), 30);
   }
 
   function closePanel() {
@@ -144,6 +150,15 @@
     return result.data.session;
   }
 
+  async function requireAdminSession() {
+    if (!suggestionState.client) throw new Error('Supabase не настроен.');
+    if (!suggestionState.isAdmin) throw new Error('Это действие доступно только администратору.');
+    const { data, error } = await suggestionState.client.auth.getSession();
+    if (error) throw error;
+    if (!data?.session?.user) throw new Error('Войди в аккаунт администратора.');
+    return data.session;
+  }
+
   function parseSteamAppId(value) {
     try {
       const url = new URL(String(value || '').trim());
@@ -163,7 +178,22 @@
     elements.previewImage.removeAttribute('src');
   }
 
+  function applyAdminAccess() {
+    elements.adminOnly.forEach(element => {
+      element.hidden = !suggestionState.isAdmin;
+      element.setAttribute('aria-hidden', suggestionState.isAdmin ? 'false' : 'true');
+    });
+    if (!suggestionState.isAdmin && !elements.views.find(view => view.dataset.suggestionsPanel === 'submit')?.hidden) {
+      setTab('rating');
+    }
+    renderPublicSuggestions();
+  }
+
   async function previewSteamGame() {
+    if (!suggestionState.isAdmin) {
+      showNotice('Проверять и предлагать игры может только администратор.', 'error');
+      return;
+    }
     const steamUrl = elements.steamUrl.value.trim();
     if (!parseSteamAppId(steamUrl)) {
       clearPreview();
@@ -173,7 +203,7 @@
 
     setBusy(elements.previewButton, true, 'Ищем…');
     try {
-      await ensureViewerSession();
+      await requireAdminSession();
       const { data, error } = await suggestionState.client.functions.invoke('steam-game', {
         body: { action: 'suggestion-preview', steamUrl }
       });
@@ -202,6 +232,10 @@
 
   async function submitSuggestion(event) {
     event.preventDefault();
+    if (!suggestionState.isAdmin) {
+      showNotice('Предлагать игры может только администратор.', 'error');
+      return;
+    }
     const preview = suggestionState.preview;
     if (!preview?.appId) {
       showNotice('Сначала проверь Steam-ссылку.', 'error');
@@ -210,7 +244,7 @@
 
     setBusy(elements.submitButton, true, 'Отправляем…');
     try {
-      await ensureViewerSession();
+      await requireAdminSession();
       const { data, error } = await suggestionState.client.rpc('submit_game_suggestion', {
         p_steam_app_id: Number(preview.appId),
         p_title: preview.title,
@@ -266,6 +300,14 @@
       const cover = safeUrl(game.cover_url);
       const steam = safeUrl(game.steam_url, ['steampowered.com', 'steamcommunity.com']);
       const selected = game.status === 'selected';
+      const voteCount = Number(game.vote_count) || 0;
+      const voteLabel = selected
+        ? 'Голосование завершено'
+        : !suggestionState.isAdmin
+          ? `Голос администратора · ${voteCount}`
+          : game.has_voted
+            ? `Голос учтён · ${voteCount}`
+            : `Голосовать · ${voteCount}`;
       return `
         <article class="suggestion-card${selected ? ' is-selected' : ''}" data-suggestion-id="${Number(game.id)}">
           <div class="suggestion-rank">${selected ? '◆' : `#${index + 1}`}</div>
@@ -277,7 +319,7 @@
             <div class="suggestion-stats"><span>↑ ${Number(game.support_count) || 0} поддержали заявку</span><span>◌ ${Number(game.comment_count) || 0} комментариев</span></div>
           </div>
           <div class="suggestion-card-actions">
-            <button class="suggestion-vote${game.has_voted ? ' active' : ''}" ${selected ? 'disabled' : ''} data-suggestion-vote type="button">${selected ? 'Голосование завершено' : game.has_voted ? `Голос учтён · ${Number(game.vote_count) || 0}` : `Голосовать · ${Number(game.vote_count) || 0}`}</button>
+            <button class="suggestion-vote${game.has_voted ? ' active' : ''}" ${selected || !suggestionState.isAdmin ? 'disabled' : ''} data-suggestion-vote type="button">${voteLabel}</button>
             <button class="suggestion-comments-button" data-suggestion-comments type="button">Комментарии · ${Number(game.comment_count) || 0}</button>
           </div>
         </article>`;
@@ -298,9 +340,13 @@
   }
 
   async function toggleVote(id, button) {
+    if (!suggestionState.isAdmin) {
+      showNotice('Голосовать может только администратор.', 'error');
+      return;
+    }
     setBusy(button, true, 'Сохраняем…');
     try {
-      await ensureViewerSession();
+      await requireAdminSession();
       const { data, error } = await suggestionState.client.rpc('toggle_suggestion_vote', {
         p_suggestion_id: Number(id)
       });
@@ -469,18 +515,23 @@
       const { data: sessionData } = await suggestionState.client.auth.getSession();
       if (!sessionData?.session?.user) {
         suggestionState.isAdmin = false;
+        applyAdminAccess();
         elements.moderationList.innerHTML = '<div class="suggestions-empty">Войди, чтобы загрузить очередь.</div>';
         return;
       }
       const { data: isAdmin, error: adminError } = await suggestionState.client.rpc('is_site_admin');
       if (adminError || isAdmin !== true) {
         suggestionState.isAdmin = false;
+        applyAdminAccess();
         elements.moderationList.innerHTML = '<div class="suggestions-empty">Очередь доступна администратору.</div>';
         return;
       }
       suggestionState.isAdmin = true;
+      applyAdminAccess();
       await loadModeration();
     } catch (error) {
+      suggestionState.isAdmin = false;
+      applyAdminAccess();
       elements.moderationList.innerHTML = `<div class="suggestions-empty">${escapeHtml(errorMessage(error))}</div>`;
     }
   }
@@ -586,6 +637,7 @@
     }
     if (suggestionState.started) return;
     suggestionState.client = configuredClient();
+    applyAdminAccess();
     if (!suggestionState.client) return;
     suggestionState.started = true;
     loadPublicSuggestions();

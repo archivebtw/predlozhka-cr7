@@ -67,7 +67,7 @@
 <div class="hero-divider"></div>
 <p class="hero-copy">Здесь собраны игры, которые могут однажды появиться на стримах Sasavot. Каталог обновляется автором проекта, а следующую историю Глеб выбирает сам.</p>
 <div class="hero-actions">
-<button aria-controls="suggestionsPanel" aria-expanded="false" class="suggestion-cta suggestions-trigger" data-suggestions-view="submit" type="button">ПРЕДЛОЖИТЬ ИГРУ ↗</button>
+<button aria-controls="suggestionsPanel" aria-expanded="false" class="suggestion-cta suggestions-trigger" data-suggestions-admin-only data-suggestions-view="submit" hidden type="button">ПРЕДЛОЖИТЬ ИГРУ ↗</button>
 <button aria-controls="featurePanel" aria-expanded="false" class="suggestion-cta coming-soon-trigger" data-coming-description="Здесь зрители смогут предлагать видео для будущих просмотров на стриме." data-coming-kicker="Предложить видео" data-coming-title="СКОРО" type="button">ПРЕДЛОЖИТЬ ВИДЕО ↗</button>
 <a class="channel-cta" href="#catalog">КАТАЛОГ ИГР ↗</a>
 <span class="hero-note">Игры для будущих стримов.</span>
@@ -178,17 +178,17 @@
 <div class="suggestions-backdrop" data-suggestions-close=""></div>
 <section aria-labelledby="suggestionsTitle" aria-modal="true" class="suggestions-dialog" role="dialog">
 <header class="suggestions-head">
-<div><span>Выбор сообщества</span><h2 id="suggestionsTitle">Рейтинг предложки</h2><p>Предлагай игры, поддерживай идеи сообщества и голосуй за следующую игру на стриме.</p></div>
+<div><span>Выбор следующей игры</span><h2 id="suggestionsTitle">Рейтинг предложки</h2><p>Рейтинг открыт для просмотра и обсуждения. Добавлять игры и голосовать может только администратор.</p></div>
 <button aria-label="Закрыть рейтинг предложки" class="suggestions-close" id="suggestionsClose" type="button">×</button>
 </header>
 <nav aria-label="Разделы предложки" class="suggestions-tabs">
 <button class="active" data-suggestions-tab="rating" type="button">Рейтинг</button>
-<button data-suggestions-tab="submit" type="button">Предложить игру</button>
+<button data-suggestions-admin-only data-suggestions-tab="submit" hidden type="button">Предложить игру</button>
 </nav>
 <div class="suggestions-notice" id="suggestionsNotice" role="status"></div>
 <section class="suggestions-view active" data-suggestions-panel="rating">
 <div class="suggestions-rating-head">
-<div><span>Один зритель — один голос за игру</span><h3>Следующая игра на стриме</h3></div>
+<div><span>Голосование администратора</span><h3>Следующая игра на стриме</h3></div>
 <label>Сортировка<select id="suggestionsSort"><option value="votes">По голосам</option><option value="newest">Сначала новые</option><option value="comments">По обсуждениям</option></select></label>
 </div>
 <div aria-live="polite" class="suggestions-grid" id="suggestionsGrid"><div class="suggestions-empty">Загружаем рейтинг…</div></div>
@@ -198,7 +198,7 @@
 <form class="suggestion-form" id="suggestionForm" novalidate>
 <span class="suggestion-step">Шаг 1 · Steam</span>
 <h3>Предложить игру</h3>
-<p>Вставь ссылку на страницу игры. Если её уже предложили, твоя поддержка добавится к существующей заявке.</p>
+<p>Вставь ссылку на страницу игры. Отправка доступна только аккаунту из таблицы <code>site_admins</code>.</p>
 <label for="suggestionSteamUrl">Ссылка на Steam</label>
 <div class="suggestion-steam-row"><input id="suggestionSteamUrl" maxlength="500" placeholder="https://store.steampowered.com/app/..." required type="url"><button id="suggestionPreviewButton" type="button">Проверить</button></div>
 <div class="suggestion-preview" hidden id="suggestionPreview">
@@ -207,12 +207,12 @@
 </div>
 <label for="suggestionComment">Комментарий <small>необязательно, до 300 символов</small></label>
 <textarea disabled id="suggestionComment" maxlength="300" placeholder="Почему эту игру стоит показать на стриме?"></textarea>
-<div class="suggestion-form-actions"><button disabled id="suggestionSubmitButton" type="submit">Отправить предложение</button><small>Отправляя игру, ты также поддерживаешь её заявку.</small></div>
+<div class="suggestion-form-actions"><button disabled id="suggestionSubmitButton" type="submit">Отправить предложение</button><small>Игра попадёт в административную очередь перед публикацией.</small></div>
 </form>
 <aside class="suggestion-rules">
 <span>Как это работает</span>
-<ol><li>Steam ID защищает список от дубликатов.</li><li>Повторная заявка увеличивает число поддержавших.</li><li>Администратор проверяет игру перед публикацией.</li><li>После одобрения игра появляется в рейтинге.</li></ol>
-<p>Для голоса или комментария сайт создаст безопасную анонимную сессию на этом устройстве.</p>
+<ol><li>Steam ID защищает список от дубликатов.</li><li>Добавлять игры может только администратор.</li><li>Игра проходит проверку перед публикацией.</li><li>После одобрения она появляется в рейтинге.</li></ol>
+<p>Зрители могут просматривать рейтинг и оставлять комментарии. Предложения и голоса защищены административной проверкой на сервере.</p>
 </aside>
 </div>
 </section>

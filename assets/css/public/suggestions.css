@@ -768,3 +768,199 @@ html.suggestions-open {
     min-width: 0;
   }
 }
+
+/* Обновление 1.0 — предложка использует ту же Bloodseeker-тему, что и сайт. */
+.suggestions-panel {
+  z-index: 1500;
+}
+
+.suggestion-comments-panel {
+  z-index: 1600;
+}
+
+.suggestions-dialog {
+  isolation: isolate;
+  font-family: var(--font-body);
+  background:
+    linear-gradient(180deg, rgba(4, 1, 1, .82), rgba(8, 2, 2, .94)),
+    radial-gradient(circle at 12% 10%, rgba(235, 55, 35, .18), transparent 30%),
+    radial-gradient(circle at 88% 82%, rgba(123, 13, 9, .16), transparent 32%),
+    url('../../images/theme/portal-bg.png') center / cover fixed no-repeat;
+}
+
+.suggestions-dialog::before,
+.suggestions-dialog::after {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  content: '';
+  pointer-events: none;
+}
+
+.suggestions-dialog::before {
+  opacity: .22;
+  background-image:
+    linear-gradient(rgba(240, 72, 49, .035) 1rem, transparent 1rem),
+    linear-gradient(90deg, rgba(240, 72, 49, .035) 1rem, transparent 1rem);
+  background-size: 68rem 68rem;
+  mask-image: linear-gradient(to bottom, #000, transparent 92%);
+}
+
+.suggestions-dialog::after {
+  opacity: .18;
+  background:
+    radial-gradient(circle at 22% 20%, rgba(240, 74, 51, .32), transparent 28%),
+    radial-gradient(circle at 78% 76%, rgba(111, 10, 8, .28), transparent 34%);
+  filter: blur(40rem);
+}
+
+.suggestions-head {
+  position: relative;
+  z-index: 3;
+  min-height: 132rem;
+  align-items: center;
+  padding: 25rem clamp(24rem, 4vw, 72rem);
+  border-bottom: 1rem solid rgba(240, 72, 49, .18);
+  background: linear-gradient(90deg, rgba(24, 5, 4, .96), rgba(6, 2, 2, .9));
+  box-shadow: 0 24rem 70rem rgba(0, 0, 0, .3);
+}
+
+.suggestions-head h2,
+.suggestions-rating-head h3,
+.suggestion-form h3,
+.suggestion-comments-dialog h2 {
+  font-family: var(--font-display);
+  letter-spacing: -.035em;
+}
+
+.suggestions-head h2 {
+  line-height: 1;
+}
+
+.suggestions-head > div > span,
+.suggestion-comments-dialog > span,
+.suggestion-step,
+.suggestion-rules > span {
+  color: #f05a43;
+  font-family: var(--font-accent);
+}
+
+#suggestionsClose {
+  position: fixed;
+  top: 18rem;
+  right: 20rem;
+  z-index: 220;
+  width: 46rem;
+  height: 46rem;
+  border-color: rgba(240, 84, 61, .42);
+  background: rgba(19, 4, 3, .94);
+  box-shadow: 0 12rem 34rem rgba(0, 0, 0, .45);
+}
+
+.suggestions-tabs {
+  z-index: 100;
+  gap: 8rem;
+  padding: 12rem clamp(24rem, 4vw, 72rem);
+  border-bottom: 1rem solid rgba(240, 72, 49, .16);
+  background: rgba(7, 2, 2, .94);
+  box-shadow: 0 16rem 42rem rgba(0, 0, 0, .24);
+}
+
+.suggestions-tabs button {
+  appearance: none;
+  min-height: 40rem;
+  padding: 9rem 16rem;
+  border: 1rem solid transparent;
+  border-radius: 10rem 10rem 10rem 3rem;
+  color: #b7a5a0;
+  background: transparent;
+  font-family: var(--font-accent);
+  font-size: 12rem;
+  line-height: 1.25;
+}
+
+.suggestions-tabs button:hover {
+  border-color: rgba(240, 72, 49, .2);
+  color: #fff;
+  background: rgba(240, 72, 49, .08);
+}
+
+.suggestions-tabs button.active {
+  border-color: rgba(240, 76, 53, .5);
+  color: #fff6f2;
+  background: linear-gradient(145deg, rgba(151, 28, 19, .34), rgba(43, 8, 6, .68));
+  box-shadow: inset 0 1rem rgba(255, 255, 255, .05);
+}
+
+.suggestions-view {
+  position: relative;
+  z-index: 2;
+}
+
+.suggestion-card,
+.suggestion-form,
+.suggestion-rules,
+.suggestion-comments-dialog {
+  border-color: rgba(240, 72, 49, .2);
+  background:
+    linear-gradient(145deg, rgba(27, 7, 6, .94), rgba(7, 2, 2, .96)),
+    radial-gradient(circle at 0 0, rgba(240, 72, 49, .12), transparent 40%);
+  box-shadow: 0 26rem 72rem rgba(0, 0, 0, .32), inset 0 1rem rgba(255, 255, 255, .025);
+}
+
+.suggestion-card {
+  border-radius: 16rem 16rem 16rem 5rem;
+}
+
+.suggestion-card:hover {
+  border-color: rgba(240, 72, 49, .36);
+  background: linear-gradient(110deg, rgba(48, 11, 9, .96), rgba(10, 3, 3, .97));
+}
+
+.suggestions-rating-head span,
+.suggestions-rating-head label,
+.suggestion-stats {
+  color: #a9938e;
+}
+
+.suggestions-rating-head select,
+.suggestion-form input,
+.suggestion-form textarea,
+.suggestion-comment-form textarea {
+  border-width: 1rem;
+  border-color: rgba(240, 72, 49, .22);
+  color: #fff4ef;
+  background: rgba(5, 1, 1, .78);
+}
+
+.suggestion-vote {
+  border-color: rgba(240, 72, 49, .5);
+  background: linear-gradient(145deg, rgba(151, 28, 19, .28), rgba(45, 8, 6, .66));
+}
+
+.suggestion-vote:disabled {
+  border-color: rgba(255, 255, 255, .1);
+  color: #8f807c;
+  background: rgba(255, 255, 255, .025);
+}
+
+.suggestion-comments-button {
+  background: rgba(255, 255, 255, .035);
+}
+
+#suggestionCommentsClose {
+  z-index: 220;
+  line-height: 1;
+}
+
+@media (max-width: 760px) {
+  .suggestions-head {
+    min-height: 92rem;
+    padding-right: 76rem;
+  }
+
+  #suggestionsClose {
+    top: 14rem;
+    right: 14rem;
+  }
+}
