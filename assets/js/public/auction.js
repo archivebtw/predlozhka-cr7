@@ -25,7 +25,7 @@
   let historyEntries = [];
   const settingsKey = 'predlozhka141.auctionSettings';
   const rulesKey = 'predlozhka141.auctionRules';
-  const defaultSettings = { initialMinutes:60,showTimer:false,showChances:true,compactList:false,autoHide:false,accent:'#e33b28' };
+  const defaultSettings = { initialMinutes:60,showTimer:false,showBank:true,showChances:true,compactList:false,autoHide:false,accent:'#e33b28' };
   let userSettings = { ...defaultSettings };
   try { userSettings={...defaultSettings,...JSON.parse(localStorage.getItem(settingsKey)||'{}')}; } catch (_) { userSettings={...defaultSettings}; }
 
@@ -91,6 +91,7 @@
   function render() {
     const active=activeItems(),bank=active.reduce((sum,item)=>sum+Number(item.amount),0),selectionSum=selectionTotal(),hideEliminated=byId('auctionHideEliminated').checked;
     total.textContent = money(bank); count.textContent = String(active.length);
+    panel.classList.toggle('auction-hide-bank',!userSettings.showBank);
     panel.classList.toggle('auction-hide-chances',!userSettings.showChances);
     panel.classList.toggle('auction-compact-list',userSettings.compactList);
     panel.style.setProperty('--auction-accent',userSettings.accent);
@@ -213,6 +214,7 @@
   function applySettings() {
     byId('auctionInitialMinutes').value=userSettings.initialMinutes;
     byId('auctionShowTimer').checked=userSettings.showTimer;
+    byId('auctionShowBank').checked=userSettings.showBank;
     byId('auctionShowChances').checked=userSettings.showChances;
     byId('auctionCompactList').checked=userSettings.compactList;
     byId('auctionAutoHide').checked=userSettings.autoHide;
@@ -248,6 +250,7 @@
   panel.querySelector('[data-open-auction-settings]').addEventListener('click',()=>{switchTab(panel.querySelector('[data-auction-tab="settings"]'));byId('auctionSettings').hidden=true;});
   byId('auctionInitialMinutes').addEventListener('change',event=>{userSettings.initialMinutes=Math.max(1,Math.min(360,Number(event.target.value)||60));saveSettings();});
   byId('auctionShowTimer').addEventListener('change',event=>{userSettings.showTimer=event.target.checked;saveSettings();});
+  byId('auctionShowBank').addEventListener('change',event=>{userSettings.showBank=event.target.checked;saveSettings();});
   byId('auctionShowChances').addEventListener('change',event=>{userSettings.showChances=event.target.checked;saveSettings();});
   byId('auctionCompactList').addEventListener('change',event=>{userSettings.compactList=event.target.checked;saveSettings();});
   byId('auctionAutoHide').addEventListener('change',event=>{userSettings.autoHide=event.target.checked;byId('auctionHideEliminated').checked=event.target.checked;saveSettings();});

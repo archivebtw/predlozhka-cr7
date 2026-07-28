@@ -5,8 +5,7 @@
   const catalogLink = document.querySelector('.nav-link[href="#catalog"]');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let frame = 0;
-  // Compact mode changed the sticky element's intrinsic height and caused jumps.
-  catalogToolbar?.classList.remove('is-compact');
+  const compactSentinel = catalog?.querySelector('.catalog-compact-sentinel');
 
   function updatePageState() {
     frame = 0;
@@ -18,6 +17,13 @@
 
   function scheduleUpdate() {
     if (!frame) frame = requestAnimationFrame(updatePageState);
+  }
+
+  if (catalogToolbar && compactSentinel && 'IntersectionObserver' in window) {
+    const compactObserver = new IntersectionObserver(([entry]) => {
+      catalogToolbar.classList.toggle('is-compact',!entry.isIntersecting&&entry.boundingClientRect.top<180);
+    },{ rootMargin:'-180px 0px 0px',threshold:0 });
+    compactObserver.observe(compactSentinel);
   }
 
   if (catalog && catalogLink && 'IntersectionObserver' in window) {

@@ -369,3 +369,18 @@ body.auction-open { overflow: hidden; }
 .auction-rules-editor h2 { margin: 0 0 14px; color: #fff; font-size: 30px; }
 .auction-rules-editor li::marker { color: var(--auction-accent,var(--red)); }
 @media (max-width: 900px) { .auction-content [data-auction-panel='manage'].active { overflow: visible; } .auction-manage-view { height: auto; overflow: visible; } .auction-manage-view .auction-manage-grid { height: auto; } .auction-manage-view .auction-side-column { overflow: visible; } .auction-rules-editor { height: min(62vh,560px); } }
+
+/* Simultaneous rules, lots and timer workspace */
+.auction-hide-bank .auction-bank { display: none; }
+.auction-content [data-auction-panel='manage'].active { grid-template: minmax(0,1fr) / minmax(260px,.72fr) minmax(420px,1.55fr) minmax(300px,.73fr); gap: 12px; }
+.auction-content [data-auction-panel='manage'] > .auction-setup-notice { position: absolute; top: 4px; right: 70px; z-index: 2; }
+.auction-content [data-auction-panel='manage'] > .auction-manage-tabs { display: none !important; }
+.auction-content [data-auction-panel='manage'] > [data-manage-panel='lots'],
+.auction-content [data-auction-panel='manage'] > [data-manage-panel='lots'] > .auction-manage-grid { display: contents; }
+.auction-content [data-auction-panel='manage'] .auction-rules { grid-column: 1; grid-row: 1; display: block; height: 100%; min-height: 0; }
+.auction-content [data-auction-panel='manage'] .auction-admin { grid-column: 2; grid-row: 1; height: 100%; min-height: 0; }
+.auction-content [data-auction-panel='manage'] .auction-side-column { grid-column: 3; grid-row: 1; height: 100%; min-height: 0; }
+.auction-content [data-auction-panel='manage'] .auction-rules-editor { padding: 22px; font-size: 12px; }
+.auction-content [data-auction-panel='manage'] .auction-rules-editor h2 { font-size: 24px; }
+@media (max-width: 1180px) { .auction-content [data-auction-panel='manage'].active { grid-template-columns: minmax(240px,.7fr) minmax(360px,1.3fr); } .auction-content [data-auction-panel='manage'] .auction-side-column { display: none; } }
+@media (max-width: 760px) { .auction-content [data-auction-panel='manage'].active { display: flex; flex-direction: column; overflow: auto; } .auction-content [data-auction-panel='manage'] .auction-rules,.auction-content [data-auction-panel='manage'] .auction-admin { min-height: 520px; } }
