@@ -135,8 +135,9 @@
 <button class="filter-btn" data-filter="unknown" type="button">Без даты</button>
 <button class="filter-btn" data-filter="favorite" type="button">★ Избранное</button>
 <button class="filter-btn" data-filter="completed" type="button">Пройденные</button>
+<button class="filter-btn" data-filter="dropped" type="button">Дроп</button>
 <button class="filter-btn" data-filter="ignored" type="button">Неинтересно</button>
-</div>
+<button class="filter-btn tier-list-trigger" id="tierListOpen" type="button">▦ Тир-лист</button></div>
 <label class="catalog-sort" for="publicCatalogSort"><span>Сортировка</span><select id="publicCatalogSort"><option value="newest">По новизне</option><option value="votes">По голосам</option></select></label>
 </div>
 </div>
@@ -317,6 +318,7 @@
 </section>
 </div>
 </div>
+<div aria-hidden="true" class="tier-panel" hidden id="tierListPanel"><div class="tier-backdrop" data-tier-close></div><section aria-labelledby="tierListTitle" aria-modal="true" class="tier-dialog" role="dialog"><button aria-label="Закрыть тир-лист" class="tier-close" id="tierListClose" type="button">×</button><header><span>Моя библиотека</span><h2 id="tierListTitle">Тир-лист игр</h2><p>Пройденные и дропнутые игры. Изменять оценки может только администратор.</p><small id="tierAdminStatus">Публичный просмотр</small></header><div class="tier-board" id="tierBoard" aria-live="polite"></div></section></div>
 <div aria-hidden="true" class="game-modal" hidden="" id="gameModal">
 <div class="modal-backdrop" data-modal-close=""></div>
 <div aria-labelledby="modalTitle" aria-modal="true" class="modal-panel" role="dialog">
@@ -326,10 +328,11 @@
 <div class="modal-badges" id="modalBadges"></div>
 <h2 class="modal-title" id="modalTitle"></h2>
 <p class="modal-release" id="modalRelease"></p>
-<div aria-label="Будущие отметки игры" class="modal-collection-tabs" role="group">
+<div aria-label="Отметки игры в библиотеке" class="modal-collection-tabs" role="group">
 <span class="modal-tabs-label">Моя библиотека <small>только админ</small></span>
 <div class="modal-tabs-list">
 <button aria-pressed="false" class="modal-collection-tab is-completed" data-library-action="completed" type="button"><i aria-hidden="true">✓</i><span>Пройдено</span></button>
+<button aria-pressed="false" class="modal-collection-tab is-dropped" data-library-action="dropped" type="button"><i aria-hidden="true">↘</i><span>Дроп</span></button>
 <button aria-pressed="false" class="modal-collection-tab is-ignored" data-library-action="ignored" type="button"><i aria-hidden="true">×</i><span>Не интересует</span></button>
 <button aria-pressed="false" class="modal-collection-tab is-favorite" data-library-action="favorite" type="button"><i aria-hidden="true">★</i><span>Избранное</span></button>
 </div>
@@ -360,5 +363,5 @@
 </div>
 </div>
 <footer><div class="shell footer-inner"><div class="footer-brand"><strong>ПРЕДЛОЖКА<span>141</span></strong><small>Сделано сообществом для сообщества</small></div><div class="footer-credits"><span>Создатели сайта</span><div><b>@tankzor</b><b>@archivebtw</b><b>@obwectbo141</b></div></div><a class="footer-top" href="#top">Наверх ↑</a></div></footer>
-<script src="./assets/js/public/loading.js"></script><script>document.body.classList.add('is-ready');</script><script src="./assets/js/public/supabase-loader.js"></script><script src="./config.js"></script><script src="./assets/js/public/state.js"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js"></script><script src="./assets/js/public/hero.js"></script><script src="./assets/js/public/catalog.js"></script><script src="./assets/js/public/modal-effects.js"></script><script src="./assets/js/public/bloodseeker-motion.js"></script><script src="./assets/js/public/animated-background.js"></script><script async src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js"></script><script src="./assets/js/public/auction.js"></script><script src="./assets/js/public/admin-portal.js"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js"></script><script src="./assets/js/public/app.js"></script></body>
+<script src="./assets/js/public/loading.js"></script><script>document.body.classList.add('is-ready');</script><script src="./assets/js/public/supabase-loader.js"></script><script src="./config.js"></script><script src="./assets/js/public/state.js"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js"></script><script src="./assets/js/public/hero.js"></script><script src="./assets/js/public/catalog.js"></script><script src="./assets/js/public/modal-effects.js"></script><script src="./assets/js/public/tier-list.js"></script><script src="./assets/js/public/bloodseeker-motion.js"></script><script src="./assets/js/public/animated-background.js"></script><script async src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js"></script><script src="./assets/js/public/auction.js"></script><script src="./assets/js/public/admin-portal.js"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js"></script><script src="./assets/js/public/app.js"></script></body>
 </html>

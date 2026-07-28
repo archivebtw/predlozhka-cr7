@@ -89,6 +89,7 @@ function openGameModal(gameId) {
         elements.modalLibraryNotice.textContent = action === 'favorite'
           ? game.is_favorite ? 'Игра добавлена в избранное.' : 'Игра удалена из избранного.'
           : game.library_status === 'completed' ? 'Игра перемещена в пройденные.'
+            : game.library_status === 'dropped' ? 'Игра отмечена как дропнутая.'
             : game.library_status === 'ignored' ? 'Игра перемещена в неинтересные.' : 'Игра возвращена в основной каталог.';
         elements.modalLibraryNotice.className = 'modal-library-notice is-success';
         render();
