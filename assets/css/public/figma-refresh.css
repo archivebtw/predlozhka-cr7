@@ -12,6 +12,7 @@ body {
 body::-webkit-scrollbar { width: 0; height: 0; }
 body::before { display: none; }
 body::after { display: none; }
+html.lenis { scroll-behavior: auto; }
 
 main,
 #top,
@@ -1677,6 +1678,15 @@ footer {
   #catalog .card-title,
   #catalog .featured .card-title { font-size: 24rem; }
   #catalog .card-open-hint { font-size: 14rem; }
+}
+
+/* На ноутбуках с низким экраном первый экран должен помещаться без
+   принудительной высоты 720px и дополнительной прокрутки. */
+@media (min-width: 721px) and (max-height: 720px) {
+  .hero {
+    min-height: 100svh;
+    height: 100svh;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
