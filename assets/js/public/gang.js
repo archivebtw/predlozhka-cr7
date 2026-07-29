@@ -22,6 +22,7 @@
   let players = [];
   let fallbackTimeout = 0;
   let uptimeTimer = 0;
+  const regionRestrictedChannels = new Set(['yurapivo','r4dom1r']);
 
   const label = channel => channel.replace(/(^|_)(\w)/g,(_,prefix,letter) => `${prefix}${letter.toUpperCase()}`);
   const channelUrl = ({ provider,channel }) => `https://${provider === 'kick' ? 'kick.com' : 'www.twitch.tv'}/${channel}`;
@@ -228,6 +229,26 @@
     }
   }
 
+  async function checkRegionRestrictedChannel(streamer) {
+    try {
+      const metadata = await twitchFallbackMetadata(streamer.channel);
+      applyStatus({
+        ...streamer,
+        ...metadata,
+        thumbnailUrl: metadata.live
+          ? `https://static-cdn.jtvnw.net/previews-ttv/live_user_${streamer.channel}-640x360.jpg?t=${Date.now()}`
+          : '',
+        avatarUrl: '',
+      });
+      return true;
+    } catch (error) {
+      if (error?.name !== 'AbortError') {
+        console.warn(`141 GANG regional check (${streamer.channel}):`,error);
+      }
+      return false;
+    }
+  }
+
   function waitForTwitchPlayer(signal) {
     if (window.Twitch?.Player) return Promise.resolve(true);
     return new Promise(resolve => {
@@ -253,17 +274,38 @@
 
   async function checkTwitchWithPlayer(streamersToCheck,signal) {
     if (!streamersToCheck.length) return;
+    const restricted = streamersToCheck.filter(
+      streamer => regionRestrictedChannels.has(streamer.channel)
+    );
+    const regionalResults = await Promise.all(
+      restricted.map(checkRegionRestrictedChannel)
+    );
+    if (signal?.aborted) return;
+    const resolved = new Set(
+      restricted
+        .filter((_,index) => regionalResults[index])
+        .map(streamer => streamer.channel)
+    );
+    const playerStreamers = streamersToCheck.filter(
+      streamer => !resolved.has(streamer.channel)
+    );
+    if (!playerStreamers.length) {
+      sortCards();
+      updateSummary();
+      return;
+    }
+
     const playerReady = await waitForTwitchPlayer(signal);
     if (signal?.aborted) return;
     if (!playerReady) {
-      streamersToCheck.forEach(streamer => applyStatus({ ...streamer, available: false }));
+      playerStreamers.forEach(streamer => applyStatus({ ...streamer, available: false }));
       sortCards();
       updateSummary();
       return;
     }
 
     const parent = window.location.hostname || 'localhost';
-    streamersToCheck.forEach(streamer => {
+    playerStreamers.forEach(streamer => {
       const detector = document.createElement('div');
       detector.className = 'gang-detector';
       detector.id = `gangDetector-${streamer.channel}`;
@@ -288,7 +330,7 @@
     });
 
     fallbackTimeout = window.setTimeout(() => {
-      streamersToCheck.forEach(streamer => {
+      playerStreamers.forEach(streamer => {
         const card = cardFor(streamer);
         if (card?.dataset.status === 'checking') {
           applyStatus({ ...streamer, available: false });
