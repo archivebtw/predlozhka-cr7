@@ -76,7 +76,8 @@ body :is(
   .feature-close,
   .gang-close,
   .admin-portal-close,
-  .suggestions-close
+  .suggestions-close,
+  .media-close
 ) {
   z-index: 200;
   display: grid;
