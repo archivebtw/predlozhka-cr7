@@ -20,7 +20,6 @@ env:
 
 jobs:
   deploy-functions:
-    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -30,11 +29,17 @@ jobs:
       RU_STREAM_STATUS_URL: ${{ secrets.RU_STREAM_STATUS_URL }}
       RU_STREAM_STATUS_TOKEN: ${{ secrets.RU_STREAM_STATUS_TOKEN }}
     steps:
+      - name: Keep deployment idle during scheduled synchronization
+        if: github.event_name == 'schedule'
+        run: echo "Scheduled run only refreshes Steam data."
       - uses: actions/checkout@v4
+        if: github.event_name != 'schedule'
       - uses: supabase/setup-cli@v1
+        if: github.event_name != 'schedule'
         with:
           version: latest
       - name: Check deployment access
+        if: github.event_name != 'schedule'
         id: access
         shell: bash
         run: |
@@ -62,6 +67,7 @@ jobs:
         run: supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF"
 
   sync-steam-games:
+    needs: deploy-functions
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
