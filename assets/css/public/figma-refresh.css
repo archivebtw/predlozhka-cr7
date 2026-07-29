@@ -5,7 +5,7 @@ body {
   background: #040404 !important;
   font-family: var(--font-body);
   font-size: 20rem;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   scrollbar-width: none;
 }
 
@@ -196,7 +196,7 @@ body.is-ready .site-header {
   font-family: var(--font-body);
   font-size: clamp(14rem, 1.0417vw, 20rem);
   font-weight: 500;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   white-space: nowrap;
   transition: color .2s ease, background .2s ease, opacity .2s ease, transform .2s ease;
 }
@@ -349,7 +349,7 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
   font-size: 20rem;
   font-weight: 500;
   line-height: 1.2;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
 }
 
 .content-menu-toggle {
@@ -606,7 +606,7 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
   box-shadow: none;
   font-size: 20rem;
   font-weight: 500;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
 }
 
 #catalog .search::placeholder { color: #000; opacity: 1; }
@@ -633,7 +633,7 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
   box-shadow: none;
   font-size: 20rem;
   font-weight: 500;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   white-space: nowrap;
   transition: color .2s ease, background .2s ease, border-radius .2s ease;
 }
@@ -713,7 +713,7 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
   box-shadow: none;
   font-size: 22rem;
   font-weight: 600;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   text-align: left;
 }
 
@@ -871,7 +871,7 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
   font-size: 20rem;
   font-weight: 500;
   line-height: normal;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
 }
 
 #catalog .card-top {
@@ -899,7 +899,7 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
   font-size: 16rem;
   font-weight: 500;
   line-height: normal;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   text-transform: none;
   white-space: nowrap;
 }
@@ -944,7 +944,7 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
   font-size: 20rem;
   font-weight: 500;
   line-height: normal;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   opacity: 0;
   transform: translateY(8rem);
   transition: max-height .3s ease, opacity .3s ease, transform .3s ease;
@@ -1525,6 +1525,25 @@ footer {
   .catalog-menu-toggle { padding-inline: 13rem; font-size: 15rem; }
 }
 
+@media (max-width: 1280px) {
+  #catalog .controls,
+  #catalog .catalog-toolbar.is-compact .controls {
+    min-height: 0;
+    flex-wrap: wrap;
+  }
+  #catalog .search-wrap {
+    min-width: 0;
+    flex: 1 0 calc(100% - 20rem);
+  }
+  #catalog .release-filters {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  #catalog .release-filters::-webkit-scrollbar { display: none; }
+}
+
 @media (max-width: 1100px) {
   .shell,
   .hero {
@@ -1548,13 +1567,6 @@ footer {
   .hero-intro { right: auto; left: 0; bottom: 30rem; width: min(560rem, 100%); }
   .content-menu-panel { padding-block: 80rem; }
   .content-menu-card { height: auto; }
-  #catalog .controls,
-  #catalog .catalog-toolbar.is-compact .controls {
-    min-height: 0;
-    flex-wrap: wrap;
-  }
-  #catalog .search-wrap { flex-basis: calc(100% - 20rem); }
-  #catalog .release-filters { flex: 1 1 auto; overflow-x: auto; scrollbar-width: none; }
 }
 
 @media (max-width: 720px) {
@@ -1664,3 +1676,4 @@ footer {
   .content-menu-toggle img,
   #catalog .game-card { transition: none; animation: none; opacity: 1; transform: none; }
 }
+

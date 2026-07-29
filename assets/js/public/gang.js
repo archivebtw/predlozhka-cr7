@@ -10,18 +10,17 @@
   ].map(([provider,channel],order) => ({ provider, channel, order }));
   const panel = document.getElementById('gangPanel');
   const grid = document.getElementById('gangGrid');
+  const detectors = document.getElementById('gangDetectors');
   const openButton = document.getElementById('gangOpen');
   const closeButton = document.getElementById('gangClose');
   const status = document.getElementById('gangStatus');
-  if (!panel || !grid || !openButton || !closeButton || !status) return;
+  if (!panel || !grid || !detectors || !openButton || !closeButton || !status) return;
 
-  const CACHE_TTL = 60000;
   let lastFocusedElement = null;
-  let lastCheckedAt = 0;
   let refreshTimer = 0;
   let requestController = null;
-  let currentRequest = null;
-  let requestSequence = 0;
+  let players = [];
+  let fallbackTimeout = 0;
   let uptimeTimer = 0;
 
   const label = channel => channel.replace(/(^|_)(\w)/g,(_,prefix,letter) => `${prefix}${letter.toUpperCase()}`);
@@ -143,37 +142,206 @@
     }
   }
 
-  function markAllUnavailable() {
-    streamers.forEach(streamer => applyStatus({ ...streamer, available: false, live: false }));
+  function destroyFallbackPlayers() {
+    window.clearTimeout(fallbackTimeout);
+    players.forEach(player => {
+      try {
+        player.destroy();
+      } catch {}
+    });
+    players = [];
+    detectors.replaceChildren();
+  }
+
+  function startedAtFromUptime(value) {
+    const text = String(value || '').toLowerCase();
+    const units = [
+      [/([\d.]+)\s*(?:days?|д(?:н(?:я|ей)?)?)/,86400000],
+      [/([\d.]+)\s*(?:hours?|hrs?|ч(?:ас(?:а|ов)?)?)/,3600000],
+      [/([\d.]+)\s*(?:minutes?|mins?|мин(?:ут[ы]?)?)/,60000],
+      [/([\d.]+)\s*(?:seconds?|secs?|сек(?:унд[ы]?)?)/,1000],
+    ];
+    const elapsed = units.reduce(
+      (total,[pattern,multiplier]) => total + Number(text.match(pattern)?.[1] || 0) * multiplier,
+      0
+    );
+    return elapsed > 0 ? new Date(Date.now() - elapsed).toISOString() : '';
+  }
+
+  async function twitchFallbackMetadata(channel) {
+    const read = async path => {
+      const response = await fetch(
+        `https://decapi.me/twitch/${path}/${encodeURIComponent(channel)}`,
+        { signal: requestController?.signal }
+      );
+      if (!response.ok) throw new Error(`Twitch metadata: ${response.status}`);
+      return (await response.text()).trim();
+    };
+    const [title,category,uptime] = await Promise.all([
+      read('title'),
+      read('game'),
+      read('uptime')
+    ]);
+    const offlinePattern = /(?:channel is offline|not live|currently offline|offline)/i;
+    const startedAt = startedAtFromUptime(uptime);
+    if (!startedAt && !offlinePattern.test(uptime)) {
+      throw new Error(`Unknown Twitch uptime response: ${uptime}`);
+    }
+    return {
+      available: true,
+      live: Boolean(startedAt),
+      title: offlinePattern.test(title) ? '' : title,
+      category: offlinePattern.test(category) ? '' : category,
+      startedAt,
+    };
+  }
+
+  async function applyTwitchFallback(channel,live) {
+    const streamer = streamers.find(item => item.provider === 'twitch' && item.channel === channel);
+    if (!streamer) return;
+    const fallback = {
+      ...streamer,
+      available: true,
+      live,
+      title: live ? 'Прямой эфир — открыть на Twitch' : '',
+      category: '',
+      thumbnailUrl: live
+        ? `https://static-cdn.jtvnw.net/previews-ttv/live_user_${channel}-640x360.jpg?t=${Date.now()}`
+        : '',
+      avatarUrl: '',
+      startedAt: '',
+    };
+    applyStatus(fallback);
     sortCards();
     updateSummary();
+    if (!live) return;
+    try {
+      const metadata = await twitchFallbackMetadata(channel);
+      const card = cardFor(streamer);
+      if (card?.dataset.status === 'live') {
+        applyStatus({ ...fallback,...metadata,available: true,live: true });
+      }
+    } catch (error) {
+      if (error?.name !== 'AbortError') {
+        console.warn(`141 GANG metadata (${channel}):`,error);
+      }
+    }
   }
 
-  async function requestStatuses() {
-    const client = getConfiguredClient();
-    if (!client) throw new Error('Supabase не настроен');
-    const invoke = () => client.functions.invoke('stream-status',{
-      body: { streamers },
-      signal: requestController.signal
+  function waitForTwitchPlayer(signal) {
+    if (window.Twitch?.Player) return Promise.resolve(true);
+    return new Promise(resolve => {
+      const startedAt = Date.now();
+      const poll = () => {
+        if (signal?.aborted) {
+          resolve(false);
+          return;
+        }
+        if (window.Twitch?.Player) {
+          resolve(true);
+          return;
+        }
+        if (Date.now() - startedAt >= 10000) {
+          resolve(false);
+          return;
+        }
+        window.setTimeout(poll,50);
+      };
+      poll();
     });
-    const result = window.CR7_AUTH?.runPublicRequest
-      ? await window.CR7_AUTH.runPublicRequest(client,invoke)
-      : await invoke();
-    if (result.error) throw result.error;
-    return Array.isArray(result.data?.streamers) ? result.data.streamers : [];
   }
 
-  async function checkLiveChannels({ force = false } = {}) {
-    window.clearTimeout(refreshTimer);
-    if (!force && lastCheckedAt && Date.now() - lastCheckedAt < CACHE_TTL) {
-      scheduleRefresh();
+  async function checkTwitchWithPlayer(streamersToCheck,signal) {
+    if (!streamersToCheck.length) return;
+    const playerReady = await waitForTwitchPlayer(signal);
+    if (signal?.aborted) return;
+    if (!playerReady) {
+      streamersToCheck.forEach(streamer => applyStatus({ ...streamer, available: false }));
+      sortCards();
+      updateSummary();
       return;
     }
-    if (currentRequest) return currentRequest;
 
+    const parent = window.location.hostname || 'localhost';
+    streamersToCheck.forEach(streamer => {
+      const detector = document.createElement('div');
+      detector.className = 'gang-detector';
+      detector.id = `gangDetector-${streamer.channel}`;
+      detectors.appendChild(detector);
+      const player = new window.Twitch.Player(detector.id,{
+        channel: streamer.channel,
+        parent: [parent],
+        width: 400,
+        height: 300,
+        autoplay: false,
+        muted: true
+      });
+      player.addEventListener(
+        window.Twitch.Player.ONLINE,
+        () => applyTwitchFallback(streamer.channel,true)
+      );
+      player.addEventListener(
+        window.Twitch.Player.OFFLINE,
+        () => applyTwitchFallback(streamer.channel,false)
+      );
+      players.push(player);
+    });
+
+    fallbackTimeout = window.setTimeout(() => {
+      streamersToCheck.forEach(streamer => {
+        const card = cardFor(streamer);
+        if (card?.dataset.status === 'checking') {
+          applyStatus({ ...streamer, available: false });
+        }
+      });
+      sortCards();
+      updateSummary();
+    },15000);
+  }
+
+  async function checkKickDirect(streamer) {
+    try {
+      const response = await fetch(
+        `https://kick.com/api/v2/channels/${encodeURIComponent(streamer.channel)}`,
+        { headers: { Accept: 'application/json' }, signal: requestController?.signal }
+      );
+      if (!response.ok) throw new Error(`Kick: ${response.status}`);
+      const data = await response.json();
+      const live = data.livestream || null;
+      const thumbnail = live?.thumbnail?.url
+        || (typeof live?.thumbnail === 'string' ? live.thumbnail : '')
+        || live?.thumbnail_url
+        || data.banner_image?.url
+        || data.banner_image?.src
+        || '';
+      const avatar = data.user?.profile_pic
+        || data.user?.profile_picture
+        || data.profile_picture
+        || data.user?.avatar
+        || data.avatar
+        || '';
+      applyStatus({
+        ...streamer,
+        available: true,
+        live: Boolean(live),
+        title: live?.session_title || '',
+        category: live?.categories?.[0]?.name || live?.category?.name || '',
+        thumbnailUrl: thumbnail,
+        avatarUrl: avatar,
+        startedAt: live?.start_time || live?.created_at || live?.started_at || '',
+      });
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      console.warn('141 GANG Kick fallback:',error);
+      applyStatus({ ...streamer, available: false });
+    }
+  }
+
+  async function checkLiveChannels() {
+    window.clearTimeout(refreshTimer);
     requestController?.abort();
     requestController = new AbortController();
-    const sequence = ++requestSequence;
+    destroyFallbackPlayers();
     [...grid.children].forEach(card => {
       card.dataset.status = 'checking';
       card.classList.add('is-checking');
@@ -181,35 +349,18 @@
     sortCards();
     updateSummary();
 
-    const requestPromise = (async () => {
-      try {
-        const received = await requestStatuses();
-        if (sequence !== requestSequence) return;
-        streamers.forEach(streamer => {
-          const item = received.find(candidate => candidate.provider === streamer.provider
-            && String(candidate.channel).toLowerCase() === streamer.channel);
-          applyStatus(item || { ...streamer, available: false, live: false });
-        });
-        lastCheckedAt = Date.now();
-        sortCards();
-        updateSummary();
-      } catch (error) {
-        if (error?.name === 'AbortError' || sequence !== requestSequence) return;
-        console.error('141 GANG status:',error);
-        markAllUnavailable();
-      } finally {
-        if (currentRequest === requestPromise) currentRequest = null;
-        if (sequence === requestSequence && panel.getAttribute('aria-hidden') === 'false') scheduleRefresh();
-      }
-    })();
+    const twitch = streamers.filter(streamer => streamer.provider === 'twitch');
+    const kick = streamers.filter(streamer => streamer.provider === 'kick');
+    await Promise.all([
+      checkTwitchWithPlayer(twitch,requestController.signal),
+      Promise.all(kick.map(checkKickDirect))
+    ]);
+    sortCards();
+    updateSummary();
 
-    currentRequest = requestPromise;
-    return requestPromise;
-  }
-
-  function scheduleRefresh() {
-    window.clearTimeout(refreshTimer);
-    refreshTimer = window.setTimeout(() => checkLiveChannels({ force: true }),120000);
+    if (panel.getAttribute('aria-hidden') === 'false') {
+      refreshTimer = window.setTimeout(checkLiveChannels,120000);
+    }
   }
 
   function openPanel() {
@@ -235,8 +386,7 @@
     window.clearTimeout(refreshTimer);
     window.clearInterval(uptimeTimer);
     requestController?.abort();
-    requestSequence += 1;
-    currentRequest = null;
+    destroyFallbackPlayers();
     window.setTimeout(() => {
       panel.hidden = true;
       lastFocusedElement?.focus();
@@ -266,3 +416,4 @@
     }
   });
 })();
+
