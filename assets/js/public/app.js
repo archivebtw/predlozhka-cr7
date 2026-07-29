@@ -136,8 +136,13 @@
     });
 
     elements.filters.forEach(button => button.addEventListener('click', () => {
-      state.filter = button.dataset.filter;
-      elements.filters.forEach(item => item.classList.toggle('active', item === button));
+      const libraryFilter = Boolean(button.closest('#libraryFiltersMenu'));
+      const clearLibraryFilter = libraryFilter && button.classList.contains('active');
+      state.filter = clearLibraryFilter ? 'all' : button.dataset.filter;
+      elements.filters.forEach(item => item.classList.toggle(
+        'active',
+        clearLibraryFilter ? item.dataset.filter === 'all' : item === button
+      ));
       render();
     }));
 
