@@ -5,7 +5,6 @@
   const servicesMenu = document.getElementById('servicesMenu');
   const filtersToggle = document.getElementById('libraryFiltersToggle');
   const filtersMenu = document.getElementById('libraryFiltersMenu');
-  const filtersApply = document.getElementById('libraryFiltersApply');
   const sortToggle = document.getElementById('catalogSortToggle');
   const sortMenu = document.getElementById('catalogSortMenu');
   const sortSelect = document.getElementById('publicCatalogSort');
@@ -78,7 +77,6 @@
     });
   }
 
-  filtersApply?.addEventListener('click', () => setPopup(filtersToggle, filtersMenu, false));
   document.querySelectorAll('.release-filters [data-filter]').forEach(button => {
     button.addEventListener('click', () => setPopup(filtersToggle, filtersMenu, false));
   });
