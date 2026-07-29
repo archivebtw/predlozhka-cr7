@@ -400,22 +400,13 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
   transition: transform .45s cubic-bezier(.16, 1, .3, 1);
 }
 
-.content-menu-toggle[aria-expanded="true"] img { transform: rotate(90deg); }
 .hero-data-registry { display: none !important; }
 
 .content-menu-panel {
-  max-height: 0;
-  padding-block: 0;
+  padding: 200rem 0 210rem;
   overflow: hidden;
   color: #f0f0f0;
   background: #121212;
-  opacity: 0;
-  transition: max-height .7s cubic-bezier(.16, 1, .3, 1), padding .7s cubic-bezier(.16, 1, .3, 1), opacity .35s ease;
-}
-
-.content-menu-panel.is-open {
-  max-height: 672rem;
-  padding: 200rem 0 210rem;
   opacity: 1;
 }
 
@@ -1551,7 +1542,7 @@ footer {
   .site-header .twitch-login-trigger { min-height: 44rem; padding: 9rem 15rem; }
   .hero-intro { width: min(500rem, 38vw); }
   .hero-intro p { font-size: 17rem; }
-  .content-menu-panel.is-open { padding-block: 130rem; max-height: 522rem; }
+  .content-menu-panel { padding-block: 130rem; }
   .content-menu-card { height: auto; }
   #catalog .controls,
   #catalog .catalog-toolbar.is-compact .controls { margin-top: 80rem; }
@@ -1580,7 +1571,7 @@ footer {
   .nav-center::-webkit-scrollbar { display: none; }
   .hero h1 { bottom: 210rem; }
   .hero-intro { right: auto; left: 0; bottom: 30rem; width: min(560rem, 100%); }
-  .content-menu-panel.is-open { max-height: 520rem; padding-block: 80rem; }
+  .content-menu-panel { padding-block: 80rem; }
   .content-menu-card { height: auto; }
   #catalog .controls,
   #catalog .catalog-toolbar.is-compact .controls {
@@ -1636,7 +1627,7 @@ footer {
   .hero-intro p { font-size: 16rem; }
   .content-menu-toggle { min-height: 60rem; padding: 12rem 16rem; font-size: 25rem; }
   .content-menu-toggle img { width: 34rem; height: 34rem; }
-  .content-menu-panel.is-open { max-height: 710rem; padding-block: 40rem; }
+  .content-menu-panel { padding-block: 40rem; }
   .content-menu { grid-template-columns: 1fr; gap: 10rem; }
   .content-menu-card { height: 190rem; }
   .content-menu-card > span { font-size: 38rem; }

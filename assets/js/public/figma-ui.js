@@ -63,19 +63,18 @@
   });
 
   if (contentToggle && contentPanel) {
-    contentToggle.addEventListener('click', () => {
-      const open = !contentPanel.classList.contains('is-open');
-      contentPanel.classList.toggle('is-open', open);
-      contentPanel.setAttribute('aria-hidden', String(!open));
-      contentToggle.setAttribute('aria-expanded', String(open));
-      document.body.classList.toggle('content-menu-open', open);
-    });
-    contentPanel.addEventListener('click', event => {
-      if (!event.target.closest('.content-menu-card')) return;
-      contentPanel.classList.remove('is-open');
-      contentPanel.setAttribute('aria-hidden', 'true');
-      contentToggle.setAttribute('aria-expanded', 'false');
-      document.body.classList.remove('content-menu-open');
+    contentToggle.addEventListener('click', event => {
+      event.preventDefault();
+      const panelRect = contentPanel.getBoundingClientRect();
+      const panelTop = window.scrollY + panelRect.top;
+      const centeredTop = panelTop - Math.max(0,(window.innerHeight - panelRect.height) / 2);
+      const maxScroll = Math.max(0,document.documentElement.scrollHeight - window.innerHeight);
+      const target = Math.min(maxScroll,Math.max(0,centeredTop));
+      if (window.CR7_LENIS?.scrollTo) {
+        window.CR7_LENIS.scrollTo(target,{ duration: 1.1 });
+      } else {
+        window.scrollTo({ top: target, behavior: 'smooth' });
+      }
     });
   }
 
