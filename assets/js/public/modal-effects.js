@@ -10,7 +10,7 @@ function openGameModal(gameId) {
       state.activeGameId = String(game.id);
       lastFocusedElement = document.activeElement;
       elements.modalMedia.innerHTML = coverUrl
-        ? `<img src="${escapeHtml(coverUrl)}" alt="Обложка ${escapeHtml(game.title)}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='./assets/images/bloodseeker.webp'">`
+        ? `<img src="${escapeHtml(coverUrl)}" alt="Обложка ${escapeHtml(game.title)}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='./assets/images/figma/game-placeholder.svg'">`
         : `<div class="cover-fallback"><img src="${TWITCH_LOGO_DATA}" alt="" aria-hidden="true"></div>`;
       elements.modalBadges.innerHTML = `
         <span class="release-badge ${meta.badgeClass}">${escapeHtml(meta.badge)}</span>
@@ -19,6 +19,7 @@ function openGameModal(gameId) {
       elements.modalTitle.textContent = game.title || 'Без названия';
       elements.modalRelease.textContent = `Дата выхода: ${meta.line} · ${meta.countdown}`;
       elements.modalDescription.textContent = game.description || 'Описание не указано.';
+      elements.modalDescription.title = game.description || '';
       const authorComment = String(game.author_comment || '').replaceAll(EMPTY_AUTHOR_COMMENT, '').trim();
       elements.modalComment.textContent = authorComment;
       elements.modalCommentSection.hidden = !authorComment;

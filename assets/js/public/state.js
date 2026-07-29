@@ -39,6 +39,6 @@
     };
 
     const state = { games: [], query: '', filter: 'all', sort: 'newest', channel: null, activeGameId: null, librarySchemaReady: true, tierSchemaReady: true, reputationSchemaReady: true, reputationScores: {}, currentVotes: {} };
-    const TWITCH_LOGO_DATA = './assets/images/bloodseeker.webp';
+    const TWITCH_LOGO_DATA = './assets/images/figma/game-placeholder.svg';
     const EMPTY_AUTHOR_COMMENT = '\u2063';
     let lastFocusedElement = null;

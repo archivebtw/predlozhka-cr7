@@ -216,7 +216,7 @@
       elements.previewText.textContent = data.description || 'Описание в Steam не указано.';
       const cover = safeUrl(data.coverUrl);
       if (cover) elements.previewImage.src = cover;
-      else elements.previewImage.src = './assets/images/bloodseeker.webp';
+      else elements.previewImage.src = './assets/images/figma/game-placeholder.svg';
       elements.previewImage.alt = `Обложка ${data.title}`;
       elements.preview.hidden = false;
       elements.comment.disabled = false;
@@ -311,7 +311,7 @@
       return `
         <article class="suggestion-card${selected ? ' is-selected' : ''}" data-suggestion-id="${Number(game.id)}">
           <div class="suggestion-rank">${selected ? '◆' : `#${index + 1}`}</div>
-          <img class="suggestion-cover" src="${escapeHtml(cover || './assets/images/bloodseeker.webp')}" alt="Обложка ${escapeHtml(game.title)}" loading="lazy" referrerpolicy="no-referrer">
+          <img class="suggestion-cover" src="${escapeHtml(cover || './assets/images/figma/game-placeholder.svg')}" alt="Обложка ${escapeHtml(game.title)}" loading="lazy" referrerpolicy="no-referrer">
           <div class="suggestion-card-copy">
             <span>${selected ? 'Выбрано для стрима' : `${Number(game.vote_count) || 0} голосов`}</span>
             <h4>${steam ? `<a href="${escapeHtml(steam)}" target="_blank" rel="noopener noreferrer">${escapeHtml(game.title)} ↗</a>` : escapeHtml(game.title)}</h4>
@@ -495,7 +495,7 @@
       const comments = Array.isArray(item.suggestion_comments) ? item.suggestion_comments : [];
       return `
         <article class="moderation-card">
-          <img src="${escapeHtml(cover || './assets/images/bloodseeker.webp')}" alt="">
+          <img src="${escapeHtml(cover || './assets/images/figma/game-placeholder.svg')}" alt="">
           <div class="moderation-card-copy">
             <h3><a href="${escapeHtml(steam || '#')}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)} ↗</a></h3>
             <div class="moderation-card-meta"><span>Steam ID ${Number(item.steam_app_id)}</span><span>↑ ${relationCount(item.suggestion_supports)} поддержек</span><span>◆ ${relationCount(item.suggestion_votes)} голосов</span><span>${escapeHtml(formatDate(item.created_at))}</span></div>

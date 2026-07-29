@@ -14,24 +14,24 @@ html {
 }
 
 :root {
-  --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Russo One', 'Arial Black', system-ui, sans-serif;
-  --font-accent: 'Oxanium', 'Inter', system-ui, sans-serif;
-  --bg: #070202;
-  --bg-2: #100505;
-  --surface: rgba(23, 8, 8, .80);
-  --surface-strong: rgba(31, 10, 10, .96);
-  --text: #fff5ef;
-  --muted: #b9a6a0;
-  --red: #e33324;
-  --orange: #ff6b36;
-  --purple: #7d1717;
-  --cyan: #ffb06b;
+  --font-body: 'Manrope', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Druk Cyr', 'Druk Text Wide Cyr', 'Russo One', 'Arial Black', system-ui, sans-serif;
+  --font-accent: 'Manrope', 'Inter', system-ui, sans-serif;
+  --bg: #040404;
+  --bg-2: #121212;
+  --surface: rgba(32, 32, 32, .86);
+  --surface-strong: rgba(18, 18, 18, .98);
+  --text: #f0f0f0;
+  --muted: rgba(240, 240, 240, .55);
+  --red: #e63d3d;
+  --orange: #f35252;
+  --purple: #8800ff;
+  --cyan: #f0f0f0;
   --green: #78d99b;
-  --line: rgba(255, 109, 83, .16);
+  --line: rgba(240, 240, 240, .1);
   --shadow: 0 34rem 100rem rgba(0,0,0,.62);
-  --radius-xl: 34rem;
-  --radius-lg: 25rem;
-  --radius-md: 16rem;
+  --radius-xl: 6rem;
+  --radius-lg: 6rem;
+  --radius-md: 6rem;
   --ease: cubic-bezier(.16, 1, .3, 1);
 }

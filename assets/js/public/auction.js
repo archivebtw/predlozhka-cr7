@@ -15,7 +15,7 @@
   const timerDisplay = byId('auctionTimer');
   if (!panel || !openButton || !closeButton || !list || !manageList || !wheel || !form || !timerDisplay) return;
 
-  const colors = ['#e33b28','#8f170f','#f06b45','#5f0d09','#c9291c','#ff8965','#78120c','#b51f15'];
+  const colors = ['#e63d3d','#343434','#6a6a6a','#a13636','#202020','#4d4d4d','#762b2b','#7a7a7a'];
   const fallbackItems = [
     { id: 'preview-1',title: 'Пример большого лота',description: 'Демонстрационный участник',amount: 10000,eliminated: false },
     { id: 'preview-2',title: 'Пример малого лота',description: 'Демонстрационный участник',amount: 1000,eliminated: false }
@@ -25,7 +25,7 @@
   let historyEntries = [];
   const settingsKey = 'predlozhka141.auctionSettings';
   const rulesKey = 'predlozhka141.auctionRules';
-  const defaultSettings = { initialMinutes:60,showTimer:false,showBank:true,showChances:true,compactList:false,autoHide:false,accent:'#e33b28' };
+  const defaultSettings = { initialMinutes:60,showTimer:false,showBank:true,showChances:true,compactList:false,autoHide:false,accent:'#e63d3d' };
   let userSettings = { ...defaultSettings };
   try { userSettings={...defaultSettings,...JSON.parse(localStorage.getItem(settingsKey)||'{}')}; } catch (_) { userSettings={...defaultSettings}; }
 
@@ -60,11 +60,11 @@
 
   function wheelGradient(highlightId = '') {
     const entries=selectionEntries(),sum=selectionTotal();
-    if (!sum) return 'conic-gradient(from 0deg,#35100d 0 100%)';
+    if (!sum) return 'conic-gradient(from 0deg,#202020 0 100%)';
     let cursor = 0;
     return `conic-gradient(from 0deg,${entries.map(({item,weight},index) => {
       const start = cursor; cursor += weight / sum * 100;
-      const color = highlightId && String(item.id) !== String(highlightId) ? '#3b3332' : colors[items.indexOf(item) % colors.length];
+      const color = highlightId && String(item.id) !== String(highlightId) ? '#2b2b2b' : colors[items.indexOf(item) % colors.length];
       return `${color} ${start}% ${cursor}%`;
     }).join(',')})`;
   }
