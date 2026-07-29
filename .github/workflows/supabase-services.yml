@@ -32,12 +32,6 @@ jobs:
       - name: Keep deployment idle during scheduled synchronization
         if: github.event_name == 'schedule'
         run: echo "Scheduled run only refreshes Steam data."
-      - uses: actions/checkout@v4
-        if: github.event_name != 'schedule'
-      - uses: supabase/setup-cli@v1
-        if: github.event_name != 'schedule'
-        with:
-          version: latest
       - name: Check deployment access
         if: github.event_name != 'schedule'
         id: access
@@ -49,6 +43,12 @@ jobs:
           else
             echo "available=true" >> "$GITHUB_OUTPUT"
           fi
+      - uses: actions/checkout@v4
+        if: steps.access.outputs.available == 'true'
+      - uses: supabase/setup-cli@v1
+        if: steps.access.outputs.available == 'true'
+        with:
+          version: 2.110.0
       - name: Update function secrets
         if: steps.access.outputs.available == 'true'
         shell: bash

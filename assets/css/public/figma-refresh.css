@@ -749,21 +749,6 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
   transform: rotate(45deg);
 }
 
-.catalog-filter-apply {
-  width: 100%;
-  min-height: 50rem;
-  border: 0;
-  border-radius: 60rem;
-  color: #fff;
-  background: #f35252;
-  font-size: 20rem;
-  font-weight: 500;
-  letter-spacing: -0.06em;
-}
-
-.catalog-filter-apply:hover,
-.catalog-filter-apply:focus-visible { background: #e63d3d; }
-
 .catalog-sort-menu {
   width: 230rem;
   padding: 10rem;
@@ -1655,7 +1640,6 @@ footer {
     padding: 9rem 14rem;
     font-size: 18rem;
   }
-  .catalog-filter-apply { min-height: 46rem; font-size: 16rem; }
   #catalog .catalog-stream { margin-top: 55rem; }
   #catalog .section-grid { grid-template-columns: 1fr; gap: 12rem; }
   #catalog .card-index { font-size: 14rem; }
