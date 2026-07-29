@@ -13,6 +13,18 @@
 
     const PUBLIC_GAME_FIELDS = 'id,title,steam_url,cover_url,description,author_comment,created_at,display_order,steam_app_id,release_date,release_date_text,coming_soon,steam_synced_at,is_coop,coop_type,coop_min_players,coop_max_players,coop_source';
 
+    function runPublicRequest(client, operation) {
+      return window.CR7_AUTH?.runPublicRequest
+        ? window.CR7_AUTH.runPublicRequest(client,operation)
+        : operation();
+    }
+
+    function getUsableSession(client) {
+      return window.CR7_AUTH?.getUsableSession
+        ? window.CR7_AUTH.getUsableSession(client)
+        : client.auth.getSession();
+    }
+
     function isMissingLibraryColumn(error) {
       if (!error) return false;
       const details = `${error.code || ''} ${error.message || ''} ${error.details || ''}`;
@@ -34,7 +46,7 @@
     }
 
     async function loadReputation(client) {
-      const { data,error } = await client.rpc('get_game_vote_scores');
+      const { data,error } = await runPublicRequest(client,() => client.rpc('get_game_vote_scores'));
       if (error) {
         if (!isMissingReputationRpc(error)) console.warn('Не удалось загрузить репутацию игр:',error.message || error);
         resetReputationState();
@@ -42,30 +54,31 @@
       }
       state.reputationSchemaReady = true;
       state.reputationScores = Object.fromEntries((data || []).map(item => [String(item.game_id),Number(item.score) || 0]));
-      const { data: sessionData } = await client.auth.getSession();
+      const { data: sessionData } = await getUsableSession(client);
       if (!sessionData?.session?.user) {
         state.currentVotes = {};
         return;
       }
-      const { data: votes,error: votesError } = await client.rpc('get_my_game_votes');
+      const { data: votes,error: votesError } = await runPublicRequest(client,() => client.rpc('get_my_game_votes'));
       state.currentVotes = votesError ? {} : Object.fromEntries((votes || []).map(item => [String(item.game_id),Number(item.vote) || 0]));
     }
 
     async function loadGames(client) {
-      let result = await client
+      const selectGames = fields => runPublicRequest(client,() => client
         .from('games')
-        .select(`${PUBLIC_GAME_FIELDS},library_status,is_favorite,tier_rank,tier_order`)
-        .eq('published', true);
+        .select(fields)
+        .eq('published', true));
+      let result = await selectGames(`${PUBLIC_GAME_FIELDS},library_status,is_favorite,tier_rank,tier_order`);
 
       // Не скрываем весь каталог, если frontend опубликован раньше SQL-миграции.
       // После выполнения game_library_status.sql следующий Realtime/reload вернёт отметки.
       if (isMissingLibraryColumn(result.error)) {
         state.tierSchemaReady = false;
-        result = await client.from('games').select(`${PUBLIC_GAME_FIELDS},library_status,is_favorite`).eq('published',true);
+        result = await selectGames(`${PUBLIC_GAME_FIELDS},library_status,is_favorite`);
         if (isMissingLibraryColumn(result.error)) {
           state.librarySchemaReady = false;
           console.warn('Отметки библиотеки ещё не добавлены в Supabase; загружаем каталог без них.');
-          result = await client.from('games').select(PUBLIC_GAME_FIELDS).eq('published',true);
+          result = await selectGames(PUBLIC_GAME_FIELDS);
         } else state.librarySchemaReady = true;
       } else {
         state.librarySchemaReady = true;
