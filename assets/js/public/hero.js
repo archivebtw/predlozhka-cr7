@@ -9,7 +9,7 @@ function setConnection(status, text) {
         button.disabled = true;
         button.removeAttribute('data-game-id');
         button.innerHTML = `
-          <span class="quick-cover"><img src="./assets/images/bloodseeker.webp" alt="" aria-hidden="true"></span>
+          <span class="quick-cover"><img src="./assets/images/figma/game-placeholder.svg" alt="" aria-hidden="true"></span>
           <span class="quick-copy">
             <span class="quick-kicker">${escapeHtml(kicker)}</span>
             <span class="quick-title">${escapeHtml(emptyTitle)}</span>
@@ -21,8 +21,8 @@ function setConnection(status, text) {
 
       const coverUrl = safeExternalUrl(game.cover_url);
       const cover = coverUrl
-        ? `<span class="quick-cover"><img src="${escapeHtml(coverUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='./assets/images/bloodseeker.webp'"></span>`
-        : '<span class="quick-cover"><img src="./assets/images/bloodseeker.webp" alt="" aria-hidden="true"></span>';
+        ? `<span class="quick-cover"><img src="${escapeHtml(coverUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='./assets/images/figma/game-placeholder.svg'"></span>`
+        : '<span class="quick-cover"><img src="./assets/images/figma/game-placeholder.svg" alt="" aria-hidden="true"></span>';
 
       button.disabled = false;
       button.dataset.gameId = String(game.id);

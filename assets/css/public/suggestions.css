@@ -781,11 +781,7 @@ html.suggestions-open {
 .suggestions-dialog {
   isolation: isolate;
   font-family: var(--font-body);
-  background:
-    linear-gradient(180deg, rgba(4, 1, 1, .82), rgba(8, 2, 2, .94)),
-    radial-gradient(circle at 12% 10%, rgba(235, 55, 35, .18), transparent 30%),
-    radial-gradient(circle at 88% 82%, rgba(123, 13, 9, .16), transparent 32%),
-    url('../../images/theme/portal-bg.png') center / cover fixed no-repeat;
+  background: #121212;
 }
 
 .suggestions-dialog::before,
