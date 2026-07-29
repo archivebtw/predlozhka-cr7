@@ -582,9 +582,8 @@ async function showLoggedOut() {
       }
       const isAdmin = await verifyAdmin();
       if (!isAdmin) {
-        await state.client.auth.signOut();
         await showLoggedOut();
-        showNotice('Этот аккаунт не добавлен в таблицу site_admins.', 'error', true);
+        showNotice('Профиль авторизован, но не добавлен в таблицу site_admins.', 'info', true);
         return;
       }
       elements.loginSection.hidden = true;
