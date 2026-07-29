@@ -13,7 +13,7 @@
 <script defer src="./assets/js/public/smooth-scroll.js?v=3.1"></script>
 <link href="./assets/css/public/fonts.css?v=3.0" rel="stylesheet"/>
 <link href="./assets/css/public/variables.css?v=3.0" rel="stylesheet"/>
-<link href="./assets/css/public/base.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css?v=3.1" rel="stylesheet"/><link href="./assets/css/public/auction.css" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/admin-portal.css" rel="stylesheet"/><link href="./assets/css/public/suggestions.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/media-submissions.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/figma-refresh.css?v=3.1" rel="stylesheet"/></head>
+<link href="./assets/css/public/base.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css?v=3.1" rel="stylesheet"/><link href="./assets/css/public/auction.css" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/admin-portal.css" rel="stylesheet"/><link href="./assets/css/public/suggestions.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/media-submissions.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/figma-refresh.css?v=3.2" rel="stylesheet"/></head>
 <body><a class="skip-link" href="#catalog">Перейти к каталогу</a><div aria-hidden="true" class="scroll-progress" id="scrollProgress"></div><div aria-label="Загрузка сайта" aria-live="polite" class="site-loader" id="siteLoader" role="status">
 <div class="loader-content">
 <div aria-hidden="true" class="loader-visual">
@@ -50,7 +50,7 @@
 <h1><span>141 Gang</span><span>Предложка</span></h1>
 <div class="hero-intro">
 <p>Здесь собраны игры, которые могут однажды появиться на стримах Sasavot. Каталог обновляется автором проекта, а следующую историю Глеб выбирает сам.</p>
-<button aria-controls="contentMenuPanel" aria-expanded="false" class="content-menu-toggle" id="contentMenuToggle" type="button"><span>Предложить контент</span><img alt="" aria-hidden="true" src="./assets/images/figma/arrow-circle-white.svg"/></button>
+<button aria-controls="contentMenuPanel" aria-label="Перейти к выбору контента" class="content-menu-toggle" id="contentMenuToggle" type="button"><span>Предложить контент</span><img alt="" aria-hidden="true" src="./assets/images/figma/arrow-circle-white.svg"/></button>
 </div>
 <div aria-hidden="true" class="hero-data-registry">
 <strong id="totalCount">0</strong><strong id="upcomingCount">0</strong><strong id="nearestDate">—</strong>
@@ -58,7 +58,7 @@
 <div id="heroHighlights"><button disabled id="quickLatest" type="button"></button><button disabled id="quickNearest" type="button"></button></div>
 </div>
 </section>
-<section aria-hidden="true" class="content-menu-panel" id="contentMenuPanel">
+<section aria-labelledby="contentMenuToggle" class="content-menu-panel" id="contentMenuPanel">
 <div class="shell content-menu">
 <button aria-controls="suggestionsPanel" aria-expanded="false" class="content-menu-card suggestions-trigger" data-suggestions-view="submit" type="button"><span>Предложить<br/>игру</span><img alt="" aria-hidden="true" src="./assets/images/figma/arrow-circle-white.svg"/></button>
 <button aria-controls="mediaPanel" aria-expanded="false" class="content-menu-card content-menu-card-media media-trigger" type="button"><span>Предложить<br/>видео</span><img alt="" aria-hidden="true" src="./assets/images/figma/arrow-circle-red.svg"/></button>
@@ -432,5 +432,5 @@
 </div>
 </div>
 <footer><div class="shell footer-inner"><p class="footer-signature">@archivebtw x @max_vopros</p></div></footer>
-<script src="./assets/js/public/loading.js"></script><script>document.body.classList.add('is-ready');</script><script src="./assets/js/public/supabase-loader.js"></script><script src="./config.js"></script><script src="./assets/js/public/auth-recovery.js?v=3.1"></script><script src="./assets/js/public/state.js?v=3.0"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js?v=3.0"></script><script src="./assets/js/public/hero.js?v=3.0"></script><script src="./assets/js/public/catalog.js?v=3.0"></script><script src="./assets/js/public/modal-effects.js?v=3.0"></script><script src="./assets/js/public/tier-list.js?v=3.0"></script><script src="./assets/js/public/suggestions.js?v=3.0"></script><script src="./assets/js/public/media-submissions.js?v=3.0"></script><script src="./assets/js/public/gang.js?v=3.1"></script><script src="./assets/js/public/auction.js?v=3.0"></script><script src="./assets/js/public/admin-portal.js?v=3.1"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js"></script><script src="./assets/js/public/app.js?v=3.1"></script><script src="./assets/js/public/figma-ui.js?v=3.0"></script></body>
+<script src="./assets/js/public/loading.js"></script><script>document.body.classList.add('is-ready');</script><script src="./assets/js/public/supabase-loader.js"></script><script src="./config.js"></script><script src="./assets/js/public/auth-recovery.js?v=3.1"></script><script src="./assets/js/public/state.js?v=3.0"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js?v=3.0"></script><script src="./assets/js/public/hero.js?v=3.0"></script><script src="./assets/js/public/catalog.js?v=3.0"></script><script src="./assets/js/public/modal-effects.js?v=3.0"></script><script src="./assets/js/public/tier-list.js?v=3.0"></script><script src="./assets/js/public/suggestions.js?v=3.0"></script><script src="./assets/js/public/media-submissions.js?v=3.0"></script><script src="./assets/js/public/gang.js?v=3.1"></script><script src="./assets/js/public/auction.js?v=3.0"></script><script src="./assets/js/public/admin-portal.js?v=3.1"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js"></script><script src="./assets/js/public/app.js?v=3.1"></script><script src="./assets/js/public/figma-ui.js?v=3.2"></script></body>
 </html>
