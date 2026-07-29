@@ -57,21 +57,20 @@ main,
 }
 
 .loader-content {
-  width: min(520rem, 92vw);
+  width: min(640rem, 92vw);
   display: grid;
   justify-items: center;
-  gap: 28rem;
 }
 
 .loader-visual {
-  width: 220rem;
+  width: min(360rem, 82vw);
   display: grid;
-  gap: 20rem;
+  gap: 28rem;
 }
 
 .loader-brand {
-  width: 142rem;
-  height: 50rem;
+  width: min(240rem, 62vw);
+  height: auto;
   justify-self: center;
 }
 
@@ -92,17 +91,6 @@ main,
   background: #e63d3d;
   animation: figmaLoaderLine 1s cubic-bezier(.16, 1, .3, 1) infinite alternate;
 }
-
-.site-loader p {
-  margin: 0;
-  color: rgba(240, 240, 240, .48);
-  font-size: 11rem;
-  font-weight: 700;
-  letter-spacing: .04em;
-  text-align: center;
-}
-
-.site-loader strong { color: #f0f0f0; }
 
 @keyframes figmaLoaderLine {
   from { transform: translateX(-105%); }
@@ -710,7 +698,8 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
   backdrop-filter: blur(20rem);
 }
 
-#catalog .catalog-filter-menu .filter-btn {
+#catalog .catalog-filter-menu .filter-btn,
+#catalog .catalog-toolbar.is-compact .catalog-filter-menu .filter-btn {
   width: 100%;
   min-height: 50rem;
   display: flex;
@@ -722,8 +711,8 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
   color: #000;
   background: #a1a1a1;
   box-shadow: none;
-  font-size: 20rem;
-  font-weight: 500;
+  font-size: 22rem;
+  font-weight: 600;
   letter-spacing: -0.06em;
   text-align: left;
 }
@@ -902,30 +891,31 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
 
 #catalog .card-top {
   position: absolute;
-  top: 20rem;
-  right: 20rem;
+  top: 16rem;
+  right: 16rem;
   left: auto;
   z-index: 3;
   display: flex;
   align-items: center;
-  gap: 10rem;
+  gap: 8rem;
 }
 
 #catalog .release-badge,
 #catalog .coop-badge {
-  min-height: 39rem;
+  min-height: 30rem;
   display: inline-flex;
   align-items: center;
-  padding: 6rem 21rem;
+  padding: 4rem 14rem;
   border: 0;
   border-radius: 6rem;
   color: #000;
   background: #f0f0f0;
   font-family: var(--font-body);
-  font-size: 20rem;
+  font-size: 16rem;
   font-weight: 500;
   line-height: normal;
   letter-spacing: -0.06em;
+  text-transform: none;
   white-space: nowrap;
 }
 
@@ -1660,12 +1650,17 @@ footer {
   .catalog-menu-toggle { min-height: 42rem; padding: 9rem 12rem; font-size: 14rem; }
   .catalog-filter-menu { width: min(340rem, calc(100vw - 24rem)); }
   #catalog .catalog-filter-menu .filter-btn,
+  #catalog .catalog-toolbar.is-compact .catalog-filter-menu .filter-btn {
+    min-height: 46rem;
+    padding: 9rem 14rem;
+    font-size: 18rem;
+  }
   .catalog-filter-apply { min-height: 46rem; font-size: 16rem; }
   #catalog .catalog-stream { margin-top: 55rem; }
   #catalog .section-grid { grid-template-columns: 1fr; gap: 12rem; }
   #catalog .card-index { font-size: 14rem; }
   #catalog .release-badge,
-  #catalog .coop-badge { min-height: 30rem; padding: 5rem 12rem; font-size: 14rem; }
+  #catalog .coop-badge { min-height: 26rem; padding: 3rem 10rem; font-size: 12rem; }
   #catalog .card-title,
   #catalog .featured .card-title { font-size: 24rem; }
   #catalog .card-open-hint { font-size: 14rem; }
