@@ -1,0 +1,5 @@
+[functions.stream-status]
+verify_jwt = false
+
+[functions.steam-game]
+verify_jwt = false
