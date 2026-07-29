@@ -608,15 +608,33 @@ async function showLoggedOut() {
         elements.configError.hidden = false;
         return;
       }
-      const { data, error } = await state.client.auth.getSession();
+      const sessionResult = window.CR7_AUTH?.getUsableSession
+        ? await window.CR7_AUTH.getUsableSession(state.client)
+        : await state.client.auth.getSession();
+      const { data, error, recovered } = sessionResult;
       if (error) {
         showNotice(error.message, 'error', true);
         await showLoggedOut();
         return;
       }
+      if (recovered) {
+        await showLoggedOut();
+        showNotice('Сессия истекла. Войди снова.', 'info');
+        return;
+      }
       if (data.session?.user) {
-        try { await showLoggedIn(data.session.user); }
-        catch (err) { console.error(err); showNotice(err.message || 'Ошибка проверки доступа.', 'error', true); }
+        try {
+          await showLoggedIn(data.session.user);
+        } catch (err) {
+          console.error(err);
+          if (window.CR7_AUTH?.isExpiredAuthError?.(err)) {
+            await window.CR7_AUTH.clearStaleSession(state.client);
+            await showLoggedOut();
+            showNotice('Сессия истекла. Войди снова.', 'info');
+          } else {
+            showNotice(err.message || 'Ошибка проверки доступа.', 'error', true);
+          }
+        }
       } else {
         await showLoggedOut();
       }
