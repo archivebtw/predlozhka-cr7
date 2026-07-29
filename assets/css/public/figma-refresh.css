@@ -22,39 +22,24 @@ body::-webkit-scrollbar {
   height: 0;
 }
 
-.scroll-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 99998;
-  width: 100%;
-  height: 3rem;
-  overflow: visible;
-  pointer-events: none;
-  background: linear-gradient(90deg, rgba(255, 255, 255, .72), #fff 72%, #fff);
-  box-shadow: 0 0 12rem rgba(255, 255, 255, .72), 0 0 28rem rgba(255, 255, 255, .28);
-  transform: scaleX(0);
-  transform-origin: left center;
-  will-change: transform;
-  transition: transform .14s cubic-bezier(.22, 1, .36, 1);
+html.modal-scroll-locked,
+body.modal-scroll-locked {
+  overflow: hidden !important;
+  overscroll-behavior: none;
 }
 
-.scroll-progress::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: -2rem;
-  width: 56rem;
-  height: 12rem;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at right, rgba(255, 255, 255, .95), rgba(255, 255, 255, .34) 42%, transparent 74%);
-  filter: blur(3rem);
-  opacity: .9;
-  transform: translateY(-50%);
+[aria-modal="true"],
+dialog[open] {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior: contain;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .scroll-progress { transition: none; }
+[aria-modal="true"]::-webkit-scrollbar,
+dialog[open]::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 body::before { display: none; }
