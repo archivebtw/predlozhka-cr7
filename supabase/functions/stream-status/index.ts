@@ -26,6 +26,16 @@ const imageUrl = (value: unknown): string => {
   if (url.startsWith("/")) return `https://kick.com${url}`;
   return /^https?:\/\//i.test(url) ? url : "";
 };
+const statusFromPayload = (streamer: Streamer,item: Record<string,unknown> | undefined): StreamStatus => ({
+  ...streamer,
+  available: item?.available !== false,
+  live: item?.live === true,
+  title: clean(item?.title),
+  category: clean(item?.category,120),
+  thumbnailUrl: imageUrl(item?.thumbnailUrl),
+  avatarUrl: imageUrl(item?.avatarUrl),
+  startedAt: clean(item?.startedAt,80),
+});
 
 function response(body: unknown, status = 200) {
   return new Response(JSON.stringify(body),{ status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=45" } });
@@ -55,8 +65,38 @@ async function getTwitchToken(clientId: string,clientSecret: string) {
   return twitchToken;
 }
 
+async function russianProxyStatuses(streamers: Streamer[]): Promise<StreamStatus[] | null> {
+  const endpoint = clean(Deno.env.get("RU_STREAM_STATUS_URL"),500);
+  if (!endpoint) return null;
+  const url = new URL(endpoint);
+  if (url.protocol !== "https:") throw new Error("RU stream status proxy must use HTTPS");
+  const token = clean(Deno.env.get("RU_STREAM_STATUS_TOKEN"),500);
+  const headers: Record<string,string> = { "Content-Type": "application/json", "Accept": "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const proxyResponse = await fetch(url,{
+    method: "POST",
+    headers,
+    body: JSON.stringify({ streamers }),
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!proxyResponse.ok) throw new Error(`RU stream status proxy: ${proxyResponse.status}`);
+  const payload = await proxyResponse.json();
+  const received = Array.isArray(payload?.streamers) ? payload.streamers as Record<string,unknown>[] : [];
+  return streamers.map(streamer => {
+    const item = received.find(candidate => clean(candidate?.provider,10).toLowerCase() === streamer.provider
+      && clean(candidate?.channel,40).toLowerCase() === streamer.channel);
+    return item ? statusFromPayload(streamer,item) : unavailable(streamer);
+  });
+}
+
 async function twitchStatuses(streamers: Streamer[]): Promise<StreamStatus[]> {
   if (!streamers.length) return [];
+  try {
+    const regionalResult = await russianProxyStatuses(streamers);
+    if (regionalResult) return regionalResult;
+  } catch (error) {
+    console.error(error);
+  }
   const clientId = clean(Deno.env.get("TWITCH_CLIENT_ID"),200);
   const clientSecret = clean(Deno.env.get("TWITCH_CLIENT_SECRET"),300);
   if (!clientId || !clientSecret) return streamers.map(unavailable);
@@ -118,7 +158,11 @@ Deno.serve(async request => {
     const twitch = streamers.filter(item => item.provider === 'twitch');
     const kick = streamers.filter(item => item.provider === 'kick');
     const [twitchResult,kickResult] = await Promise.all([twitchStatuses(twitch),Promise.all(kick.map(kickStatus))]);
-    return response({ streamers: [...twitchResult,...kickResult], checkedAt: new Date().toISOString() });
+    return response({
+      streamers: [...twitchResult,...kickResult],
+      checkedAt: new Date().toISOString(),
+      region: clean(Deno.env.get("SB_REGION"),40),
+    });
   } catch (error) {
     console.error(error);
     return response({ error: "Invalid request" },400);
