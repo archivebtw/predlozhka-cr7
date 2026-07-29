@@ -3,3 +3,6 @@ verify_jwt = false
 
 [functions.steam-game]
 verify_jwt = false
+
+[functions.yandex-userinfo]
+verify_jwt = false
