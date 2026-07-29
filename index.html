@@ -13,7 +13,7 @@
 <script defer src="./assets/js/public/smooth-scroll.js?v=3.1"></script>
 <link href="./assets/css/public/fonts.css?v=3.0" rel="stylesheet"/>
 <link href="./assets/css/public/variables.css?v=3.0" rel="stylesheet"/>
-<link href="./assets/css/public/base.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css?v=3.2" rel="stylesheet"/><link href="./assets/css/public/auction.css" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/admin-portal.css" rel="stylesheet"/><link href="./assets/css/public/suggestions.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/media-submissions.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/figma-refresh.css?v=3.5" rel="stylesheet"/></head>
+<link href="./assets/css/public/base.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css?v=3.2" rel="stylesheet"/><link href="./assets/css/public/auction.css" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/admin-portal.css" rel="stylesheet"/><link href="./assets/css/public/suggestions.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/media-submissions.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/figma-refresh.css?v=3.5" rel="stylesheet"/><link href="./assets/css/public/site-auth.css?v=1.0" rel="stylesheet"/></head>
 <body><a class="skip-link" href="#catalog">Перейти к каталогу</a><div aria-hidden="true" class="scroll-progress" id="scrollProgress"></div><div aria-label="Загрузка сайта" aria-live="polite" class="site-loader" id="siteLoader" role="status">
 <div class="loader-content">
 <div aria-hidden="true" class="loader-visual">
@@ -40,7 +40,7 @@
 </div>
 <button aria-controls="adminPortal" aria-expanded="false" class="nav-link admin-portal-trigger" id="adminPortalOpen" type="button">Управление</button>
 </nav>
-<button aria-controls="featurePanel" aria-expanded="false" class="twitch-login-trigger coming-soon-trigger" data-coming-description="Авторизация через Twitch появится в одном из следующих обновлений." data-coming-kicker="Личный профиль" data-coming-title="СКОРО" type="button">Войти через Twitch</button>
+<button aria-controls="siteAuthPanel" aria-expanded="false" class="account-auth-trigger" id="siteAuthOpen" type="button">Войти</button>
 <div class="status connection-status" hidden title="Подключение к каталогу"><span class="status-dot" id="statusDot"></span><span id="statusText">Подключение…</span></div>
 </div>
 </header>
@@ -224,6 +224,25 @@
 <div aria-live="polite" class="media-queue" id="mediaQueue"><div class="media-empty">Загружаем очередь…</div></div>
 </section>
 </div>
+</section>
+</div>
+<div aria-hidden="true" class="site-auth-panel" hidden id="siteAuthPanel">
+<div class="site-auth-backdrop" data-site-auth-close=""></div>
+<section aria-labelledby="siteAuthTitle" aria-modal="true" class="site-auth-dialog" role="dialog">
+<button aria-label="Закрыть окно входа" class="site-auth-close" id="siteAuthClose" type="button">×</button>
+<span class="site-auth-kicker">Личный профиль</span>
+<h2 id="siteAuthTitle">Войти на сайт</h2>
+<p class="site-auth-description" id="siteAuthDescription">Выбери удобный аккаунт. Пароль останется у сервиса авторизации.</p>
+<div class="site-auth-providers" id="siteAuthProviders">
+<button class="site-auth-provider is-yandex" data-auth-provider="custom:yandex" type="button"><span aria-hidden="true">Я</span><strong>Войти через Яндекс ID</strong></button>
+<button class="site-auth-provider is-google" data-auth-provider="google" type="button"><span aria-hidden="true">G</span><strong>Войти через Google</strong></button>
+</div>
+<div class="site-auth-account" hidden id="siteAuthAccount">
+<img alt="" class="site-auth-avatar" id="siteAuthAvatar"/>
+<div><strong id="siteAuthName"></strong><span id="siteAuthEmail"></span></div>
+<button class="site-auth-logout" id="siteAuthLogout" type="button">Выйти</button>
+</div>
+<p aria-live="polite" class="site-auth-notice" id="siteAuthNotice" role="status"></p>
 </section>
 </div>
 <div aria-hidden="true" class="feature-panel" hidden id="featurePanel"><div class="feature-backdrop" data-feature-close=""></div><section aria-labelledby="featureTitle" aria-modal="true" class="feature-dialog" role="dialog"><button aria-label="Закрыть окно" class="feature-close" id="featureClose" type="button">×</button><span id="featureKicker">Новый раздел</span><h2 id="featureTitle">Скоро</h2><p id="featureDescription">Функция находится в разработке.</p></section></div>
@@ -431,5 +450,5 @@
 </div>
 </div>
 <footer><div class="shell footer-inner"><p class="footer-signature">@archivebtw x @max_vopros</p></div></footer>
-<script src="./assets/js/public/loading.js"></script><script>document.body.classList.add('is-ready');</script><script src="./assets/js/public/supabase-loader.js"></script><script src="./config.js"></script><script src="./assets/js/public/auth-recovery.js?v=3.1"></script><script src="./assets/js/public/state.js?v=3.0"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js?v=3.0"></script><script src="./assets/js/public/hero.js?v=3.0"></script><script src="./assets/js/public/catalog.js?v=3.0"></script><script src="./assets/js/public/modal-effects.js?v=3.0"></script><script src="./assets/js/public/tier-list.js?v=3.0"></script><script src="./assets/js/public/suggestions.js?v=3.0"></script><script src="./assets/js/public/media-submissions.js?v=3.0"></script><script async id="twitchPlayerSdk" src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js?v=3.3"></script><script src="./assets/js/public/auction.js?v=3.0"></script><script src="./assets/js/public/admin-portal.js?v=3.1"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js"></script><script src="./assets/js/public/app.js?v=3.2"></script><script src="./assets/js/public/figma-ui.js?v=3.3"></script></body>
+<script src="./assets/js/public/loading.js"></script><script>document.body.classList.add('is-ready');</script><script src="./assets/js/public/supabase-loader.js"></script><script src="./config.js"></script><script src="./assets/js/public/auth-recovery.js?v=3.1"></script><script src="./assets/js/public/site-auth.js?v=1.0"></script><script src="./assets/js/public/state.js?v=3.0"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js?v=3.0"></script><script src="./assets/js/public/hero.js?v=3.0"></script><script src="./assets/js/public/catalog.js?v=3.0"></script><script src="./assets/js/public/modal-effects.js?v=3.0"></script><script src="./assets/js/public/tier-list.js?v=3.0"></script><script src="./assets/js/public/suggestions.js?v=3.0"></script><script src="./assets/js/public/media-submissions.js?v=3.0"></script><script async id="twitchPlayerSdk" src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js?v=3.3"></script><script src="./assets/js/public/auction.js?v=3.0"></script><script src="./assets/js/public/admin-portal.js?v=3.1"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js"></script><script src="./assets/js/public/app.js?v=3.2"></script><script src="./assets/js/public/figma-ui.js?v=3.3"></script></body>
 </html>
