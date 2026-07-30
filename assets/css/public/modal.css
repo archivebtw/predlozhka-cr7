@@ -189,3 +189,99 @@ body.tier-open { overflow: hidden; }
 .tier-confirm-dialog button { min-height: 42rem; border: 1rem solid rgba(255,255,255,.1); border-radius: 8rem; color: #d8cecb; background: rgba(255,255,255,.035); font-size: 10rem; font-weight: 900; }
 .tier-confirm-dialog button.is-danger { border-color: rgba(240,68,46,.5); color: #fff; background: linear-gradient(135deg,#aa2117,#5b100b); }
 @media (max-width:650px) { .tier-dialog { padding: 12rem 8rem; } .tier-dialog > header { padding-right: 54rem; } .tier-header-actions { position: static; margin-top: 10rem; transform: none; } }
+
+/* Extended tier-row editor and precise cover sorting. */
+.tier-color-presets {
+  display: grid;
+  grid-template-columns: repeat(8,32rem);
+  justify-content: center;
+  gap: 11rem;
+}
+.tier-color-presets button,
+.tier-color-presets input {
+  appearance: none;
+  width: 32rem;
+  height: 32rem;
+  min-width: 0;
+  padding: 0;
+  border: 2rem solid rgba(255,255,255,.82);
+  border-radius: 50%;
+  background-color: var(--color) !important;
+  background-image: none !important;
+  box-shadow: 0 0 0 1rem rgba(0,0,0,.7);
+  cursor: pointer;
+  transition: transform .16s ease,box-shadow .16s ease,border-color .16s ease;
+}
+.tier-color-presets button:hover {
+  transform: scale(1.08);
+  border-color: #fff;
+}
+.tier-color-presets button.is-selected {
+  transform: scale(1.1);
+  border-color: #fff;
+  box-shadow: 0 0 0 3rem #b62b20,0 0 18rem rgba(226,59,40,.35);
+}
+.tier-color-presets input {
+  overflow: hidden;
+  background: transparent !important;
+}
+.tier-row-management {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 8rem;
+}
+.tier-row-management button {
+  min-height: 42rem;
+  padding: 8rem 12rem;
+  border: 1rem solid rgba(255,255,255,.13);
+  border-radius: 8rem;
+  color: #e7dcda;
+  background: rgba(255,255,255,.045);
+  font-size: 10rem;
+  font-weight: 850;
+  transition: transform .16s ease,border-color .16s ease,background .16s ease;
+}
+.tier-row-management button:hover {
+  transform: translateY(-1rem);
+  border-color: rgba(240,68,46,.5);
+  background: rgba(169,33,23,.12);
+}
+.tier-row-management button.is-danger {
+  border-color: rgba(240,68,46,.42);
+  color: #ffd7d1;
+  background: rgba(169,33,23,.14);
+}
+.tier-drag-preview {
+  position: fixed;
+  top: -1000rem;
+  left: -1000rem;
+  overflow: hidden;
+  background: transparent;
+  opacity: .98;
+  pointer-events: none;
+}
+.tier-drag-preview img {
+  width: 100%;
+  height: 96rem;
+  display: block;
+  object-fit: contain;
+  background: transparent;
+}
+body.tier-game-dragging,
+body.tier-game-dragging * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+.tier-game.is-dragging {
+  opacity: 0;
+  transform: none;
+  pointer-events: none;
+}
+.tier-row.is-over .tier-dropzone {
+  background: transparent;
+  box-shadow: none;
+}
+@media (max-width:650px) {
+  .tier-color-presets { grid-template-columns: repeat(4,32rem); }
+  .tier-row-management { grid-template-columns: 1fr; }
+}
