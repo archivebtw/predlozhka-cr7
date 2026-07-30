@@ -55,9 +55,17 @@
   let activeTab = 'manage';
   let searchQuery = '';
   let rulesSaveTimer = 0;
+  let isAdmin = document.body.classList.contains('is-site-admin');
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
+  }
+
+  function requireAdmin(message = 'Управление аукционом доступно только администратору.') {
+    if (isAdmin && document.body.classList.contains('is-site-admin')) return true;
+    const result = byId('auctionResult');
+    if (result) result.textContent = message;
+    return false;
   }
 
   function loadState() {
@@ -332,11 +340,11 @@
     byId('auctionQuickHide').checked = byId('auctionHideEliminated').checked;
     byId('auctionQuickChances').checked = settings.showChances;
     document.querySelectorAll('[name="auctionMode"]').forEach(input => {
-      input.disabled = false;
+      input.disabled = !isAdmin;
       input.checked = input.value === settings.mode;
     });
     ['auctionSpinDuration', 'auctionRandomDuration', 'auctionSpinMin', 'auctionSpinMax'].forEach(id => {
-      byId(id).disabled = false;
+      byId(id).disabled = !isAdmin;
     });
     document.querySelectorAll('#auctionAccentColors [data-color]').forEach(button => {
       button.classList.toggle('active', button.dataset.color === settings.accent);
@@ -345,6 +353,66 @@
     byId('auctionOverlayShowLeader').checked = settings.overlay.leader;
     byId('auctionOverlayShowBank').checked = settings.overlay.bank;
     byId('auctionOverlayTransparent').checked = settings.overlay.transparent;
+  }
+
+  function applyAdminAccess() {
+    const readonly = !isAdmin;
+    panel.classList.toggle('auction-readonly', readonly);
+
+    const badge = byId('auctionAccessBadge');
+    if (badge) {
+      badge.classList.toggle('is-admin', isAdmin);
+      badge.lastChild.textContent = isAdmin ? ' Администратор' : ' Только просмотр';
+    }
+
+    const notice = byId('auctionSetupNotice');
+    if (notice) {
+      notice.hidden = isAdmin;
+      notice.innerHTML = '<strong>Режим просмотра</strong><span>Изменять лоты, правила, настройки и запускать розыгрыш может только администратор.</span>';
+    }
+
+    form.hidden = readonly;
+    ['auctionAdminToggle', 'auctionSave', 'auctionNew'].forEach(id => {
+      const control = byId(id);
+      if (control) control.hidden = readonly;
+    });
+
+    manageList.querySelectorAll('[data-lot-field]').forEach(input => {
+      input.readOnly = readonly;
+      input.tabIndex = readonly ? -1 : 0;
+    });
+    manageList.querySelectorAll('.auction-lot-tools').forEach(tools => {
+      tools.hidden = readonly;
+    });
+
+    const adminControls = [
+      'auctionSpin', 'auctionWinnerConfirm', 'auctionWinnerReroll', 'auctionWinnerRemove',
+      'auctionSettingsToggle', 'auctionQuickChances', 'auctionTimerToggle', 'auctionTimerReset',
+      'auctionTimerAdd', 'auctionTimerSubtract', 'auctionTimerStep', 'auctionTimerUnit',
+      'auctionHistoryClear', 'auctionSettingsReset'
+    ];
+    adminControls.forEach(id => {
+      const control = byId(id);
+      if (control) control.disabled = readonly || (id === 'auctionSpin' && (spinning || !selectionTotal()));
+    });
+
+    document.querySelectorAll('[data-auction-panel="settings"] input, [data-auction-panel="settings"] button, .auction-overlay-page .auction-settings-card input').forEach(control => {
+      control.disabled = readonly;
+    });
+
+    const toolbar = panel.querySelector('.auction-editor-toolbar');
+    if (toolbar) toolbar.hidden = readonly;
+    rulesEditor.contentEditable = isAdmin ? 'true' : 'false';
+    rulesEditor.setAttribute('aria-readonly', String(readonly));
+    rulesStatus.textContent = isAdmin ? 'Сохранено' : 'Только просмотр';
+  }
+
+  function syncAdminAccess(force = false) {
+    const next = document.body.classList.contains('is-site-admin');
+    if (!force && next === isAdmin) return;
+    isAdmin = next;
+    applySettings();
+    renderAll();
   }
 
   function renderAll() {
@@ -360,6 +428,7 @@
     renderWinner();
     renderOverlay();
     drawTimer();
+    applyAdminAccess();
   }
 
   function saveAndRender() {
@@ -370,6 +439,7 @@
 
   function addLot(event) {
     event.preventDefault();
+    if (!requireAdmin()) return;
     const title = byId('auctionItemTitle').value.trim();
     const amount = Math.round(Number(byId('auctionItemAmount').value));
     if (!title || !Number.isFinite(amount) || amount <= 0) return;
@@ -381,6 +451,7 @@
   }
 
   function updateLot(row, field, value) {
+    if (!requireAdmin()) return;
     const item = state.items.find(entry => entry.id === row?.dataset.auctionId);
     if (!item) return;
     if (field === 'title') {
@@ -395,6 +466,7 @@
   }
 
   function lotAction(button) {
+    if (!requireAdmin()) return;
     const row = button.closest('[data-auction-id]');
     const item = state.items.find(entry => entry.id === row?.dataset.auctionId);
     if (!item) return;
@@ -462,6 +534,7 @@
   }
 
   function spin() {
+    if (!requireAdmin('Запустить розыгрыш может только администратор.')) return;
     if (spinning) return;
     const winner = pickWinner();
     if (!winner) return;
@@ -495,6 +568,7 @@
   }
 
   function confirmWinner() {
+    if (!requireAdmin()) return;
     if (!pendingWinner || pendingWinner.confirmed) return;
     const item = state.items.find(entry => entry.id === pendingWinner.itemId);
     if (!item) return;
@@ -514,6 +588,7 @@
   }
 
   function removeWinner() {
+    if (!requireAdmin()) return;
     if (!pendingWinner) return;
     const item = state.items.find(entry => entry.id === pendingWinner.itemId);
     if (item) {
@@ -525,6 +600,7 @@
   }
 
   function adjustTimer(delta) {
+    if (!requireAdmin()) return;
     const next = Math.max(0, remainingSeconds() + delta);
     state.timer.remaining = next;
     if (state.timer.running) state.timer.endsAt = Date.now() + next * 1000;
@@ -537,6 +613,7 @@
   }
 
   function toggleTimer() {
+    if (!requireAdmin()) return;
     if (state.timer.running) {
       state.timer.remaining = remainingSeconds();
       state.timer.running = false;
@@ -551,6 +628,7 @@
   }
 
   function resetTimer() {
+    if (!requireAdmin()) return;
     state.timer = {
       remaining: Math.max(1, Number(state.settings.initialMinutes) || 10) * 60,
       running: false,
@@ -581,11 +659,12 @@
     });
     switchManageView(tabName === 'rules' ? 'rules' : 'lots');
     panel.classList.toggle('is-rules-tab', tabName === 'rules');
-    if (tabName === 'rules') byId('auctionRulesEditor').focus();
+    if (tabName === 'rules' && isAdmin) byId('auctionRulesEditor').focus();
     if (tabName === 'wheel') renderAll();
   }
 
   function archiveAuction() {
+    if (!requireAdmin()) return;
     const hasData = state.items.length || state.spins.length;
     if (!hasData) return;
     if (!window.confirm('Завершить текущий аукцион и начать новый? Лоты будут перенесены в историю.')) return;
@@ -627,11 +706,19 @@
   }
 
   function updateSetting(key, value) {
+    if (!requireAdmin()) {
+      applySettings();
+      return;
+    }
     state.settings[key] = value;
     saveAndRender();
   }
 
   function updateOverlaySetting(key, value) {
+    if (!requireAdmin()) {
+      applySettings();
+      return;
+    }
     state.settings.overlay[key] = value;
     saveAndRender();
   }
@@ -646,6 +733,8 @@
   }
 
   function openAuction() {
+    syncAdminAccess(true);
+    if (!isAdmin && activeTab === 'manage') activeTab = 'wheel';
     lastFocusedElement = document.activeElement;
     panel.hidden = false;
     panel.setAttribute('aria-hidden', 'false');
@@ -675,7 +764,7 @@
   const rulesEditor = byId('auctionRulesEditor');
   const rulesStatus = byId('auctionRulesStatus');
   rulesEditor.innerHTML = state.rules || defaultRules;
-  form.hidden = false;
+  form.hidden = !isAdmin;
 
   openButton.addEventListener('click', openAuction);
   closeButton.addEventListener('click', closeAuction);
@@ -717,6 +806,7 @@
   spinButton.addEventListener('click', spin);
   byId('auctionWinnerConfirm').addEventListener('click', confirmWinner);
   byId('auctionWinnerReroll').addEventListener('click', () => {
+    if (!requireAdmin()) return;
     pendingWinner = null;
     renderWinner();
     spin();
@@ -743,10 +833,12 @@
   byId('auctionTimerAdd').addEventListener('click', () => adjustTimer(timerStep()));
   byId('auctionTimerSubtract').addEventListener('click', () => adjustTimer(-timerStep()));
   byId('auctionHistoryClear').addEventListener('click', () => {
+    if (!requireAdmin()) return;
     state.activity = [];
     saveAndRender();
   });
   byId('auctionSave').addEventListener('click', event => {
+    if (!requireAdmin()) return;
     saveState();
     const button = event.currentTarget;
     const previous = button.textContent;
@@ -774,6 +866,7 @@
     if (button) updateSetting('accent', button.dataset.color);
   });
   byId('auctionSettingsReset').addEventListener('click', () => {
+    if (!requireAdmin()) return;
     state.settings = clone(defaultSettings);
     saveAndRender();
   });
@@ -794,6 +887,10 @@
   });
 
   rulesEditor.addEventListener('input', () => {
+    if (!requireAdmin()) {
+      rulesEditor.innerHTML = state.rules || defaultRules;
+      return;
+    }
     rulesStatus.textContent = 'Сохранение…';
     window.clearTimeout(rulesSaveTimer);
     rulesSaveTimer = window.setTimeout(() => {
@@ -803,10 +900,12 @@
     }, 350);
   });
   rulesEditor.addEventListener('paste', event => {
+    if (!requireAdmin()) return;
     event.preventDefault();
     document.execCommand('insertText', false, event.clipboardData.getData('text/plain'));
   });
   panel.querySelector('.auction-editor-toolbar').addEventListener('click', event => {
+    if (!requireAdmin()) return;
     const button = event.target.closest('button');
     if (!button) return;
     rulesEditor.focus();
@@ -824,12 +923,16 @@
     applySettings();
     renderAll();
   });
+  new MutationObserver(() => syncAdminAccess()).observe(document.body, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
   window.setInterval(drawTimer, 250);
 
   applySettings();
   ensureLiveTimer();
   renderAll();
-  switchTab('manage');
+  switchTab(isAdmin ? 'manage' : 'wheel');
 
   if (new URLSearchParams(location.search).get('auction-overlay') === '1') {
     activeTab = 'overlay';
@@ -874,4 +977,3 @@
     if (event.key === 'Escape' && !panel.hidden) close();
   });
 })();
-

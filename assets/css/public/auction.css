@@ -234,6 +234,15 @@ body.auction-open {
   width: 5rem;
   height: 5rem;
   border-radius: 50%;
+  background: #8d8d8d;
+  box-shadow: 0 0 8rem rgba(141, 141, 141, .45);
+}
+
+.auction-storage-badge.is-admin {
+  color: #a7d8ba;
+}
+
+.auction-storage-badge.is-admin i {
   background: #55b77d;
   box-shadow: 0 0 8rem rgba(85, 183, 125, .72);
 }
@@ -660,6 +669,64 @@ body.auction-open {
   display: grid;
   grid-template-columns: minmax(470rem, 1.4fr) minmax(285rem, .6fr);
   gap: 17rem;
+}
+
+.auction-setup-notice {
+  display: flex;
+  align-items: center;
+  gap: 12rem;
+  margin-bottom: 13rem;
+  padding: 12rem 14rem;
+  border: 1rem solid rgba(238, 156, 45, .22);
+  border-radius: 10rem;
+  color: #d9c4a7;
+  background: rgba(145, 81, 13, .08);
+}
+
+.auction-setup-notice strong {
+  flex: 0 0 auto;
+  color: #efb15c;
+  font-size: 9rem;
+}
+
+.auction-setup-notice span {
+  color: #8e8374;
+  font-size: 8rem;
+  line-height: 1.45;
+}
+
+.auction-readonly .auction-lot-title,
+.auction-readonly .auction-lot-amount input {
+  border-color: transparent;
+  color: #d5d5d5;
+  background: transparent;
+  pointer-events: none;
+}
+
+.auction-readonly .auction-lot-title {
+  padding-left: 0;
+}
+
+.auction-readonly .auction-lot-amount input {
+  text-align: right;
+}
+
+.auction-readonly .auction-settings-page input:disabled,
+.auction-readonly .auction-settings-page button:disabled,
+.auction-readonly .auction-overlay-page .auction-settings-card input:disabled,
+.auction-readonly .auction-timer input:disabled,
+.auction-readonly .auction-timer select:disabled {
+  cursor: not-allowed;
+  opacity: .52;
+}
+
+.auction-readonly .auction-rules-editor {
+  cursor: default;
+  user-select: text;
+}
+
+.auction-readonly .auction-rules-editor:focus {
+  border-color: rgba(255, 255, 255, .08);
 }
 
 .auction-admin {
@@ -1578,6 +1645,11 @@ body.auction-open {
     padding-right: 38rem;
   }
 
+  .auction-setup-notice {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .auction-setting-row {
     align-items: flex-start;
     flex-direction: column;
@@ -1610,4 +1682,3 @@ body.auction-open {
     animation-duration: .01ms !important;
   }
 }
-
