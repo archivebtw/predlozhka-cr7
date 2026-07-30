@@ -5,267 +5,837 @@
   const closeButton = byId('auctionClose');
   const list = byId('auctionList');
   const manageList = byId('auctionManageList');
-  const total = byId('auctionTotal');
-  const count = byId('auctionCount');
+  const form = byId('auctionForm');
   const wheel = byId('auctionWheel');
   const spinButton = byId('auctionSpin');
-  const result = byId('auctionResult');
-  const manageTab = byId('auctionManageTab');
-  const form = byId('auctionForm');
   const timerDisplay = byId('auctionTimer');
-  if (!panel || !openButton || !closeButton || !list || !manageList || !wheel || !form || !timerDisplay) return;
 
-  const colors = ['#e63d3d','#343434','#6a6a6a','#a13636','#202020','#4d4d4d','#762b2b','#7a7a7a'];
-  const fallbackItems = [
-    { id: 'preview-1',title: 'Пример большого лота',description: 'Демонстрационный участник',amount: 10000,eliminated: false },
-    { id: 'preview-2',title: 'Пример малого лота',description: 'Демонстрационный участник',amount: 1000,eliminated: false }
-  ];
-  let items = [],client = null,isAdmin = false,schemaReady = true,spinning = false,rotation = 0,editingId = null,lastFocusedElement = null;
-  let timer = { remaining: 0,running: false,endsAt: null };
-  let historyEntries = [];
-  const settingsKey = 'predlozhka141.auctionSettings';
-  const rulesKey = 'predlozhka141.auctionRules';
-  const defaultSettings = { initialMinutes:60,showTimer:false,showBank:true,showChances:true,compactList:false,autoHide:false,accent:'#e63d3d' };
-  let userSettings = { ...defaultSettings };
-  try { userSettings={...defaultSettings,...JSON.parse(localStorage.getItem(settingsKey)||'{}')}; } catch (_) { userSettings={...defaultSettings}; }
+  if (!panel || !openButton || !closeButton || !list || !manageList || !form || !wheel || !spinButton || !timerDisplay) return;
 
-  const money = value => `${new Intl.NumberFormat('ru-RU').format(Number(value) || 0)} ₽`;
-  const percent = value => `${new Intl.NumberFormat('ru-RU',{ maximumFractionDigits: 1 }).format(value)}%`;
-  const activeItems = () => items.filter(item => !item.eliminated && Number(item.amount) > 0);
-  const auctionMode = () => document.querySelector('[name="auctionMode"]:checked')?.value || 'winner';
-  const selectionEntries = () => {
-    const active=activeItems(),total=active.reduce((sum,item)=>sum+Number(item.amount),0);
-    return active.map(item=>({ item,weight:auctionMode()==='elimination' ? Math.max(0,total-Number(item.amount)) : Number(item.amount) }));
+  const storageKey = 'predlozhka141.auction.v4';
+  const colors = ['#ef3d35', '#f39a2b', '#2b91e8', '#51b97d', '#9b72df', '#e96f8d', '#68c6bd', '#f0cf55'];
+  const defaultRules = '<h2>Правила аукциона</h2><p>Добавьте условия участия и проведения розыгрыша.</p><ul><li>Сумма лота определяет его шанс на колесе.</li><li>Результат фиксируется после подтверждения победителя.</li></ul>';
+  const defaultSettings = {
+    initialMinutes: 10,
+    showTimer: true,
+    showBank: true,
+    showChances: true,
+    compactList: false,
+    autoHide: false,
+    accent: '#ef3d35',
+    mode: 'winner',
+    spinDuration: 6,
+    randomDuration: false,
+    spinMin: 4,
+    spinMax: 10,
+    overlay: {
+      timer: true,
+      leader: true,
+      bank: true,
+      transparent: false
+    }
   };
-  const selectionTotal = () => selectionEntries().reduce((sum,entry)=>sum+entry.weight,0);
+  const defaultState = {
+    version: 4,
+    startedAt: new Date().toISOString(),
+    items: [],
+    activity: [],
+    spins: [],
+    archives: [],
+    rules: defaultRules,
+    timer: { remaining: defaultSettings.initialMinutes * 60, running: false, endsAt: null },
+    settings: defaultSettings
+  };
 
-  function renderHistory() {
-    const history=byId('auctionHistory');
-    history.innerHTML=historyEntries.length ? historyEntries.map((entry,index)=>`<article><span>${escapeHtml(entry.label)}</span><button aria-label="Отменить изменение" data-history-index="${index}" title="Отменить">↶</button></article>`).join('') : '<p>Изменений пока нет</p>';
+  let state = loadState();
+  let lastFocusedElement = null;
+  let spinning = false;
+  let rotation = 0;
+  let pendingWinner = null;
+  let activeTab = 'manage';
+  let searchQuery = '';
+  let rulesSaveTimer = 0;
+
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
   }
 
-  function recordHistory(label,undo) {
-    historyEntries.unshift({label,undo});
-    historyEntries=historyEntries.slice(0,20);
-    renderHistory();
+  function loadState() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
+      if (!saved || typeof saved !== 'object') return clone(defaultState);
+      return {
+        ...clone(defaultState),
+        ...saved,
+        items: Array.isArray(saved.items) ? saved.items : [],
+        activity: Array.isArray(saved.activity) ? saved.activity : [],
+        spins: Array.isArray(saved.spins) ? saved.spins : [],
+        archives: Array.isArray(saved.archives) ? saved.archives : [],
+        rules: typeof saved.rules === 'string' ? saved.rules : defaultRules,
+        timer: { ...defaultState.timer, ...(saved.timer || {}) },
+        settings: {
+          ...clone(defaultSettings),
+          ...(saved.settings || {}),
+          overlay: { ...defaultSettings.overlay, ...(saved.settings?.overlay || {}) }
+        }
+      };
+    } catch (_) {
+      return clone(defaultState);
+    }
   }
 
-  function createClient() {
-    const config = window.CR7_CONFIG || {};
-    if (!window.supabase?.createClient || !String(config.supabaseUrl || '').startsWith('https://')) return null;
-    if (window.CR7_SUPABASE_CLIENT) return window.CR7_SUPABASE_CLIENT;
-    window.CR7_SUPABASE_CLIENT = window.supabase.createClient(config.supabaseUrl,config.supabasePublishableKey,{ auth:{ persistSession:true,autoRefreshToken:true,detectSessionInUrl:false } });
-    return window.CR7_SUPABASE_CLIENT;
+  function saveState() {
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[character]);
+  }
+
+  function uid(prefix = 'lot') {
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function money(value) {
+    return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(Number(value) || 0)} ₽`;
+  }
+
+  function percent(value) {
+    return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(Number(value) || 0)}%`;
+  }
+
+  function timestamp(value = new Date()) {
+    return new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' }).format(value);
+  }
+
+  function activeItems() {
+    return state.items.filter(item => !item.eliminated && Number(item.amount) > 0);
+  }
+
+  function bankTotal() {
+    return activeItems().reduce((sum, item) => sum + Number(item.amount), 0);
+  }
+
+  function selectionEntries() {
+    const active = activeItems();
+    const sum = active.reduce((total, item) => total + Number(item.amount), 0);
+    return active.map(item => ({
+      item,
+      weight: state.settings.mode === 'elimination'
+        ? Math.max(1, sum - Number(item.amount))
+        : Number(item.amount)
+    }));
+  }
+
+  function selectionTotal() {
+    return selectionEntries().reduce((sum, entry) => sum + entry.weight, 0);
+  }
+
+  function itemChance(item) {
+    const total = selectionTotal();
+    const entry = selectionEntries().find(candidate => candidate.item.id === item.id);
+    return total && entry ? entry.weight / total * 100 : 0;
+  }
+
+  function recordActivity(label) {
+    state.activity.unshift({ id: uid('event'), label, at: new Date().toISOString() });
+    state.activity = state.activity.slice(0, 60);
+    saveState();
   }
 
   function wheelGradient(highlightId = '') {
-    const entries=selectionEntries(),sum=selectionTotal();
-    if (!sum) return 'conic-gradient(from 0deg,#202020 0 100%)';
+    const entries = selectionEntries();
+    const total = selectionTotal();
+    if (!total) return 'conic-gradient(from 0deg, #252525 0 100%)';
     let cursor = 0;
-    return `conic-gradient(from 0deg,${entries.map(({item,weight},index) => {
-      const start = cursor; cursor += weight / sum * 100;
-      const color = highlightId && String(item.id) !== String(highlightId) ? '#2b2b2b' : colors[items.indexOf(item) % colors.length];
+    return `conic-gradient(from 0deg, ${entries.map(({ item, weight }, index) => {
+      const start = cursor;
+      cursor += weight / total * 100;
+      const sourceColor = colors[state.items.indexOf(item) % colors.length];
+      const color = highlightId && item.id !== highlightId ? '#292929' : sourceColor;
       return `${color} ${start}% ${cursor}%`;
-    }).join(',')})`;
+    }).join(', ')})`;
   }
 
-  function highlightItem(id='') {
-    wheel.style.background=wheelGradient(id);
-    list.querySelectorAll('[data-auction-id]').forEach(row=>{
-      const selected=id&&String(row.dataset.auctionId)===String(id);
-      row.classList.toggle('is-highlighted',Boolean(selected));
-      row.classList.toggle('is-dimmed',Boolean(id)&&!selected);
+  function sortedItems() {
+    return [...state.items].sort((left, right) => {
+      if (left.pinned !== right.pinned) return left.pinned ? -1 : 1;
+      if (left.eliminated !== right.eliminated) return left.eliminated ? 1 : -1;
+      return Number(right.amount) - Number(left.amount);
     });
   }
 
-  function itemAtWheelPoint(event) {
-    if(spinning)return null;
-    const rect=wheel.getBoundingClientRect(),x=event.clientX-(rect.left+rect.width/2),y=event.clientY-(rect.top+rect.height/2);
-    const radius=Math.hypot(x,y);if(radius<rect.width*.17||radius>rect.width*.5)return null;
-    const matrix=new DOMMatrixReadOnly(getComputedStyle(wheel).transform);
-    const renderedRotation=Math.atan2(matrix.b,matrix.a)*180/Math.PI;
-    const angle=(Math.atan2(y,x)*180/Math.PI+90-renderedRotation+360)%360,entries=selectionEntries(),sum=selectionTotal();let cursor=0;
-    if(!sum)return null;
-    for(const {item,weight} of entries){cursor+=weight/sum*360;if(angle<cursor)return item;}
-    return entries.at(-1)?.item||null;
+  function visibleItems() {
+    const query = searchQuery.toLocaleLowerCase('ru');
+    return sortedItems().filter(item => {
+      if (state.settings.autoHide && item.eliminated) return false;
+      return !query || item.title.toLocaleLowerCase('ru').includes(query);
+    });
   }
 
-  function render() {
-    const active=activeItems(),bank=active.reduce((sum,item)=>sum+Number(item.amount),0),selectionSum=selectionTotal(),hideEliminated=byId('auctionHideEliminated').checked;
-    total.textContent = money(bank); count.textContent = String(active.length);
-    panel.classList.toggle('auction-hide-bank',!userSettings.showBank);
-    panel.classList.toggle('auction-hide-chances',!userSettings.showChances);
-    panel.classList.toggle('auction-compact-list',userSettings.compactList);
-    panel.style.setProperty('--auction-accent',userSettings.accent);
-    spinButton.disabled = !isAdmin || !selectionSum || spinning;
-    wheel.style.background = wheelGradient();
-    const chanceById=new Map(selectionEntries().map(entry=>[String(entry.item.id),selectionSum ? entry.weight/selectionSum*100 : 0]));
-    const visible = items.filter(item => !hideEliminated || !item.eliminated).sort((a,b)=>{
-      if(a.eliminated!==b.eliminated)return a.eliminated?1:-1;
-      if(auctionMode()==='elimination')return (chanceById.get(String(a.id))||0)-(chanceById.get(String(b.id))||0);
-      return 0;
-    });
-    list.innerHTML = visible.length ? visible.map((item,index) => {
-      const chance=chanceById.get(String(item.id))||0;
-      return `<article class="auction-item${item.eliminated ? ' is-eliminated' : ''}" data-auction-id="${escapeHtml(item.id)}">
-        <span class="auction-color" style="--lot-color:${colors[items.indexOf(item) % colors.length]}">${String(index + 1).padStart(2,'0')}</span>
+  function renderManageList() {
+    const items = visibleItems();
+    manageList.innerHTML = items.length ? items.map((item, index) => `
+      <article class="auction-manage-item${item.eliminated ? ' is-eliminated' : ''}" data-auction-id="${escapeHtml(item.id)}">
+        <span class="auction-lot-index">${String(index + 1).padStart(2, '0')}</span>
+        <input aria-label="Название лота" class="auction-lot-title" data-lot-field="title" maxlength="120" value="${escapeHtml(item.title)}">
+        <label class="auction-lot-amount"><input aria-label="Сумма лота" data-lot-field="amount" min="1" step="1" type="number" value="${Number(item.amount) || 0}"><span>₽</span></label>
+        <div class="auction-lot-tools">
+          <label class="auction-lot-add"><input aria-label="Добавить сумму" min="1" placeholder="+ ₽" type="number"><button aria-label="Прибавить сумму" data-lot-action="add" type="button">＋</button></label>
+          <button aria-label="${item.pinned ? 'Открепить лот' : 'Закрепить лот'}" class="${item.pinned ? 'is-active' : ''}" data-lot-action="pin" title="Закрепить" type="button">⌖</button>
+          <button aria-label="${item.eliminated ? 'Вернуть лот' : 'Исключить лот'}" class="${item.eliminated ? 'is-active' : ''}" data-lot-action="eliminate" title="Исключить" type="button">⊘</button>
+          <button aria-label="Удалить лот" data-lot-action="delete" title="Удалить" type="button">×</button>
+        </div>
+      </article>
+    `).join('') : `
+      <div class="auction-empty">
+        <strong>${searchQuery ? 'Ничего не найдено' : 'Добавьте первый лот'}</strong>
+        <span>${searchQuery ? 'Измените поисковый запрос.' : 'Название и сумма появятся в колесе автоматически.'}</span>
+      </div>`;
+  }
+
+  function renderWheelList() {
+    const hideEliminated = byId('auctionHideEliminated')?.checked;
+    const entries = sortedItems().filter(item => !hideEliminated || !item.eliminated);
+    list.innerHTML = entries.length ? entries.map((item, index) => `
+      <article class="auction-item${item.eliminated ? ' is-eliminated' : ''}" data-auction-id="${escapeHtml(item.id)}">
+        <span class="auction-color" style="--lot-color:${colors[state.items.indexOf(item) % colors.length]}">${String(index + 1).padStart(2, '0')}</span>
         <div class="auction-item-copy"><h3>${escapeHtml(item.title)}</h3><p>${money(item.amount)}</p></div>
-        <div class="auction-item-amount"><span>Собрано</span><strong>${money(item.amount)}</strong></div>
-        <div class="auction-item-chance"><span>${item.eliminated ? 'Статус' : auctionMode()==='elimination' ? 'Шанс вылета' : 'Шанс победы'}</span><strong>${item.eliminated ? 'Выбыл' : percent(chance)}</strong></div>
-      </article>`;
-    }).join('') : '<div class="auction-empty"><strong>Участников пока нет</strong><span>Администратор добавит лоты перед аукционом.</span></div>';
-    manageList.innerHTML = [...items].sort((a,b)=>Number(b.amount)-Number(a.amount)).map(item => `<article class="auction-manage-item" data-auction-id="${escapeHtml(item.id)}"><div><strong>${escapeHtml(item.title)}</strong><span>${money(item.amount)} · ${item.eliminated ? 'выбыл' : 'участвует'}</span></div><label class="auction-funds"><input min="1" placeholder="Добавить ₽" step="1" type="number"><button aria-label="Добавить рубли" class="auction-add-funds" title="Добавить рубли" type="button">+₽</button></label><div class="auction-manage-actions"><button aria-label="${item.eliminated ? 'Вернуть в рулетку' : 'Исключить из рулетки'}" class="auction-eliminate" title="${item.eliminated ? 'Вернуть' : 'Исключить'}" type="button">${item.eliminated ? '↩' : '⊘'}</button><button aria-label="Изменить лот" class="auction-edit" title="Изменить" type="button">✎</button><button aria-label="Удалить лот" class="auction-delete" title="Удалить" type="button">×</button></div></article>`).join('');
+        <div class="auction-item-chance"><span>${item.eliminated ? 'Статус' : state.settings.mode === 'elimination' ? 'Шанс вылета' : 'Шанс победы'}</span><strong>${item.eliminated ? 'Выбыл' : percent(itemChance(item))}</strong></div>
+      </article>
+    `).join('') : '<div class="auction-empty"><strong>Колесо пустое</strong><span>Добавьте активные лоты во вкладке «Лоты».</span></div>';
   }
 
-  async function loadItems() {
-    client ||= createClient();
-    if (!client) { schemaReady=false;items=fallbackItems;render();return; }
-    const { data,error } = await client.from('auction_items').select('id,title,description,amount,display_order,eliminated').eq('active',true).order('display_order').order('created_at');
-    if (error) { schemaReady=false;items=fallbackItems;result.textContent='Демонстрация · примените миграцию аукциона'; }
-    else { schemaReady=true;items=data || []; }
-    await checkAdmin(); render();
+  function renderActivity() {
+    const container = byId('auctionHistory');
+    if (!container) return;
+    container.innerHTML = state.activity.length ? state.activity.slice(0, 12).map(entry => `
+      <article><span>${escapeHtml(entry.label)}</span><time>${timestamp(new Date(entry.at))}</time></article>
+    `).join('') : '<p>Изменений пока нет</p>';
   }
 
-  async function checkAdmin() {
-    if (!client) return;
-    const { data:sessionData } = await client.auth.getSession();
-    if (!sessionData?.session?.user) return;
-    const { data,error } = await client.rpc('is_site_admin');
-    isAdmin = !error && data === true;
-    manageTab.hidden = !isAdmin;
-    byId('auctionSpinDuration').disabled = !isAdmin;
-    byId('auctionRandomDuration').disabled = !isAdmin;
-    byId('auctionSpinMin').disabled = !isAdmin;
-    byId('auctionSpinMax').disabled = !isAdmin;
-    document.querySelectorAll('[name="auctionMode"]').forEach(input=>{input.disabled=!isAdmin;});
-    byId('auctionSetupNotice').hidden = schemaReady || !isAdmin;
+  function renderArchive() {
+    const sessions = state.archives;
+    const allSpins = [...state.spins, ...sessions.flatMap(session => session.spins || [])];
+    byId('auctionArchiveCount').textContent = String(sessions.length);
+    byId('auctionSpinCount').textContent = String(allSpins.length);
+    byId('auctionLastWinner').textContent = allSpins[0]?.winner || '—';
+    const archiveList = byId('auctionArchiveList');
+    if (!archiveList) return;
+    const current = state.spins.length ? [{
+      id: 'current',
+      finishedAt: null,
+      bank: bankTotal(),
+      lots: state.items.length,
+      spins: state.spins
+    }] : [];
+    const entries = [...current, ...sessions];
+    archiveList.innerHTML = entries.length ? entries.map(session => `
+      <article class="auction-archive-card">
+        <header><div><span>${session.id === 'current' ? 'Текущая сессия' : 'Завершённый аукцион'}</span><strong>${session.finishedAt ? new Intl.DateTimeFormat('ru-RU', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(session.finishedAt)) : 'Сейчас'}</strong></div><b>${money(session.bank)}</b></header>
+        <div>${(session.spins || []).length ? session.spins.map(spin => `<p><span>${escapeHtml(spin.winner)}</span><small>${percent(spin.chance)} · ${timestamp(new Date(spin.at))}</small></p>`).join('') : '<p><span>Без подтверждённых победителей</span></p>'}</div>
+      </article>
+    `).join('') : '<div class="auction-empty"><strong>История пуста</strong><span>Подтвердите победителя или завершите текущий аукцион.</span></div>';
+  }
+
+  function renderWinner() {
+    const card = byId('auctionWinnerCard');
+    if (!card) return;
+    if (!pendingWinner) {
+      card.hidden = true;
+      return;
+    }
+    const item = state.items.find(entry => entry.id === pendingWinner.itemId);
+    if (!item) {
+      pendingWinner = null;
+      card.hidden = true;
+      return;
+    }
+    card.hidden = false;
+    byId('auctionWinnerName').textContent = item.title;
+    byId('auctionWinnerChance').textContent = percent(pendingWinner.chance);
+    byId('auctionWinnerCumulative').textContent = percent(pendingWinner.cumulative);
+    const confirm = byId('auctionWinnerConfirm');
+    confirm.disabled = Boolean(pendingWinner.confirmed);
+    confirm.textContent = pendingWinner.confirmed ? 'Победитель сохранён' : 'Подтвердить';
+  }
+
+  function remainingSeconds() {
+    if (state.timer.running && state.timer.endsAt) {
+      return Math.max(0, Math.ceil((Number(state.timer.endsAt) - Date.now()) / 1000));
+    }
+    return Math.max(0, Number(state.timer.remaining) || 0);
+  }
+
+  function timerText(seconds, includeHours = true) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor(seconds % 3600 / 60);
+    const remainder = seconds % 60;
+    const values = includeHours ? [hours, minutes, remainder] : [hours * 60 + minutes, remainder];
+    return values.map(value => String(value).padStart(2, '0')).join(':');
+  }
+
+  function drawTimer() {
+    const seconds = remainingSeconds();
+    timerDisplay.textContent = timerText(seconds);
+    byId('auctionOverlayTimer').textContent = timerText(seconds, false);
+    const liveTimer = byId('auctionLiveTimer');
+    if (liveTimer) {
+      liveTimer.textContent = timerText(seconds);
+      liveTimer.hidden = !state.settings.showTimer;
+    }
+    if (!seconds && state.timer.running) {
+      state.timer = { remaining: 0, running: false, endsAt: null };
+      saveState();
+    }
+    const toggle = byId('auctionTimerToggle');
+    if (toggle) {
+      toggle.textContent = state.timer.running ? 'Ⅱ' : '▶';
+      toggle.title = state.timer.running ? 'Пауза' : 'Продолжить';
+    }
+  }
+
+  function renderOverlay() {
+    const active = [...activeItems()].sort((left, right) => Number(right.amount) - Number(left.amount));
+    byId('auctionOverlayLeader').textContent = active[0] ? `${active[0].title} · ${money(active[0].amount)}` : 'Лидер появится после добавления лотов';
+    byId('auctionOverlayBank').textContent = money(bankTotal());
+    const preview = byId('auctionOverlayPreview');
+    preview.classList.toggle('is-transparent', state.settings.overlay.transparent);
+    byId('auctionOverlayTimer').hidden = !state.settings.overlay.timer;
+    byId('auctionOverlayLeader').hidden = !state.settings.overlay.leader;
+    byId('auctionOverlayBank').parentElement.hidden = !state.settings.overlay.bank;
+  }
+
+  function applySettings() {
+    const settings = state.settings;
+    panel.style.setProperty('--auction-accent', settings.accent);
+    panel.classList.toggle('auction-hide-bank', !settings.showBank);
+    panel.classList.toggle('auction-hide-chances', !settings.showChances);
+    panel.classList.toggle('auction-compact-list', settings.compactList);
+    byId('auctionInitialMinutes').value = settings.initialMinutes;
+    byId('auctionShowTimer').checked = settings.showTimer;
+    byId('auctionShowBank').checked = settings.showBank;
+    byId('auctionShowChances').checked = settings.showChances;
+    byId('auctionCompactList').checked = settings.compactList;
+    byId('auctionAutoHide').checked = settings.autoHide;
+    byId('auctionSpinDuration').value = settings.spinDuration;
+    byId('auctionRandomDuration').checked = settings.randomDuration;
+    byId('auctionSpinMin').value = settings.spinMin;
+    byId('auctionSpinMax').value = settings.spinMax;
+    byId('auctionRandomRange').hidden = !settings.randomDuration;
+    byId('auctionQuickHide').checked = byId('auctionHideEliminated').checked;
+    byId('auctionQuickChances').checked = settings.showChances;
+    document.querySelectorAll('[name="auctionMode"]').forEach(input => {
+      input.disabled = false;
+      input.checked = input.value === settings.mode;
+    });
+    ['auctionSpinDuration', 'auctionRandomDuration', 'auctionSpinMin', 'auctionSpinMax'].forEach(id => {
+      byId(id).disabled = false;
+    });
+    document.querySelectorAll('#auctionAccentColors [data-color]').forEach(button => {
+      button.classList.toggle('active', button.dataset.color === settings.accent);
+    });
+    byId('auctionOverlayShowTimer').checked = settings.overlay.timer;
+    byId('auctionOverlayShowLeader').checked = settings.overlay.leader;
+    byId('auctionOverlayShowBank').checked = settings.overlay.bank;
+    byId('auctionOverlayTransparent').checked = settings.overlay.transparent;
+  }
+
+  function renderAll() {
+    const total = bankTotal();
+    byId('auctionTotal').textContent = money(total);
+    byId('auctionCount').textContent = String(activeItems().length);
+    wheel.style.background = wheelGradient();
+    spinButton.disabled = spinning || !selectionTotal();
+    renderManageList();
+    renderWheelList();
+    renderActivity();
+    renderArchive();
+    renderWinner();
+    renderOverlay();
+    drawTimer();
+  }
+
+  function saveAndRender() {
+    saveState();
+    applySettings();
+    renderAll();
+  }
+
+  function addLot(event) {
+    event.preventDefault();
+    const title = byId('auctionItemTitle').value.trim();
+    const amount = Math.round(Number(byId('auctionItemAmount').value));
+    if (!title || !Number.isFinite(amount) || amount <= 0) return;
+    state.items.push({ id: uid(), title, amount, eliminated: false, pinned: false });
+    recordActivity(`Добавлен лот «${title}» на ${money(amount)}`);
+    form.reset();
+    saveAndRender();
+    byId('auctionItemTitle').focus();
+  }
+
+  function updateLot(row, field, value) {
+    const item = state.items.find(entry => entry.id === row?.dataset.auctionId);
+    if (!item) return;
+    if (field === 'title') {
+      const title = String(value).trim().slice(0, 120);
+      if (title) item.title = title;
+    }
+    if (field === 'amount') {
+      const amount = Math.round(Number(value));
+      if (Number.isFinite(amount) && amount > 0) item.amount = amount;
+    }
+    saveAndRender();
+  }
+
+  function lotAction(button) {
+    const row = button.closest('[data-auction-id]');
+    const item = state.items.find(entry => entry.id === row?.dataset.auctionId);
+    if (!item) return;
+    const action = button.dataset.lotAction;
+    if (action === 'delete') {
+      state.items = state.items.filter(entry => entry.id !== item.id);
+      recordActivity(`Удалён лот «${item.title}»`);
+    }
+    if (action === 'pin') {
+      item.pinned = !item.pinned;
+      recordActivity(`${item.pinned ? 'Закреплён' : 'Откреплён'} лот «${item.title}»`);
+    }
+    if (action === 'eliminate') {
+      item.eliminated = !item.eliminated;
+      recordActivity(`${item.eliminated ? 'Исключён' : 'Возвращён'} лот «${item.title}»`);
+    }
+    if (action === 'add') {
+      const input = row.querySelector('.auction-lot-add input');
+      const amount = Math.round(Number(input?.value));
+      if (!Number.isFinite(amount) || amount <= 0) return;
+      item.amount = Number(item.amount) + amount;
+      recordActivity(`«${item.title}»: +${money(amount)}`);
+    }
+    saveAndRender();
   }
 
   function pickWinner() {
-    const entries=selectionEntries(),sum=selectionTotal(); let target=Math.random()*sum,start=0;
-    for (const {item,weight} of entries) { if (target < weight) return { item,start,weight,sum }; target-=weight;start+=weight; }
-    return null;
-  }
-
-  async function spin() {
-    if (spinning || !isAdmin) return;
-    const winner=pickWinner(); if (!winner) return;
-    spinning=true;spinButton.disabled=true;result.textContent='Колесо вращается…';
-    const base=Math.max(3,Math.min(60,Number(byId('auctionSpinDuration').value)||8));
-    const minDuration=Math.max(3,Math.min(60,Number(byId('auctionSpinMin').value)||5)),maxDuration=Math.max(minDuration,Math.min(90,Number(byId('auctionSpinMax').value)||15));
-    const duration=byId('auctionRandomDuration').checked ? minDuration+Math.random()*(maxDuration-minDuration) : base;
-    wheel.style.transitionDuration=`${duration}s`;
-    const middle=(winner.start+winner.weight/2)/winner.sum*360;
-    rotation += 1800+(360-middle)-(rotation%360); wheel.style.transform=`rotate(${rotation}deg)`;
-    const mode=auctionMode();
-    window.setTimeout(async()=>{ spinning=false;result.innerHTML=`${mode==='elimination'?'Выбывает':'Победил'}: <strong>${escapeHtml(winner.item.title)}</strong>`;if(mode==='elimination'){if(schemaReady){await client.from('auction_items').update({ eliminated:true }).eq('id',winner.item.id);recordHistory(`Рулетка исключила «${winner.item.title}»`,async()=>{await client.from('auction_items').update({eliminated:false}).eq('id',winner.item.id);await loadItems();});await loadItems();}else{winner.item.eliminated=true;recordHistory(`Рулетка исключила «${winner.item.title}»`,async()=>{winner.item.eliminated=false;render();});render();}}else render(); },duration*1000+100);
-  }
-
-  async function saveItem(event) {
-    event.preventDefault(); if (!isAdmin) return;
-    const title=byId('auctionItemTitle').value.trim(),amount=Number(byId('auctionItemAmount').value);
-    if (!title || !Number.isFinite(amount) || amount<0) return;
-    const previous=items.find(item=>String(item.id)===String(editingId));
-    if (!schemaReady) {
-      if (editingId) {
-        items = items.map(item => String(item.id) === String(editingId) ? { ...item,title,amount } : item);
-        recordHistory(`Изменён лот «${title}»`,async()=>{items=items.map(item=>String(item.id)===String(previous.id)?previous:item);render();});
-      } else {
-        const created={ id:`preview-${Date.now()}`,title,description:'',amount,eliminated:false };items.push(created);
-        recordHistory(`Создан лот «${title}»`,async()=>{items=items.filter(item=>item!==created);render();});
-      }
-    } else {
-      if(editingId){const {error}=await client.from('auction_items').update({title,amount}).eq('id',editingId);if(error){result.textContent=error.message;return;}recordHistory(`Изменён лот «${title}»`,async()=>{await client.from('auction_items').update({title:previous.title,amount:previous.amount}).eq('id',previous.id);await loadItems();});}
-      else {const {data,error}=await client.from('auction_items').insert({title,amount,display_order:items.length}).select('id').single();if(error){result.textContent=error.message;return;}recordHistory(`Создан лот «${title}»`,async()=>{await client.from('auction_items').delete().eq('id',data.id);await loadItems();});}
+    const entries = selectionEntries();
+    const total = selectionTotal();
+    if (!entries.length || !total) return null;
+    const random = window.crypto?.getRandomValues
+      ? window.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296
+      : Math.random();
+    let target = random * total;
+    let start = 0;
+    for (const entry of entries) {
+      if (target < entry.weight) return { ...entry, start, total };
+      target -= entry.weight;
+      start += entry.weight;
     }
-    editingId=null;form.reset();form.hidden=true;byId('auctionAdminToggle').textContent='＋';if(schemaReady)await loadItems();else render();
+    return { ...entries.at(-1), start: total - entries.at(-1).weight, total };
   }
 
-  function editItem(id) {
-    const item=items.find(entry=>String(entry.id)===String(id));if(!item)return;
-    editingId=item.id;byId('auctionItemTitle').value=item.title;byId('auctionItemAmount').value=Number(item.amount)||0;form.hidden=false;byId('auctionAdminToggle').textContent='×';
+  function cumulativeChance(item) {
+    const active = activeItems();
+    const total = active.reduce((sum, entry) => sum + Number(entry.amount), 0);
+    const cumulative = active
+      .filter(entry => Number(entry.amount) <= Number(item.amount))
+      .reduce((sum, entry) => sum + Number(entry.amount), 0);
+    return total ? cumulative / total * 100 : 0;
   }
 
-  async function mutateItem(target,action) {
-    if(!isAdmin)return;const row=target.closest('[data-auction-id]'),id=row?.dataset.auctionId,item=items.find(entry=>String(entry.id)===String(id));if(!item)return;
-    if (!schemaReady) {
-      if(action==='delete'){const index=items.indexOf(item);items=items.filter(entry=>String(entry.id)!==String(id));recordHistory(`Удалён лот «${item.title}»`,async()=>{items.splice(index,0,item);render();});}
-      if(action==='eliminate'){const previous=item.eliminated;item.eliminated=!item.eliminated;recordHistory(`${item.eliminated?'Исключён':'Возвращён'} лот «${item.title}»`,async()=>{item.eliminated=previous;render();});}
-      render();
-    } else {
-      if(action==='delete'){const {error}=await client.from('auction_items').delete().eq('id',id);if(error){result.textContent=error.message;return;}recordHistory(`Удалён лот «${item.title}»`,async()=>{await client.from('auction_items').insert({title:item.title,description:item.description||'',amount:item.amount,display_order:item.display_order||0,active:true,eliminated:item.eliminated});await loadItems();});}
-      if(action==='eliminate'){const previous=item.eliminated,{error}=await client.from('auction_items').update({eliminated:!previous}).eq('id',id);if(error){result.textContent=error.message;return;}recordHistory(`${!previous?'Исключён':'Возвращён'} лот «${item.title}»`,async()=>{await client.from('auction_items').update({eliminated:previous}).eq('id',id);await loadItems();});}
-      await loadItems();
+  function normaliseDuration(value, fallback) {
+    const duration = Math.floor(Number(value));
+    return Number.isFinite(duration) && duration >= 1 ? duration : fallback;
+  }
+
+  function waitForSpin(milliseconds, callback) {
+    const maxTimeout = 2147480000;
+    const chunk = Math.min(milliseconds, maxTimeout);
+    window.setTimeout(() => {
+      if (milliseconds > chunk) waitForSpin(milliseconds - chunk, callback);
+      else callback();
+    }, chunk);
+  }
+
+  function spin() {
+    if (spinning) return;
+    const winner = pickWinner();
+    if (!winner) return;
+    spinning = true;
+    pendingWinner = null;
+    renderWinner();
+    spinButton.disabled = true;
+    byId('auctionResult').textContent = 'Колесо вращается…';
+    const settings = state.settings;
+    const min = normaliseDuration(settings.spinMin, 4);
+    const max = Math.max(min, normaliseDuration(settings.spinMax, 10));
+    const duration = settings.randomDuration
+      ? min + Math.random() * (max - min)
+      : normaliseDuration(settings.spinDuration, 6);
+    const middle = (winner.start + winner.weight / 2) / winner.total * 360;
+    rotation += 1800 + (360 - middle) - (rotation % 360);
+    wheel.style.transitionDuration = `${duration}s`;
+    wheel.style.transform = `rotate(${rotation}deg)`;
+    waitForSpin(duration * 1000 + 120, () => {
+      spinning = false;
+      pendingWinner = {
+        itemId: winner.item.id,
+        chance: winner.weight / winner.total * 100,
+        cumulative: cumulativeChance(winner.item),
+        confirmed: false
+      };
+      byId('auctionResult').innerHTML = `${settings.mode === 'elimination' ? 'Выбывает' : 'Победитель'}: <strong>${escapeHtml(winner.item.title)}</strong>`;
+      recordActivity(`Колесо выбрало «${winner.item.title}»`);
+      saveAndRender();
+    }, duration * 1000 + 120);
+  }
+
+  function confirmWinner() {
+    if (!pendingWinner || pendingWinner.confirmed) return;
+    const item = state.items.find(entry => entry.id === pendingWinner.itemId);
+    if (!item) return;
+    pendingWinner.confirmed = true;
+    state.spins.unshift({
+      id: uid('spin'),
+      winner: item.title,
+      itemId: item.id,
+      amount: Number(item.amount),
+      chance: pendingWinner.chance,
+      mode: state.settings.mode,
+      at: new Date().toISOString()
+    });
+    if (state.settings.mode === 'elimination') item.eliminated = true;
+    recordActivity(`Подтверждён результат: «${item.title}»`);
+    saveAndRender();
+  }
+
+  function removeWinner() {
+    if (!pendingWinner) return;
+    const item = state.items.find(entry => entry.id === pendingWinner.itemId);
+    if (item) {
+      item.eliminated = true;
+      recordActivity(`Исключён лот «${item.title}»`);
     }
+    pendingWinner = null;
+    saveAndRender();
   }
 
-  async function addFunds(target) {
-    if(!isAdmin)return;const row=target.closest('[data-auction-id]'),id=row?.dataset.auctionId,item=items.find(entry=>String(entry.id)===String(id)),amount=Number(row?.querySelector('.auction-funds input')?.value);if(!item||!Number.isFinite(amount)||amount<=0)return;
-    const previousAmount=Number(item.amount),nextAmount=previousAmount+amount,label=`«${item.title}»: +${money(amount)}`;
-    if(!schemaReady){item.amount=nextAmount;recordHistory(label,async()=>{item.amount=previousAmount;render();});render();}else{const {error}=await client.from('auction_items').update({amount:nextAmount}).eq('id',id);if(error){result.textContent=error.message;return;}recordHistory(label,async()=>{await client.from('auction_items').update({amount:previousAmount}).eq('id',id);await loadItems();});await loadItems();}
+  function adjustTimer(delta) {
+    const next = Math.max(0, remainingSeconds() + delta);
+    state.timer.remaining = next;
+    if (state.timer.running) state.timer.endsAt = Date.now() + next * 1000;
+    saveState();
+    drawTimer();
   }
 
-  function remainingSeconds() { return timer.running && timer.endsAt ? Math.max(0,Math.ceil((timer.endsAt-Date.now())/1000)) : Math.max(0,timer.remaining); }
-  function drawTimer() { const seconds=remainingSeconds(),h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;timerDisplay.textContent=[h,m,s].map(x=>String(x).padStart(2,'0')).join(':');if(!seconds&&timer.running){timer.running=false;timer.endsAt=null;byId('auctionTimerToggle').textContent='▶';} }
-  function adjustTimer(delta) { const next=Math.max(0,remainingSeconds()+delta);timer.remaining=next;if(timer.running)timer.endsAt=Date.now()+next*1000;drawTimer(); }
-  function toggleTimer(){if(timer.running){timer.remaining=remainingSeconds();timer.running=false;timer.endsAt=null;byId('auctionTimerToggle').textContent='▶';}else{if(!timer.remaining)timer.remaining=3600;timer.running=true;timer.endsAt=Date.now()+timer.remaining*1000;byId('auctionTimerToggle').textContent='Ⅱ';}drawTimer();}
-  function resetTimer(){timer={remaining:Math.max(1,Number(userSettings.initialMinutes)||60)*60,running:false,endsAt:null};byId('auctionTimerToggle').textContent='▶';drawTimer();}
-  function timerStep(){return Math.max(1,Number(byId('auctionTimerStep').value)||1)*Number(byId('auctionTimerUnit').value||1);}
-
-  function saveSettings() { localStorage.setItem(settingsKey,JSON.stringify(userSettings)); applySettings(); }
-  function applySettings() {
-    byId('auctionInitialMinutes').value=userSettings.initialMinutes;
-    byId('auctionShowTimer').checked=userSettings.showTimer;
-    byId('auctionShowBank').checked=userSettings.showBank;
-    byId('auctionShowChances').checked=userSettings.showChances;
-    byId('auctionCompactList').checked=userSettings.compactList;
-    byId('auctionAutoHide').checked=userSettings.autoHide;
-    byId('auctionQuickChances').checked=userSettings.showChances;
-    byId('auctionQuickHide').checked=byId('auctionHideEliminated').checked;
-    panel.classList.toggle('auction-show-timer',userSettings.showTimer);
-    document.querySelectorAll('[data-color]').forEach(button=>button.classList.toggle('active',button.dataset.color===userSettings.accent));
-    render();
+  function timerStep() {
+    return Math.max(1, Number(byId('auctionTimerStep').value) || 1) * Number(byId('auctionTimerUnit').value || 1);
   }
 
-  function switchTab(button){document.querySelectorAll('[data-auction-tab]').forEach(x=>x.classList.toggle('active',x===button));document.querySelectorAll('[data-auction-panel]').forEach(x=>{const active=x.dataset.auctionPanel===button.dataset.auctionTab;x.hidden=!active;x.classList.toggle('active',active);});}
-  function openAuction(){lastFocusedElement=document.activeElement;panel.hidden=false;panel.setAttribute('aria-hidden','false');openButton.setAttribute('aria-expanded','true');document.body.classList.add('auction-open');loadItems();requestAnimationFrame(()=>{panel.classList.add('is-open');closeButton.focus();});}
-  function closeAuction(){panel.classList.remove('is-open');panel.setAttribute('aria-hidden','true');openButton.setAttribute('aria-expanded','false');document.body.classList.remove('auction-open');window.setTimeout(()=>{panel.hidden=true;lastFocusedElement?.focus();},450);}
+  function toggleTimer() {
+    if (state.timer.running) {
+      state.timer.remaining = remainingSeconds();
+      state.timer.running = false;
+      state.timer.endsAt = null;
+    } else {
+      if (!state.timer.remaining) state.timer.remaining = Math.max(1, state.settings.initialMinutes) * 60;
+      state.timer.running = true;
+      state.timer.endsAt = Date.now() + state.timer.remaining * 1000;
+    }
+    saveState();
+    drawTimer();
+  }
 
-  const rulesEditor=byId('auctionRulesEditor'),rulesStatus=byId('auctionRulesStatus');
-  const savedRules=localStorage.getItem(rulesKey);
-  if(savedRules)rulesEditor.innerHTML=savedRules;
-  let rulesSaveTimer=0;
-  function saveRules(){localStorage.setItem(rulesKey,rulesEditor.innerHTML);rulesStatus.textContent='Сохранено';}
-  function scheduleRulesSave(){rulesStatus.textContent='Сохранение…';window.clearTimeout(rulesSaveTimer);rulesSaveTimer=window.setTimeout(saveRules,350);}
+  function resetTimer() {
+    state.timer = {
+      remaining: Math.max(1, Number(state.settings.initialMinutes) || 10) * 60,
+      running: false,
+      endsAt: null
+    };
+    saveState();
+    drawTimer();
+  }
 
-  openButton.addEventListener('click',openAuction);closeButton.addEventListener('click',closeAuction);spinButton.addEventListener('click',spin);form.addEventListener('submit',saveItem);
-  panel.addEventListener('click',async event=>{if(event.target.matches('[data-auction-close]'))closeAuction();const row=event.target.closest('[data-auction-id]');if(event.target.closest('.auction-edit'))editItem(row?.dataset.auctionId);if(event.target.closest('.auction-delete'))mutateItem(event.target,'delete');if(event.target.closest('.auction-eliminate'))mutateItem(event.target,'eliminate');if(event.target.closest('.auction-add-funds'))addFunds(event.target);const undo=event.target.closest('[data-history-index]');if(undo){const entry=historyEntries[Number(undo.dataset.historyIndex)];if(entry){await entry.undo();historyEntries=historyEntries.filter(item=>item!==entry);renderHistory();}}});
-  list.addEventListener('mouseover',event=>{const row=event.target.closest('[data-auction-id]');if(row)highlightItem(row.dataset.auctionId);});list.addEventListener('mouseout',()=>highlightItem());
-  wheel.addEventListener('mousemove',event=>highlightItem(itemAtWheelPoint(event)?.id||''));wheel.addEventListener('mouseleave',()=>highlightItem());
-  document.querySelectorAll('[data-auction-tab]').forEach(button=>button.addEventListener('click',()=>switchTab(button)));
-  byId('auctionHideEliminated').addEventListener('change',event=>{byId('auctionQuickHide').checked=event.target.checked;render();});byId('auctionAdminToggle').addEventListener('click',()=>{form.hidden=!form.hidden;if(form.hidden){editingId=null;form.reset();}});
-  document.querySelectorAll('[name="auctionMode"]').forEach(input=>input.addEventListener('change',render));
-  byId('auctionSettingsToggle').addEventListener('click',()=>{const quick=byId('auctionSettings');quick.hidden=!quick.hidden;byId('auctionSettingsToggle').setAttribute('aria-expanded',String(!quick.hidden));});
-  byId('auctionRandomDuration').addEventListener('change',()=>{byId('auctionRandomRange').hidden=!byId('auctionRandomDuration').checked;});
-  byId('auctionQuickHide').addEventListener('change',event=>{byId('auctionHideEliminated').checked=event.target.checked;render();});
-  byId('auctionQuickChances').addEventListener('change',event=>{userSettings.showChances=event.target.checked;saveSettings();});
-  panel.querySelector('[data-open-auction-settings]').addEventListener('click',()=>{switchTab(panel.querySelector('[data-auction-tab="settings"]'));byId('auctionSettings').hidden=true;});
-  byId('auctionInitialMinutes').addEventListener('change',event=>{userSettings.initialMinutes=Math.max(1,Math.min(360,Number(event.target.value)||60));saveSettings();});
-  byId('auctionShowTimer').addEventListener('change',event=>{userSettings.showTimer=event.target.checked;saveSettings();});
-  byId('auctionShowBank').addEventListener('change',event=>{userSettings.showBank=event.target.checked;saveSettings();});
-  byId('auctionShowChances').addEventListener('change',event=>{userSettings.showChances=event.target.checked;saveSettings();});
-  byId('auctionCompactList').addEventListener('change',event=>{userSettings.compactList=event.target.checked;saveSettings();});
-  byId('auctionAutoHide').addEventListener('change',event=>{userSettings.autoHide=event.target.checked;byId('auctionHideEliminated').checked=event.target.checked;saveSettings();});
-  byId('auctionAccentColors').addEventListener('click',event=>{const button=event.target.closest('[data-color]');if(button){userSettings.accent=button.dataset.color;saveSettings();}});
-  byId('auctionSettingsReset').addEventListener('click',()=>{userSettings={...defaultSettings};byId('auctionHideEliminated').checked=false;saveSettings();});
-  byId('auctionTimerToggle').addEventListener('click',toggleTimer);byId('auctionTimerReset').addEventListener('click',resetTimer);
-  byId('auctionTimerAdd').addEventListener('click',()=>adjustTimer(timerStep()));byId('auctionTimerSubtract').addEventListener('click',()=>adjustTimer(-timerStep()));
-  byId('auctionHistoryClear').addEventListener('click',()=>{historyEntries=[];renderHistory();});
-  document.querySelectorAll('[data-manage-view]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-manage-view]').forEach(item=>item.classList.toggle('active',item===button));document.querySelectorAll('[data-manage-panel]').forEach(view=>{const active=view.dataset.managePanel===button.dataset.manageView;view.hidden=!active;view.classList.toggle('active',active);});if(button.dataset.manageView==='rules')rulesEditor.focus();}));
-  byId('auctionRulesEditor').addEventListener('input',scheduleRulesSave);
-  byId('auctionRulesEditor').addEventListener('paste',event=>{event.preventDefault();document.execCommand('insertText',false,event.clipboardData.getData('text/plain'));});
-  panel.querySelector('.auction-editor-toolbar').addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;rulesEditor.focus();if(button.hasAttribute('data-editor-clear'))document.execCommand('removeFormat');else document.execCommand(button.dataset.editorCommand,false,button.dataset.editorValue||null);scheduleRulesSave();});
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden)closeAuction();});window.setInterval(drawTimer,250);drawTimer();renderHistory();applySettings();
+  function switchManageView(viewName) {
+    document.querySelectorAll('[data-manage-panel]').forEach(view => {
+      const active = view.dataset.managePanel === viewName;
+      view.hidden = !active;
+      view.classList.toggle('active', active);
+    });
+  }
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    document.querySelectorAll('[data-auction-tab]').forEach(button => {
+      button.classList.toggle('active', button.dataset.auctionTab === tabName);
+    });
+    const panelName = tabName === 'rules' ? 'manage' : tabName;
+    document.querySelectorAll('[data-auction-panel]').forEach(view => {
+      const active = view.dataset.auctionPanel === panelName;
+      view.hidden = !active;
+      view.classList.toggle('active', active);
+    });
+    switchManageView(tabName === 'rules' ? 'rules' : 'lots');
+    panel.classList.toggle('is-rules-tab', tabName === 'rules');
+    if (tabName === 'rules') byId('auctionRulesEditor').focus();
+    if (tabName === 'wheel') renderAll();
+  }
+
+  function archiveAuction() {
+    const hasData = state.items.length || state.spins.length;
+    if (!hasData) return;
+    if (!window.confirm('Завершить текущий аукцион и начать новый? Лоты будут перенесены в историю.')) return;
+    state.archives.unshift({
+      id: uid('auction'),
+      startedAt: state.startedAt,
+      finishedAt: new Date().toISOString(),
+      bank: state.items.reduce((sum, item) => sum + Number(item.amount || 0), 0),
+      lots: state.items.length,
+      spins: clone(state.spins)
+    });
+    state.archives = state.archives.slice(0, 30);
+    state.startedAt = new Date().toISOString();
+    state.items = [];
+    state.activity = [];
+    state.spins = [];
+    pendingWinner = null;
+    resetTimer();
+    saveAndRender();
+    switchTab('manage');
+  }
+
+  function exportHistory() {
+    const payload = JSON.stringify({
+      exportedAt: new Date().toISOString(),
+      current: {
+        startedAt: state.startedAt,
+        items: state.items,
+        spins: state.spins
+      },
+      archives: state.archives
+    }, null, 2);
+    const blob = new Blob([payload], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `141-auction-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
+  function updateSetting(key, value) {
+    state.settings[key] = value;
+    saveAndRender();
+  }
+
+  function updateOverlaySetting(key, value) {
+    state.settings.overlay[key] = value;
+    saveAndRender();
+  }
+
+  function ensureLiveTimer() {
+    if (byId('auctionLiveTimer')) return;
+    const timer = document.createElement('strong');
+    timer.className = 'auction-live-timer';
+    timer.id = 'auctionLiveTimer';
+    timer.hidden = !state.settings.showTimer;
+    panel.querySelector('.auction-wheel-toolbar')?.append(timer);
+  }
+
+  function openAuction() {
+    lastFocusedElement = document.activeElement;
+    panel.hidden = false;
+    panel.setAttribute('aria-hidden', 'false');
+    openButton.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('auction-open');
+    ensureLiveTimer();
+    applySettings();
+    renderAll();
+    switchTab(activeTab);
+    requestAnimationFrame(() => {
+      panel.classList.add('is-open');
+      closeButton.focus();
+    });
+  }
+
+  function closeAuction() {
+    panel.classList.remove('is-open');
+    panel.setAttribute('aria-hidden', 'true');
+    openButton.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('auction-open');
+    window.setTimeout(() => {
+      panel.hidden = true;
+      lastFocusedElement?.focus();
+    }, 240);
+  }
+
+  const rulesEditor = byId('auctionRulesEditor');
+  const rulesStatus = byId('auctionRulesStatus');
+  rulesEditor.innerHTML = state.rules || defaultRules;
+  form.hidden = false;
+
+  openButton.addEventListener('click', openAuction);
+  closeButton.addEventListener('click', closeAuction);
+  panel.addEventListener('click', event => {
+    if (event.target.matches('[data-auction-close]')) closeAuction();
+  });
+  form.addEventListener('submit', addLot);
+  byId('auctionAdminToggle').addEventListener('click', () => byId('auctionItemTitle').focus());
+  byId('auctionSearch').addEventListener('input', event => {
+    searchQuery = event.target.value.trim();
+    renderManageList();
+  });
+  manageList.addEventListener('change', event => {
+    const field = event.target.dataset.lotField;
+    if (field) updateLot(event.target.closest('[data-auction-id]'), field, event.target.value);
+  });
+  manageList.addEventListener('click', event => {
+    const button = event.target.closest('[data-lot-action]');
+    if (button) lotAction(button);
+  });
+  document.querySelectorAll('[data-auction-tab]').forEach(button => {
+    button.addEventListener('click', () => switchTab(button.dataset.auctionTab));
+  });
+
+  list.addEventListener('mouseover', event => {
+    const row = event.target.closest('[data-auction-id]');
+    if (!row) return;
+    wheel.style.background = wheelGradient(row.dataset.auctionId);
+    list.querySelectorAll('[data-auction-id]').forEach(item => {
+      item.classList.toggle('is-dimmed', item !== row);
+      item.classList.toggle('is-highlighted', item === row);
+    });
+  });
+  list.addEventListener('mouseleave', () => {
+    wheel.style.background = wheelGradient();
+    list.querySelectorAll('[data-auction-id]').forEach(item => item.classList.remove('is-dimmed', 'is-highlighted'));
+  });
+
+  spinButton.addEventListener('click', spin);
+  byId('auctionWinnerConfirm').addEventListener('click', confirmWinner);
+  byId('auctionWinnerReroll').addEventListener('click', () => {
+    pendingWinner = null;
+    renderWinner();
+    spin();
+  });
+  byId('auctionWinnerRemove').addEventListener('click', removeWinner);
+  byId('auctionHideEliminated').addEventListener('change', renderAll);
+  byId('auctionQuickHide').addEventListener('change', event => {
+    byId('auctionHideEliminated').checked = event.target.checked;
+    renderAll();
+  });
+  byId('auctionQuickChances').addEventListener('change', event => updateSetting('showChances', event.target.checked));
+  byId('auctionSettingsToggle').addEventListener('click', () => {
+    const quick = byId('auctionSettings');
+    quick.hidden = !quick.hidden;
+    byId('auctionSettingsToggle').setAttribute('aria-expanded', String(!quick.hidden));
+  });
+  panel.querySelector('[data-open-auction-settings]').addEventListener('click', () => {
+    byId('auctionSettings').hidden = true;
+    switchTab('settings');
+  });
+
+  byId('auctionTimerToggle').addEventListener('click', toggleTimer);
+  byId('auctionTimerReset').addEventListener('click', resetTimer);
+  byId('auctionTimerAdd').addEventListener('click', () => adjustTimer(timerStep()));
+  byId('auctionTimerSubtract').addEventListener('click', () => adjustTimer(-timerStep()));
+  byId('auctionHistoryClear').addEventListener('click', () => {
+    state.activity = [];
+    saveAndRender();
+  });
+  byId('auctionSave').addEventListener('click', event => {
+    saveState();
+    const button = event.currentTarget;
+    const previous = button.textContent;
+    button.textContent = '✓';
+    window.setTimeout(() => { button.textContent = previous; }, 900);
+  });
+  byId('auctionNew').addEventListener('click', archiveAuction);
+  byId('auctionHistoryExport').addEventListener('click', exportHistory);
+
+  byId('auctionInitialMinutes').addEventListener('change', event => updateSetting('initialMinutes', Math.max(1, Math.min(360, Number(event.target.value) || 10))));
+  byId('auctionShowTimer').addEventListener('change', event => updateSetting('showTimer', event.target.checked));
+  byId('auctionShowBank').addEventListener('change', event => updateSetting('showBank', event.target.checked));
+  byId('auctionShowChances').addEventListener('change', event => updateSetting('showChances', event.target.checked));
+  byId('auctionCompactList').addEventListener('change', event => updateSetting('compactList', event.target.checked));
+  byId('auctionAutoHide').addEventListener('change', event => updateSetting('autoHide', event.target.checked));
+  byId('auctionSpinDuration').addEventListener('input', event => updateSetting('spinDuration', normaliseDuration(event.target.value, 6)));
+  byId('auctionRandomDuration').addEventListener('change', event => updateSetting('randomDuration', event.target.checked));
+  byId('auctionSpinMin').addEventListener('input', event => updateSetting('spinMin', normaliseDuration(event.target.value, 4)));
+  byId('auctionSpinMax').addEventListener('input', event => updateSetting('spinMax', Math.max(state.settings.spinMin, normaliseDuration(event.target.value, 10))));
+  document.querySelectorAll('[name="auctionMode"]').forEach(input => {
+    input.addEventListener('change', event => updateSetting('mode', event.target.value));
+  });
+  byId('auctionAccentColors').addEventListener('click', event => {
+    const button = event.target.closest('[data-color]');
+    if (button) updateSetting('accent', button.dataset.color);
+  });
+  byId('auctionSettingsReset').addEventListener('click', () => {
+    state.settings = clone(defaultSettings);
+    saveAndRender();
+  });
+
+  byId('auctionOverlayShowTimer').addEventListener('change', event => updateOverlaySetting('timer', event.target.checked));
+  byId('auctionOverlayShowLeader').addEventListener('change', event => updateOverlaySetting('leader', event.target.checked));
+  byId('auctionOverlayShowBank').addEventListener('change', event => updateOverlaySetting('bank', event.target.checked));
+  byId('auctionOverlayTransparent').addEventListener('change', event => updateOverlaySetting('transparent', event.target.checked));
+  byId('auctionOverlayCopy').addEventListener('click', async event => {
+    const url = `${location.origin}${location.pathname}?auction-overlay=1`;
+    try {
+      await navigator.clipboard.writeText(url);
+      event.currentTarget.textContent = 'Ссылка скопирована';
+      window.setTimeout(() => { event.currentTarget.textContent = 'Копировать ссылку'; }, 1200);
+    } catch (_) {
+      event.currentTarget.textContent = url;
+    }
+  });
+
+  rulesEditor.addEventListener('input', () => {
+    rulesStatus.textContent = 'Сохранение…';
+    window.clearTimeout(rulesSaveTimer);
+    rulesSaveTimer = window.setTimeout(() => {
+      state.rules = rulesEditor.innerHTML;
+      saveState();
+      rulesStatus.textContent = 'Сохранено';
+    }, 350);
+  });
+  rulesEditor.addEventListener('paste', event => {
+    event.preventDefault();
+    document.execCommand('insertText', false, event.clipboardData.getData('text/plain'));
+  });
+  panel.querySelector('.auction-editor-toolbar').addEventListener('click', event => {
+    const button = event.target.closest('button');
+    if (!button) return;
+    rulesEditor.focus();
+    if (button.hasAttribute('data-editor-clear')) document.execCommand('removeFormat');
+    else document.execCommand(button.dataset.editorCommand, false, button.dataset.editorValue || null);
+    rulesEditor.dispatchEvent(new Event('input'));
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !panel.hidden) closeAuction();
+  });
+  window.addEventListener('storage', event => {
+    if (event.key !== storageKey) return;
+    state = loadState();
+    applySettings();
+    renderAll();
+  });
+  window.setInterval(drawTimer, 250);
+
+  applySettings();
+  ensureLiveTimer();
+  renderAll();
+  switchTab('manage');
+
+  if (new URLSearchParams(location.search).get('auction-overlay') === '1') {
+    activeTab = 'overlay';
+    openAuction();
+    panel.classList.add('auction-overlay-only');
+  }
 })();
 
 (() => {
@@ -277,18 +847,31 @@
   const description = document.getElementById('featureDescription');
   if (!panel || !buttons.length || !closeButton || !kicker || !title || !description) return;
   let activeButton = null;
-  function close() { panel.hidden = true; panel.setAttribute('aria-hidden','true'); activeButton?.setAttribute('aria-expanded','false'); activeButton?.focus(); activeButton = null; }
-  buttons.forEach(button => button.addEventListener('click',() => {
+
+  function close() {
+    panel.hidden = true;
+    panel.setAttribute('aria-hidden', 'true');
+    activeButton?.setAttribute('aria-expanded', 'false');
+    activeButton?.focus();
+    activeButton = null;
+  }
+
+  buttons.forEach(button => button.addEventListener('click', () => {
     activeButton = button;
     kicker.textContent = button.dataset.comingKicker || 'Новый раздел';
     title.textContent = button.dataset.comingTitle || 'Скоро';
     description.textContent = button.dataset.comingDescription || 'Функция находится в разработке.';
     panel.hidden = false;
-    panel.setAttribute('aria-hidden','false');
-    button.setAttribute('aria-expanded','true');
+    panel.setAttribute('aria-hidden', 'false');
+    button.setAttribute('aria-expanded', 'true');
     closeButton.focus();
   }));
-  closeButton.addEventListener('click',close);
-  panel.addEventListener('click',event => { if (event.target.matches('[data-feature-close]')) close(); });
-  document.addEventListener('keydown',event => { if (event.key === 'Escape' && !panel.hidden) close(); });
+  closeButton.addEventListener('click', close);
+  panel.addEventListener('click', event => {
+    if (event.target.matches('[data-feature-close]')) close();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !panel.hidden) close();
+  });
 })();
+
