@@ -13,7 +13,7 @@
 <script defer src="./assets/js/public/smooth-scroll.js?v=3.2"></script>
 <link href="./assets/css/public/fonts.css?v=3.0" rel="stylesheet"/>
 <link href="./assets/css/public/variables.css?v=3.0" rel="stylesheet"/>
-<link href="./assets/css/public/base.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css?v=3.2" rel="stylesheet"/><link href="./assets/css/public/auction.css?v=4.4" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/admin-portal.css" rel="stylesheet"/><link href="./assets/css/public/suggestions.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/media-submissions.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/figma-refresh.css?v=3.7" rel="stylesheet"/><link href="./assets/css/public/site-auth.css?v=1.0" rel="stylesheet"/></head>
+<link href="./assets/css/public/base.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css?v=3.2" rel="stylesheet"/><link href="./assets/css/public/auction.css?v=4.4" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/admin-portal.css" rel="stylesheet"/><link href="./assets/css/public/suggestions.css?v=3.1" rel="stylesheet"/><link href="./assets/css/public/media-submissions.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/figma-refresh.css?v=3.7" rel="stylesheet"/><link href="./assets/css/public/site-auth.css?v=1.0" rel="stylesheet"/></head>
 <body><a class="skip-link" href="#catalog">Перейти к каталогу</a><div aria-label="Загрузка сайта" aria-live="polite" class="site-loader" id="siteLoader" role="status">
 <div class="loader-content">
 <div aria-hidden="true" class="loader-visual">
@@ -157,7 +157,7 @@
 <div class="suggestions-backdrop" data-suggestions-close=""></div>
 <section aria-labelledby="suggestionsTitle" aria-modal="true" class="suggestions-dialog" role="dialog">
 <header class="suggestions-head">
-<div><span>Выбор следующей игры</span><h2 id="suggestionsTitle">Рейтинг предложки</h2><p>Рейтинг открыт для просмотра и обсуждения. Добавлять игры и голосовать может только администратор.</p></div>
+<div><span>Выбор следующей игры</span><h2 id="suggestionsTitle">Рейтинг предложки</h2><p>Зрители ставят лайки и дизлайки уже рассмотренным играм. Чем выше доля лайков, тем выше игра в списке.</p></div>
 <button aria-label="Закрыть рейтинг предложки" class="suggestions-close" id="suggestionsClose" type="button">×</button>
 </header>
 <nav aria-label="Разделы предложки" class="suggestions-tabs">
@@ -167,8 +167,8 @@
 <div class="suggestions-notice" id="suggestionsNotice" role="status"></div>
 <section class="suggestions-view active" data-suggestions-panel="rating">
 <div class="suggestions-rating-head">
-<div><span>Голосование администратора</span><h3>Следующая игра на стриме</h3></div>
-<label>Сортировка<select id="suggestionsSort"><option value="votes">По голосам</option><option value="newest">Сначала новые</option><option value="comments">По обсуждениям</option></select></label>
+<div><span>Оценка зрителей</span><h3>Хотят ли увидеть эту игру?</h3></div>
+<label>Сортировка<select id="suggestionsSort"><option value="rating">По проценту лайков</option><option value="activity">По числу оценок</option><option value="newest">Сначала новые</option><option value="comments">По обсуждениям</option></select></label>
 </div>
 <div aria-live="polite" class="suggestions-grid" id="suggestionsGrid"><div class="suggestions-empty">Загружаем рейтинг…</div></div>
 </section>
@@ -191,7 +191,7 @@
 <aside class="suggestion-rules">
 <span>Как это работает</span>
 <ol><li>Steam ID защищает список от дубликатов.</li><li>Добавлять игры может только администратор.</li><li>Игра проходит проверку перед публикацией.</li><li>После одобрения она появляется в рейтинге.</li></ol>
-<p>Зрители могут просматривать рейтинг и оставлять комментарии. Предложения и голоса защищены административной проверкой на сервере.</p>
+<p>Добавлять и модерировать игры может только администратор. После одобрения любой зритель может поставить один лайк или дизлайк и изменить свою оценку.</p>
 </aside>
 </div>
 </section>
@@ -474,5 +474,5 @@
 </div>
 </div>
 <footer><div class="shell footer-inner"><p class="footer-signature">@archivebtw x @max_vopros</p></div></footer>
-<script src="./assets/js/public/loading.js"></script><script>document.body.classList.add('is-ready');</script><script src="./assets/js/public/supabase-loader.js"></script><script src="./config.js"></script><script src="./assets/js/public/auth-recovery.js?v=3.1"></script><script src="./assets/js/public/site-auth.js?v=1.0"></script><script src="./assets/js/public/state.js?v=3.0"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js?v=3.0"></script><script src="./assets/js/public/hero.js?v=3.0"></script><script src="./assets/js/public/catalog.js?v=3.0"></script><script src="./assets/js/public/modal-effects.js?v=3.0"></script><script src="./assets/js/public/tier-list.js?v=3.0"></script><script src="./assets/js/public/suggestions.js?v=3.0"></script><script src="./assets/js/public/media-submissions.js?v=3.0"></script><script async id="twitchPlayerSdk" src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js?v=3.3"></script><script src="./assets/js/public/auction.js?v=4.4"></script><script src="./assets/js/public/admin-portal.js?v=3.2"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js?v=3.1"></script><script src="./assets/js/public/app.js?v=3.2"></script><script src="./assets/js/public/figma-ui.js?v=3.3"></script></body>
+<script src="./assets/js/public/loading.js"></script><script>document.body.classList.add('is-ready');</script><script src="./assets/js/public/supabase-loader.js"></script><script src="./config.js"></script><script src="./assets/js/public/auth-recovery.js?v=3.1"></script><script src="./assets/js/public/site-auth.js?v=1.0"></script><script src="./assets/js/public/state.js?v=3.0"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js?v=3.0"></script><script src="./assets/js/public/hero.js?v=3.0"></script><script src="./assets/js/public/catalog.js?v=3.0"></script><script src="./assets/js/public/modal-effects.js?v=3.0"></script><script src="./assets/js/public/tier-list.js?v=3.0"></script><script src="./assets/js/public/suggestions.js?v=3.1"></script><script src="./assets/js/public/media-submissions.js?v=3.0"></script><script async id="twitchPlayerSdk" src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js?v=3.3"></script><script src="./assets/js/public/auction.js?v=4.4"></script><script src="./assets/js/public/admin-portal.js?v=3.2"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js?v=3.1"></script><script src="./assets/js/public/app.js?v=3.2"></script><script src="./assets/js/public/figma-ui.js?v=3.3"></script></body>
 </html>
