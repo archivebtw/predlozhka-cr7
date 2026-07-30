@@ -353,7 +353,11 @@
           <div class="suggestion-card-actions">
             <div class="suggestion-approval" aria-label="${reactionCount ? `${approvalLabel} положительных оценок` : 'Оценок пока нет'}">
               <strong>${approvalLabel}</strong>
-              <span>${reactionCount ? 'хотят увидеть' : 'нет оценок'}</sp…191 tokens truncated…3e
+              <span>${reactionCount ? 'хотят увидеть' : 'нет оценок'}</span>
+              <div class="suggestion-approval-bar" style="--approval:${approvalPercent}%"><i></i></div>
+            </div>
+            <div aria-label="Оценить игру ${escapeHtml(game.title)}" class="suggestion-reactions" role="group">
+              <button aria-label="Поставить лайк игре ${escapeHtml(game.title)}" aria-pressed="${currentReaction === 1}" class="suggestion-reaction is-like${currentReaction === 1 ? ' active' : ''}" data-suggestion-reaction="1" ${reactionDisabled} type="button"><span aria-hidden="true">👍</span><b>${likeCount}</b></button>
               <button aria-label="Поставить дизлайк игре ${escapeHtml(game.title)}" aria-pressed="${currentReaction === -1}" class="suggestion-reaction is-dislike${currentReaction === -1 ? ' active' : ''}" data-suggestion-reaction="-1" ${reactionDisabled} type="button"><span aria-hidden="true">👎</span><b>${dislikeCount}</b></button>
             </div>
             <button class="suggestion-comments-button" data-suggestion-comments type="button">Комментарии · ${Number(game.comment_count) || 0}</button>
