@@ -84,6 +84,9 @@
     if (/anonymous sign-?ins?.*(disabled|not enabled)|anonymous provider.*disabled/i.test(message)) {
       return 'Анонимные действия пока выключены. Включи Anonymous Sign-Ins в Supabase Authentication.';
     }
+    if (/set_suggestion_reaction|my_reaction|like_count|dislike_count/i.test(message)) {
+      return 'Реакции ещё не подключены к базе. Выполни supabase/suggestion_reactions.sql в Supabase SQL Editor.';
+    }
     if (/get_public_game_suggestions|submit_game_suggestion|schema cache|PGRST202|42883/i.test(message)) {
       return 'Система предложений ещё не подключена к базе. Выполни supabase/game_suggestions.sql.';
     }
@@ -257,8 +260,8 @@
       const status = result?.suggestion_status;
       let message = result?.was_created
         ? 'Предложение отправлено модератору.'
-        : `Игра уже была предложена — твоя поддержка учтена. Всего поддержек: ${Number(result?.support_count) || 0}.`;
-      if (status === 'approved') message = 'Эта игра уже находится в рейтинге. Открой рейтинг и проголосуй за неё.';
+        : 'Эта игра уже была предложена и повторно не добавлена.';
+      if (status === 'approved') message = 'Эта игра уже находится в рейтинге. Открой рейтинг и оцени её.';
       if (status === 'selected') message = 'Эта игра уже выбрана для стрима.';
       if (status === 'rejected') message = 'Эту игру уже рассматривали и отклонили.';
       if (['completed', 'archived'].includes(status)) message = 'Эта игра уже находится в истории предложки.';
@@ -276,17 +279,42 @@
 
   function publicSort(games) {
     const items = [...games];
+    const selectedFirst = (a, b) => Number(b.status === 'selected') - Number(a.status === 'selected');
+    const likes = game => Number(game.like_count ?? game.vote_count) || 0;
+    const dislikes = game => Number(game.dislike_count) || 0;
+    const reactions = game => likes(game) + dislikes(game);
+    const approval = game => {
+      const total = reactions(game);
+      if (!total) return 0;
+      const stored = Number(game.approval_percent);
+      return Number.isFinite(stored) ? stored : likes(game) / total * 100;
+    };
     if (elements.sort.value === 'newest') {
-      return items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      return items.sort((a, b) => selectedFirst(a, b) || new Date(b.created_at) - new Date(a.created_at));
     }
     if (elements.sort.value === 'comments') {
-      return items.sort((a, b) => Number(b.comment_count) - Number(a.comment_count) || Number(b.vote_count) - Number(a.vote_count));
+      return items.sort((a, b) =>
+        selectedFirst(a, b)
+        || Number(b.comment_count) - Number(a.comment_count)
+        || approval(b) - approval(a)
+        || reactions(b) - reactions(a)
+      );
     }
-    return items.sort((a, b) => {
-      if (a.status === 'selected' && b.status !== 'selected') return -1;
-      if (b.status === 'selected' && a.status !== 'selected') return 1;
-      return Number(b.vote_count) - Number(a.vote_count) || new Date(a.created_at) - new Date(b.created_at);
-    });
+    if (elements.sort.value === 'activity') {
+      return items.sort((a, b) =>
+        selectedFirst(a, b)
+        || reactions(b) - reactions(a)
+        || approval(b) - approval(a)
+        || new Date(a.created_at) - new Date(b.created_at)
+      );
+    }
+    return items.sort((a, b) =>
+      selectedFirst(a, b)
+      || approval(b) - approval(a)
+      || reactions(b) - reactions(a)
+      || likes(b) - likes(a)
+      || new Date(a.created_at) - new Date(b.created_at)
+    );
   }
 
   function renderPublicSuggestions() {
@@ -300,26 +328,34 @@
       const cover = safeUrl(game.cover_url);
       const steam = safeUrl(game.steam_url, ['steampowered.com', 'steamcommunity.com']);
       const selected = game.status === 'selected';
-      const voteCount = Number(game.vote_count) || 0;
-      const voteLabel = selected
-        ? 'Голосование завершено'
-        : !suggestionState.isAdmin
-          ? `Голос администратора · ${voteCount}`
-          : game.has_voted
-            ? `Голос учтён · ${voteCount}`
-            : `Голосовать · ${voteCount}`;
+      const likeCount = Number(game.like_count ?? game.vote_count) || 0;
+      const dislikeCount = Number(game.dislike_count) || 0;
+      const reactionCount = likeCount + dislikeCount;
+      const storedPercent = Number(game.approval_percent);
+      const approvalPercent = reactionCount
+        ? Math.max(0, Math.min(100, Number.isFinite(storedPercent) ? storedPercent : likeCount / reactionCount * 100))
+        : 0;
+      const approvalLabel = reactionCount
+        ? `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(approvalPercent)}%`
+        : '—';
+      const currentReaction = Number(game.my_reaction ?? (game.has_voted ? 1 : 0)) || 0;
+      const reactionDisabled = selected ? 'disabled' : '';
       return `
         <article class="suggestion-card${selected ? ' is-selected' : ''}" data-suggestion-id="${Number(game.id)}">
           <div class="suggestion-rank">${selected ? '◆' : `#${index + 1}`}</div>
           <img class="suggestion-cover" src="${escapeHtml(cover || './assets/images/figma/game-placeholder.svg')}" alt="Обложка ${escapeHtml(game.title)}" loading="lazy" referrerpolicy="no-referrer">
           <div class="suggestion-card-copy">
-            <span>${selected ? 'Выбрано для стрима' : `${Number(game.vote_count) || 0} голосов`}</span>
+            ${selected ? '<span>Выбрано для стрима</span>' : ''}
             <h4>${steam ? `<a href="${escapeHtml(steam)}" target="_blank" rel="noopener noreferrer">${escapeHtml(game.title)} ↗</a>` : escapeHtml(game.title)}</h4>
             <p>${escapeHtml(game.description || 'Описание не указано.')}</p>
-            <div class="suggestion-stats"><span>↑ ${Number(game.support_count) || 0} поддержали заявку</span><span>◌ ${Number(game.comment_count) || 0} комментариев</span></div>
+            <div class="suggestion-stats"><span>Всего оценок: ${reactionCount}</span><span>◌ ${Number(game.comment_count) || 0} комментариев</span></div>
           </div>
           <div class="suggestion-card-actions">
-            <button class="suggestion-vote${game.has_voted ? ' active' : ''}" ${selected || !suggestionState.isAdmin ? 'disabled' : ''} data-suggestion-vote type="button">${voteLabel}</button>
+            <div class="suggestion-approval" aria-label="${reactionCount ? `${approvalLabel} положительных оценок` : 'Оценок пока нет'}">
+              <strong>${approvalLabel}</strong>
+              <span>${reactionCount ? 'хотят увидеть' : 'нет оценок'}</sp…191 tokens truncated…3e
+              <button aria-label="Поставить дизлайк игре ${escapeHtml(game.title)}" aria-pressed="${currentReaction === -1}" class="suggestion-reaction is-dislike${currentReaction === -1 ? ' active' : ''}" data-suggestion-reaction="-1" ${reactionDisabled} type="button"><span aria-hidden="true">👎</span><b>${dislikeCount}</b></button>
+            </div>
             <button class="suggestion-comments-button" data-suggestion-comments type="button">Комментарии · ${Number(game.comment_count) || 0}</button>
           </div>
         </article>`;
@@ -339,29 +375,31 @@
     }
   }
 
-  async function toggleVote(id, button) {
-    if (!suggestionState.isAdmin) {
-      showNotice('Голосовать может только администратор.', 'error');
-      return;
-    }
-    setBusy(button, true, 'Сохраняем…');
+  async function setReaction(id, reaction, button) {
+    const card = button.closest('[data-suggestion-id]');
+    const controls = card ? [...card.querySelectorAll('[data-suggestion-reaction]')] : [button];
+    controls.forEach(control => { control.disabled = true; });
     try {
-      await requireAdminSession();
-      const { data, error } = await suggestionState.client.rpc('toggle_suggestion_vote', {
-        p_suggestion_id: Number(id)
+      await ensureViewerSession();
+      const { data, error } = await suggestionState.client.rpc('set_suggestion_reaction', {
+        p_suggestion_id: Number(id),
+        p_reaction: Number(reaction)
       });
       if (error) throw error;
       const result = Array.isArray(data) ? data[0] : data;
       const game = suggestionState.games.find(item => String(item.id) === String(id));
       if (game) {
-        game.has_voted = Boolean(result?.active);
-        game.vote_count = Number(result?.vote_count) || 0;
+        game.my_reaction = Number(result?.current_reaction) || 0;
+        game.like_count = Number(result?.like_count) || 0;
+        game.dislike_count = Number(result?.dislike_count) || 0;
+        game.approval_percent = Number(result?.approval_percent) || 0;
       }
       renderPublicSuggestions();
-      showNotice(result?.active ? 'Голос учтён.' : 'Голос снят.', 'success');
+      const current = Number(result?.current_reaction) || 0;
+      showNotice(current === 1 ? 'Лайк учтён.' : current === -1 ? 'Дизлайк учтён.' : 'Оценка снята.', 'success');
     } catch (error) {
       showNotice(errorMessage(error), 'error');
-      setBusy(button, false);
+      controls.forEach(control => { control.disabled = false; });
     }
   }
 
@@ -454,9 +492,16 @@
     }
   }
 
-  function relationCount(value) {
-    if (Array.isArray(value)) return Number(value[0]?.count) || 0;
-    return Number(value?.count) || 0;
+  function moderationReactionStats(item) {
+    const reactions = Array.isArray(item?.suggestion_votes) ? item.suggestion_votes : [];
+    const likes = reactions.filter(entry => Number(entry.reaction) === 1).length;
+    const dislikes = reactions.filter(entry => Number(entry.reaction) === -1).length;
+    const total = likes + dislikes;
+    return {
+      likes,
+      dislikes,
+      percent: total ? Math.round(likes / total * 1000) / 10 : 0
+    };
   }
 
   function moderationActions(item) {
@@ -480,7 +525,7 @@
     const items = suggestionState.moderation
       .filter(item => item.status === suggestionState.moderationStatus)
       .sort((a, b) => {
-        if (a.status === 'pending') return relationCount(b.suggestion_supports) - relationCount(a.suggestion_supports) || new Date(a.created_at) - new Date(b.created_at);
+        if (a.status === 'pending') return new Date(a.created_at) - new Date(b.created_at);
         return new Date(b.updated_at) - new Date(a.updated_at);
       });
 
@@ -493,12 +538,13 @@
       const cover = safeUrl(item.cover_url);
       const steam = safeUrl(item.steam_url, ['steampowered.com', 'steamcommunity.com']);
       const comments = Array.isArray(item.suggestion_comments) ? item.suggestion_comments : [];
+      const reactions = moderationReactionStats(item);
       return `
         <article class="moderation-card">
           <img src="${escapeHtml(cover || './assets/images/figma/game-placeholder.svg')}" alt="">
           <div class="moderation-card-copy">
             <h3><a href="${escapeHtml(steam || '#')}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)} ↗</a></h3>
-            <div class="moderation-card-meta"><span>Steam ID ${Number(item.steam_app_id)}</span><span>↑ ${relationCount(item.suggestion_supports)} поддержек</span><span>◆ ${relationCount(item.suggestion_votes)} голосов</span><span>${escapeHtml(formatDate(item.created_at))}</span></div>
+            <div class="moderation-card-meta"><span>Steam ID ${Number(item.steam_app_id)}</span><span>👍 ${reactions.likes}</span><span>👎 ${reactions.dislikes}</span><span>${reactions.likes + reactions.dislikes ? `${reactions.percent}% лайков` : 'Нет оценок'}</span><span>${escapeHtml(formatDate(item.created_at))}</span></div>
             ${item.rejection_reason ? `<p><strong>Причина:</strong> ${escapeHtml(item.rejection_reason)}</p>` : ''}
             <div class="moderation-comments">${comments.length ? comments.map(comment => `
               <div class="moderation-comment${comment.is_hidden ? ' is-hidden' : ''}"><span>${comment.is_hidden ? '[Скрыт] ' : ''}${escapeHtml(comment.body)}</span><button data-comment-id="${Number(comment.id)}" data-comment-hidden="${comment.is_hidden ? 'false' : 'true'}" type="button">${comment.is_hidden ? 'Вернуть' : 'Скрыть'}</button></div>
@@ -541,7 +587,7 @@
     elements.moderationList.innerHTML = '<div class="suggestions-empty">Загружаем очередь…</div>';
     const { data, error } = await suggestionState.client
       .from('game_suggestions')
-      .select('*,suggestion_supports(count),suggestion_votes(count),suggestion_comments(id,body,is_hidden,created_at)')
+      .select('*,suggestion_votes(reaction),suggestion_comments(id,body,is_hidden,created_at)')
       .order('created_at', { ascending: false });
     if (error) {
       elements.moderationList.innerHTML = `<div class="suggestions-empty">${escapeHtml(errorMessage(error))}</div>`;
@@ -602,7 +648,8 @@
     elements.grid.addEventListener('click', event => {
       const card = event.target.closest('[data-suggestion-id]');
       if (!card) return;
-      if (event.target.closest('[data-suggestion-vote]')) toggleVote(card.dataset.suggestionId, event.target.closest('button'));
+      const reactionButton = event.target.closest('[data-suggestion-reaction]');
+      if (reactionButton) setReaction(card.dataset.suggestionId, reactionButton.dataset.suggestionReaction, reactionButton);
       if (event.target.closest('[data-suggestion-comments]')) openComments(card.dataset.suggestionId);
     });
     elements.commentsClose.addEventListener('click', closeComments);
