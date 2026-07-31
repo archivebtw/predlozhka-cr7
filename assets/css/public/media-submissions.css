@@ -316,7 +316,7 @@ html.media-open body { overflow: hidden; }
 .media-selected-preview video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .media-selected-preview span { color: #ff8f7e; font-size: 11rem; font-weight: 900; }
