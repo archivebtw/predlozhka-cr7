@@ -1019,10 +1019,14 @@ body:not(.has-druk-cyr) .content-menu-toggle > span {
   transform: translate(-50%, -50%) rotate(-10.04deg);
 }
 
+#catalog .library-stamp.completed {
+  border-color: #4bc07c;
+  color: #4bc07c;
+}
+
 #catalog .library-stamp.dropped {
-  border-color: #f0f0f0;
-  color: #f0f0f0;
-  font-size: clamp(34rem, 3vw, 58rem);
+  border-color: #e63d3d;
+  color: #e63d3d;
 }
 
 #catalog .library-stamp.ignored {

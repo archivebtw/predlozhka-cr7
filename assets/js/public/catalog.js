@@ -16,7 +16,7 @@ function catalogReleaseLabel(game, meta) {
     function libraryStamp(status) {
       const labels = {
         completed: 'Пройдено',
-        dropped: 'Дроп',
+        dropped: 'Дропнуто',
         ignored: 'Неинтересно'
       };
       return labels[status] || '';
