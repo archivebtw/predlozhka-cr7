@@ -13,7 +13,7 @@
 <script defer src="./assets/js/public/smooth-scroll.js?v=3.2"></script>
 <link href="./assets/css/public/fonts.css?v=3.0" rel="stylesheet"/>
 <link href="./assets/css/public/variables.css?v=3.0" rel="stylesheet"/>
-<link href="./assets/css/public/base.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css?v=3.2" rel="stylesheet"/><link href="./assets/css/public/auction.css?v=4.4" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/admin-portal.css" rel="stylesheet"/><link href="./assets/css/public/suggestions.css?v=3.1" rel="stylesheet"/><link href="./assets/css/public/media-submissions.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/figma-refresh.css?v=3.7" rel="stylesheet"/><link href="./assets/css/public/site-auth.css?v=1.0" rel="stylesheet"/></head>
+<link href="./assets/css/public/base.css?v=3.0" rel="stylesheet"/><link href="./assets/css/public/header-hero.css" rel="stylesheet"/><link href="./assets/css/public/catalog.css" rel="stylesheet"/><link href="./assets/css/public/modal.css" rel="stylesheet"/><link href="./assets/css/public/gang.css?v=3.2" rel="stylesheet"/><link href="./assets/css/public/auction.css?v=4.4" rel="stylesheet"/><link href="./assets/css/public/responsive.css" rel="stylesheet"/><link href="./assets/css/public/admin-portal.css" rel="stylesheet"/><link href="./assets/css/public/suggestions.css?v=3.1" rel="stylesheet"/><link href="./assets/css/public/media-submissions.css?v=4.0" rel="stylesheet"/><link href="./assets/css/public/figma-refresh.css?v=3.8" rel="stylesheet"/><link href="./assets/css/public/site-auth.css?v=1.0" rel="stylesheet"/></head>
 <body><a class="skip-link" href="#catalog">Перейти к каталогу</a><div aria-label="Загрузка сайта" aria-live="polite" class="site-loader" id="siteLoader" role="status">
 <div class="loader-content">
 <div aria-hidden="true" class="loader-visual">
@@ -210,42 +210,42 @@
 <div class="media-backdrop" data-media-close></div>
 <section aria-labelledby="mediaTitle" aria-modal="true" class="media-dialog" role="dialog">
 <header class="media-head">
-<div><span>Материалы для будущего стрима</span><h2 id="mediaTitle">Видосы</h2><p>Загружай фотографии и ролики с компьютера, а затем разбирай их в одной аккуратной очереди.</p></div>
+<div><span>Материалы для будущего стрима</span><h2 id="mediaTitle">Видосы</h2><p>Загрузи фотографии и ролики, добавь название и отправь подборку на модерацию.</p></div>
 <button aria-label="Закрыть раздел «Видосы»" class="media-close" id="mediaClose" type="button">×</button>
 </header>
 <div aria-live="polite" class="media-notice" id="mediaNotice" role="status"></div>
-<section class="media-locked" id="mediaLocked">
-<span>Закрытое тестирование</span>
-<h3>Загрузка доступна администраторам</h3>
-<p>Войди в панели управления под аккаунтом из <code>site_admins</code>. После входа здесь появятся форма и очередь модерации.</p>
-<button id="mediaLoginButton" type="button">Войти как администратор</button>
-</section>
-<div class="media-workspace" hidden id="mediaWorkspace">
+<div class="media-workspace" id="mediaWorkspace">
 <nav aria-label="Разделы медиапредложки" class="media-tabs">
-<button class="active" data-media-tab="upload" type="button">Новая загрузка</button>
-<button data-media-tab="queue" type="button">Очередь <span id="mediaPendingCount">0</span></button>
+<button class="active" data-media-tab="upload" type="button">Предложить материал</button>
+<button data-media-tab="published" type="button">Опубликовано</button>
 </nav>
 <section class="media-view active" data-media-view="upload">
+<section class="media-locked" hidden id="mediaLocked">
+<span>Доступ администратора</span>
+<h3>Отправка доступна только администратору</h3>
+<p>Войди в аккаунт, добавленный в <code>site_admins</code>. Обычным посетителям доступен просмотр опубликованных материалов.</p>
+<button id="mediaLoginButton" type="button">Войти как администратор</button>
+</section>
 <form class="media-form" id="mediaForm" novalidate>
-<div class="media-form-copy"><span>Шаг 1 · Файлы</span><h3>Что посмотрим на стриме?</h3><p>Можно выбрать до 8 изображений или видео за одну отправку.</p></div>
+<div class="media-form-copy"><span>Шаг 1 · Файлы</span><h3>Что посмотрим на стриме?</h3><p>Выбери до 8 фотографий и видео в любом сочетании. До отправки каждый файл можно заменить или удалить.</p></div>
 <label class="media-dropzone" for="mediaFileInput" id="mediaDropzone" tabindex="0">
 <input accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" id="mediaFileInput" multiple type="file">
-<i aria-hidden="true">＋</i><strong>Выбрать файлы</strong><span>или перетащи их сюда · до 100 МБ каждый</span>
+<i aria-hidden="true">＋</i><strong>Выбрать фото и видео</strong><span>или перетащи файлы сюда · до 8 файлов, каждый до 100 МБ</span>
 </label>
 <div aria-live="polite" class="media-selected" hidden id="mediaSelected"></div>
 <div class="media-fields">
-<label for="mediaSubmissionTitle">Заголовок <small>необязательно</small><input id="mediaSubmissionTitle" maxlength="120" placeholder="Например: мемы для вечернего просмотра"></label>
-<label for="mediaSubmissionComment">Комментарий <small>необязательно, до 1000 символов</small><textarea id="mediaSubmissionComment" maxlength="1000" placeholder="Добавь контекст или пояснение для модератора"></textarea></label>
+<label for="mediaSubmissionTitle">Название <small>обязательно, до 120 символов</small><input id="mediaSubmissionTitle" maxlength="120" placeholder="Например: смешной момент со стрима" required></label>
+<label for="mediaSubmissionComment">Описание или комментарий <small>по желанию, до 1000 символов</small><textarea id="mediaSubmissionComment" maxlength="1000" placeholder="Добавь контекст или пояснение для модератора"></textarea></label>
 </div>
-<div class="media-submit-row"><button disabled id="mediaSubmitButton" type="submit">Отправить в очередь</button><small id="mediaSubmitHint">Сначала выбери хотя бы один файл.</small></div>
+<div class="media-submit-row"><button disabled id="mediaSubmitButton" type="submit">Отправить на модерацию</button><small id="mediaSubmitHint">Сначала выбери файлы и добавь название.</small></div>
 </form>
 </section>
-<section class="media-view" data-media-view="queue" hidden>
+<section class="media-view" data-media-view="published" hidden>
 <div class="media-queue-head">
-<div><span>Модерация</span><h3>Очередь материалов</h3><p>Открой файл прямо в карточке и прими решение по всей отправке.</p></div>
-<div class="media-queue-controls"><label>Показать<select id="mediaStatusFilter"><option value="pending">На рассмотрении</option><option value="approved">Принятые</option><option value="rejected">Отклонённые</option></select></label><button id="mediaRefreshButton" title="Обновить очередь" type="button">↻</button></div>
+<div><span>После модерации</span><h3>Опубликованные материалы</h3><p>Здесь появляются фотографии и ролики, которые одобрил администратор.</p></div>
+<div class="media-queue-controls"><button id="mediaRefreshButton" title="Обновить опубликованные материалы" type="button">↻</button></div>
 </div>
-<div aria-live="polite" class="media-queue" id="mediaQueue"><div class="media-empty">Загружаем очередь…</div></div>
+<div aria-live="polite" class="media-queue" id="mediaQueue"><div class="media-empty">Загружаем опубликованные материалы…</div></div>
 </section>
 </div>
 </section>
@@ -316,6 +316,22 @@
 <button data-suggestion-status="archived" type="button">Архив</button>
 </div>
 <div aria-live="polite" class="suggestion-moderation-list" id="suggestionModerationList"><div class="suggestions-empty">Войди, чтобы загрузить очередь.</div></div>
+</article>
+<article class="panel admin-media-panel" id="adminMediaPanel">
+<div class="panel-head admin-media-panel-head">
+<div><span class="suggestion-step">Фото и видео зрителей</span><h2>Модерация материалов</h2><p>Измени название или описание, опубликуй материал, перенеси его в архив либо удали вместе с файлом.</p></div>
+<button class="btn" id="adminMediaRefresh" type="button">Обновить</button>
+</div>
+<div class="admin-media-type-tabs" role="tablist" aria-label="Тип материала">
+<button class="active" data-admin-media-type="video" role="tab" aria-selected="true" type="button">ВИДЕО <span id="adminMediaVideoCount">0</span></button>
+<button data-admin-media-type="photo" role="tab" aria-selected="false" type="button">ФОТО <span id="adminMediaPhotoCount">0</span></button>
+</div>
+<div class="admin-media-status-tabs" role="group" aria-label="Статус материалов">
+<button class="active" data-admin-media-status="pending" type="button">На рассмотрении <span id="adminMediaPendingCount">0</span></button>
+<button data-admin-media-status="published" type="button">Опубликованные</button>
+<button data-admin-media-status="archived" type="button">Архив</button>
+</div>
+<div aria-live="polite" class="admin-media-list" id="adminMediaList"><div class="media-empty">Войди, чтобы загрузить материалы.</div></div>
 </article>
 <div class="layout">
 <article class="panel">
@@ -474,5 +490,5 @@
 </div>
 </div>
 <footer><div class="shell footer-inner"><p class="footer-signature">@archivebtw x @max_vopros</p></div></footer>
-<script src="./assets/js/public/loading.js"></script><script>document.body.classList.add('is-ready');</script><script src="./assets/js/public/supabase-loader.js"></script><script src="./config.js"></script><script src="./assets/js/public/auth-recovery.js?v=3.1"></script><script src="./assets/js/public/site-auth.js?v=1.0"></script><script src="./assets/js/public/state.js?v=3.0"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js?v=3.0"></script><script src="./assets/js/public/hero.js?v=3.0"></script><script src="./assets/js/public/catalog.js?v=3.0"></script><script src="./assets/js/public/modal-effects.js?v=3.0"></script><script src="./assets/js/public/tier-list.js?v=3.0"></script><script src="./assets/js/public/suggestions.js?v=3.1"></script><script src="./assets/js/public/media-submissions.js?v=3.0"></script><script async id="twitchPlayerSdk" src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js?v=3.3"></script><script src="./assets/js/public/auction.js?v=4.4"></script><script src="./assets/js/public/admin-portal.js?v=3.2"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js?v=3.1"></script><script src="./assets/js/public/app.js?v=3.2"></script><script src="./assets/js/public/figma-ui.js?v=3.3"></script></body>
+<script src="./assets/js/public/loading.js"></script><script>document.body.classList.add('is-ready');</script><script src="./assets/js/public/supabase-loader.js"></script><script src="./config.js"></script><script src="./assets/js/public/auth-recovery.js?v=3.1"></script><script src="./assets/js/public/site-auth.js?v=1.0"></script><script src="./assets/js/public/state.js?v=3.0"></script><script src="./assets/js/public/ticker.js"></script><script src="./assets/js/public/release-utils.js?v=3.0"></script><script src="./assets/js/public/hero.js?v=3.0"></script><script src="./assets/js/public/catalog.js?v=3.1"></script><script src="./assets/js/public/modal-effects.js?v=3.0"></script><script src="./assets/js/public/tier-list.js?v=3.0"></script><script src="./assets/js/public/suggestions.js?v=3.1"></script><script src="./assets/js/public/media-submissions.js?v=4.0"></script><script async id="twitchPlayerSdk" src="https://player.twitch.tv/js/embed/v1.js"></script><script src="./assets/js/public/gang.js?v=3.3"></script><script src="./assets/js/public/auction.js?v=4.4"></script><script src="./assets/js/public/admin-portal.js?v=3.2"></script><script src="./assets/js/public/admin-portal-shell.js"></script><script src="./assets/js/public/experience.js?v=3.1"></script><script src="./assets/js/public/app.js?v=3.2"></script><script src="./assets/js/public/figma-ui.js?v=3.3"></script></body>
 </html>
