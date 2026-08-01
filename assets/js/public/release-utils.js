@@ -132,17 +132,37 @@ function escapeHtml(value) {
     }
 
     function sortGames(games) {
+      const mode = typeof state !== 'undefined' ? state.sort : 'release-newest';
+      const releaseValue = game => {
+        const date = parseDate(game.release_date);
+        return date ? date.getTime() : null;
+      };
+      const ratingValue = game => {
+        const stats = state.reputationStats?.[String(game.id)];
+        const likes = Number(stats?.likes) || 0;
+        const dislikes = Number(stats?.dislikes) || 0;
+        const total = likes + dislikes;
+        return total ? (likes / total) * 100 : 0;
+      };
+
       return [...games].sort((a, b) => {
-        const sortByVotes = typeof state !== 'undefined' && state.sort === 'votes';
-        if (sortByVotes) {
-          const aReputation = Number(state.reputationScores?.[String(a.id)] || 0);
-          const bReputation = Number(state.reputationScores?.[String(b.id)] || 0);
-          if (aReputation !== bReputation) return bReputation - aReputation;
+        if (mode === 'rating-desc' || mode === 'rating-asc') {
+          const direction = mode === 'rating-desc' ? -1 : 1;
+          const ratingDiff = (ratingValue(a) - ratingValue(b)) * direction;
+          if (ratingDiff) return ratingDiff;
+          const activityDiff = ((Number(state.reputationStats?.[String(a.id)]?.total) || 0) - (Number(state.reputationStats?.[String(b.id)]?.total) || 0)) * direction;
+          if (activityDiff) return activityDiff;
+        } else {
+          const aRelease = releaseValue(a);
+          const bRelease = releaseValue(b);
+          if (aRelease === null && bRelease !== null) return 1;
+          if (aRelease !== null && bRelease === null) return -1;
+          if (aRelease !== null && bRelease !== null && aRelease !== bRelease) {
+            return mode === 'release-oldest' ? aRelease - bRelease : bRelease - aRelease;
+          }
         }
         const createdDiff = new Date(b.created_at || 0) - new Date(a.created_at || 0);
         if (createdDiff) return createdDiff;
-        const orderDiff = (Number(a.display_order) || 0) - (Number(b.display_order) || 0);
-        if (orderDiff) return orderDiff;
         return String(a.title || '').localeCompare(String(b.title || ''), 'ru');
       });
     }

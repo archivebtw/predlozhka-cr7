@@ -42,6 +42,7 @@
     function resetReputationState() {
       state.reputationSchemaReady = false;
       state.reputationScores = {};
+      state.reputationStats = {};
       state.currentVotes = {};
     }
 
@@ -54,6 +55,11 @@
       }
       state.reputationSchemaReady = true;
       state.reputationScores = Object.fromEntries((data || []).map(item => [String(item.game_id),Number(item.score) || 0]));
+      state.reputationStats = Object.fromEntries((data || []).map(item => [String(item.game_id),{
+        likes: Number(item.like_count) || 0,
+        dislikes: Number(item.dislike_count) || 0,
+        total: Number(item.reaction_count) || 0
+      }]));
       const { data: sessionData } = await getUsableSession(client);
       if (!sessionData?.session?.user) {
         state.currentVotes = {};
@@ -136,15 +142,28 @@
     });
 
     elements.filters.forEach(button => button.addEventListener('click', () => {
-      const libraryFilter = Boolean(button.closest('#libraryFiltersMenu'));
-      const clearLibraryFilter = libraryFilter && button.classList.contains('active');
-      state.filter = clearLibraryFilter ? 'all' : button.dataset.filter;
-      elements.filters.forEach(item => item.classList.toggle(
-        'active',
-        clearLibraryFilter ? item.dataset.filter === 'all' : item === button
-      ));
+      state.filter = button.dataset.filter;
+      elements.filters.forEach(item => item.classList.toggle('active', item === button));
       render();
     }));
+
+    elements.libraryFilters.forEach(button => button.addEventListener('click', () => {
+      const value = button.dataset.libraryFilter;
+      if (state.libraryFilters.has(value)) state.libraryFilters.delete(value);
+      else state.libraryFilters.add(value);
+      button.classList.toggle('active', state.libraryFilters.has(value));
+      button.setAttribute('aria-pressed', String(state.libraryFilters.has(value)));
+      render();
+    }));
+
+    elements.libraryFiltersReset?.addEventListener('click', () => {
+      state.libraryFilters.clear();
+      elements.libraryFilters.forEach(button => {
+        button.classList.remove('active');
+        button.setAttribute('aria-pressed', 'false');
+      });
+      render();
+    });
 
     elements.sort.addEventListener('change', event => {
       state.sort = event.target.value;
