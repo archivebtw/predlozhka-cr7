@@ -30,15 +30,24 @@
       modalReputationScore: document.getElementById('modalReputationScore'),
       modalReputationNotice: document.getElementById('modalReputationNotice'),
       modalVoteActions: [...document.querySelectorAll('[data-vote]')],
+      modalLikeCount: document.getElementById('modalLikeCount'),
+      modalDislikeCount: document.getElementById('modalDislikeCount'),
+      modalCommentsList: document.getElementById('modalCommentsList'),
+      modalCommentForm: document.getElementById('modalCommentForm'),
+      modalCommentInput: document.getElementById('modalCommentInput'),
+      modalCommentComposerAvatar: document.getElementById('modalCommentComposerAvatar'),
+      modalAuthHint: document.getElementById('modalAuthHint'),
       modalDescription: document.getElementById('modalDescription'),
       modalCommentSection: document.getElementById('modalCommentSection'),
       modalComment: document.getElementById('modalComment'),
       modalAdded: document.getElementById('modalAdded'),
       modalSteam: document.getElementById('modalSteam'),
-      filters: [...document.querySelectorAll('[data-filter]')]
+      filters: [...document.querySelectorAll('.release-filters [data-filter]')],
+      libraryFilters: [...document.querySelectorAll('[data-library-filter]')],
+      libraryFiltersReset: document.getElementById('libraryFiltersReset')
     };
 
-    const state = { games: [], query: '', filter: 'all', sort: 'newest', channel: null, activeGameId: null, librarySchemaReady: true, tierSchemaReady: true, reputationSchemaReady: true, reputationScores: {}, currentVotes: {} };
+    const state = { games: [], query: '', filter: 'all', libraryFilters: new Set(), sort: 'release-newest', channel: null, activeGameId: null, librarySchemaReady: true, tierSchemaReady: true, reputationSchemaReady: true, reputationScores: {}, reputationStats: {}, currentVotes: {} };
     const TWITCH_LOGO_DATA = './assets/images/figma/game-placeholder.svg';
     const EMPTY_AUTHOR_COMMENT = '\u2063';
     let lastFocusedElement = null;

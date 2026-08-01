@@ -28,7 +28,13 @@
     moderationRefresh: document.getElementById('suggestionModerationRefresh'),
     moderationFilters: [...document.querySelectorAll('[data-suggestion-status]')],
     pendingCount: document.getElementById('suggestionPendingCount'),
-    adminOnly: [...document.querySelectorAll('[data-suggestions-admin-only]')]
+    adminOnly: [...document.querySelectorAll('[data-suggestions-admin-only]')],
+    moderationSearch: document.getElementById('proposalGameSearch'),
+    moderationSort: document.getElementById('proposalGameSort'),
+    releaseFilters: [...document.querySelectorAll('[data-proposal-release]')],
+    playersMin: document.getElementById('proposalPlayersMin'),
+    playersMax: document.getElementById('proposalPlayersMax'),
+    filtersReset: document.getElementById('proposalFiltersReset')
   };
 
   if (!elements.panel) return;
@@ -41,6 +47,8 @@
     noticeTimer: null,
     moderation: [],
     moderationStatus: 'pending',
+    moderationQuery: '',
+    moderationSort: 'oldest',
     isAdmin: false,
     eventsBound: false,
     started: false
@@ -510,7 +518,7 @@
 
   function moderationActions(item) {
     const actions = {
-      pending: [['approve', 'Добавить в рейтинг'], ['reject', 'Отклонить']],
+      pending: [['approve', 'Опубликовать'], ['delete', 'Удалить']],
       approved: [['select', 'Выбрать для стрима'], ['archive', 'В архив']],
       selected: [['complete', 'Отметить пройденной'], ['reopen', 'Вернуть в рейтинг']],
       rejected: [['approve', 'Одобрить'], ['archive', 'В архив']],
@@ -522,15 +530,45 @@
     ).join('');
   }
 
+  function moderationPlayersLabel(item) {
+    const min = Number(item.coop_min_players) || (item.is_coop ? 2 : 1);
+    const max = Number(item.coop_max_players) || min;
+    if (max <= 1) return '1 игрок';
+    return `${min}–${max} ${playerWord(max)}`;
+  }
+
+  function moderationReleaseLabel(item) {
+    if (!item.release_date) return 'Без даты';
+    const date = new Date(`${item.release_date}T12:00:00`);
+    if (Number.isNaN(date.getTime())) return 'Без даты';
+    return date > new Date()
+      ? new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date)
+      : 'Вышла';
+  }
+
   function renderModeration() {
     if (!elements.moderationList) return;
     const pending = suggestionState.moderation.filter(item => item.status === 'pending').length;
     if (elements.pendingCount) elements.pendingCount.textContent = String(pending);
+    const query = suggestionState.moderationQuery.toLocaleLowerCase('ru-RU');
+    const enabledReleaseGroups = new Set(elements.releaseFilters.filter(input => input.checked).map(input => input.dataset.proposalRelease));
+    const minPlayers = Number(elements.playersMin?.value) || 0;
+    const maxPlayers = Number(elements.playersMax?.value) || Number.MAX_SAFE_INTEGER;
     const items = suggestionState.moderation
       .filter(item => item.status === suggestionState.moderationStatus)
+      .filter(item => !query || [item.title, item.description, item.steam_app_id].some(value => String(value || '').toLocaleLowerCase('ru-RU').includes(query)))
+      .filter(item => {
+        const releaseGroup = item.release_date
+          ? (new Date(`${item.release_date}T12:00:00`) > new Date() ? 'upcoming' : 'released')
+          : 'unknown';
+        if (enabledReleaseGroups.size && !enabledReleaseGroups.has(releaseGroup)) return false;
+        const players = Number(item.coop_max_players) || (item.is_coop ? 2 : 1);
+        return players >= minPlayers && players <= maxPlayers;
+      })
       .sort((a, b) => {
-        if (a.status === 'pending') return new Date(a.created_at) - new Date(b.created_at);
-        return new Date(b.updated_at) - new Date(a.updated_at);
+        if (suggestionState.moderationSort === 'title') return String(a.title || '').localeCompare(String(b.title || ''), 'ru-RU');
+        const direction = suggestionState.moderationSort === 'newest' ? -1 : 1;
+        return (new Date(a.created_at) - new Date(b.created_at)) * direction;
       });
 
     if (!items.length) {
@@ -543,18 +581,21 @@
       const steam = safeUrl(item.steam_url, ['steampowered.com', 'steamcommunity.com']);
       const comments = Array.isArray(item.suggestion_comments) ? item.suggestion_comments : [];
       const reactions = moderationReactionStats(item);
+      const primaryComment = comments.find(comment => !comment.is_hidden) || comments[0];
       return `
         <article class="moderation-card">
-          <img src="${escapeHtml(cover || './assets/images/figma/game-placeholder.svg')}" alt="">
+          <div class="moderation-card-side">
+            <img src="${escapeHtml(cover || './assets/images/figma/game-placeholder.svg')}" alt="Обложка ${escapeHtml(item.title)}">
+            <div class="moderation-card-facts"><span class="moderation-players">${escapeHtml(moderationPlayersLabel(item))}</span><span class="moderation-release">${escapeHtml(moderationReleaseLabel(item))}</span></div>
+          </div>
           <div class="moderation-card-copy">
-            <h3><a href="${escapeHtml(steam || '#')}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)} ↗</a></h3>
+            <h3>${escapeHtml(item.title)}</h3>
+            <p class="moderation-description">${escapeHtml(item.description || 'Описание не указано.')}</p>
             <div class="moderation-card-meta"><span>Steam ID ${Number(item.steam_app_id)}</span><span>👍 ${reactions.likes}</span><span>👎 ${reactions.dislikes}</span><span>${reactions.likes + reactions.dislikes ? `${reactions.percent}% лайков` : 'Нет оценок'}</span><span>${escapeHtml(formatDate(item.created_at))}</span></div>
             ${item.rejection_reason ? `<p><strong>Причина:</strong> ${escapeHtml(item.rejection_reason)}</p>` : ''}
-            <div class="moderation-comments">${comments.length ? comments.map(comment => `
-              <div class="moderation-comment${comment.is_hidden ? ' is-hidden' : ''}"><span>${comment.is_hidden ? '[Скрыт] ' : ''}${escapeHtml(comment.body)}</span><button data-comment-id="${Number(comment.id)}" data-comment-hidden="${comment.is_hidden ? 'false' : 'true'}" type="button">${comment.is_hidden ? 'Вернуть' : 'Скрыть'}</button></div>
-            `).join('') : '<span class="moderation-card-meta">Комментариев нет</span>'}</div>
+            <div class="moderation-comments"><span>Комментарий пользователя</span><p>${escapeHtml(primaryComment?.body || 'Комментарий не оставлен.')}</p>${primaryComment ? `<button data-comment-id="${Number(primaryComment.id)}" data-comment-hidden="${primaryComment.is_hidden ? 'false' : 'true'}" type="button">${primaryComment.is_hidden ? 'Вернуть' : 'Скрыть'}</button>` : ''}</div>
+            <div class="moderation-actions">${steam ? `<a class="moderation-steam" href="${escapeHtml(steam)}" target="_blank" rel="noopener noreferrer">Открыть в Steam <img alt="" aria-hidden="true" src="./assets/images/figma/arrow-circle-white.svg"></a>` : ''}${moderationActions(item)}</div>
           </div>
-          <div class="moderation-actions">${moderationActions(item)}</div>
         </article>`;
     }).join('');
   }
@@ -609,11 +650,18 @@
     }
     setBusy(button, true, 'Сохраняем…');
     try {
-      const { error } = await suggestionState.client.rpc('moderate_game_suggestion', {
-        p_suggestion_id: Number(id),
-        p_action: action,
-        p_reason: reason
-      });
+      if (action === 'delete' && !window.confirm('Удалить предложение игры без возможности восстановления?')) {
+        setBusy(button, false);
+        return;
+      }
+      const request = action === 'delete'
+        ? suggestionState.client.rpc('delete_game_suggestion', { p_suggestion_id: Number(id) })
+        : suggestionState.client.rpc('moderate_game_suggestion', {
+          p_suggestion_id: Number(id),
+          p_action: action,
+          p_reason: reason
+        });
+      const { error } = await request;
       if (error) throw error;
       showNotice('Статус предложения обновлён.', 'success');
       await Promise.all([loadModeration(), loadPublicSuggestions()]);
@@ -663,6 +711,25 @@
     elements.commentForm.addEventListener('submit', saveComment);
     elements.commentDelete.addEventListener('click', deleteMyComment);
     elements.moderationRefresh?.addEventListener('click', checkAdminAndLoad);
+    elements.moderationSearch?.addEventListener('input', event => {
+      suggestionState.moderationQuery = event.target.value.trim();
+      renderModeration();
+    });
+    elements.moderationSort?.addEventListener('change', event => {
+      suggestionState.moderationSort = event.target.value;
+      renderModeration();
+    });
+    elements.releaseFilters.forEach(input => input.addEventListener('change', renderModeration));
+    elements.playersMin?.addEventListener('input', renderModeration);
+    elements.playersMax?.addEventListener('input', renderModeration);
+    elements.filtersReset?.addEventListener('click', () => {
+      elements.releaseFilters.forEach(input => { input.checked = true; });
+      if (elements.playersMin) elements.playersMin.value = '';
+      if (elements.playersMax) elements.playersMax.value = '';
+      suggestionState.moderationQuery = '';
+      if (elements.moderationSearch) elements.moderationSearch.value = '';
+      renderModeration();
+    });
     elements.moderationFilters.forEach(button => button.addEventListener('click', () => {
       suggestionState.moderationStatus = button.dataset.suggestionStatus;
       elements.moderationFilters.forEach(item => item.classList.toggle('active', item === button));
