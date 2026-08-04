@@ -1,12 +1,16 @@
 (() => {
-  const finalStyleId = 'figmaMainFinalStyles';
-  if (!document.getElementById(finalStyleId)) {
+  const styleLayers = [
+    ['figmaMainFinalStyles', './assets/css/public/figma-main-final.css?v=1.0'],
+    ['adminFigmaFinalStyles', './assets/css/public/admin-figma-final.css?v=1.0']
+  ];
+  styleLayers.forEach(([id, href]) => {
+    if (document.getElementById(id)) return;
     const stylesheet = document.createElement('link');
-    stylesheet.id = finalStyleId;
+    stylesheet.id = id;
     stylesheet.rel = 'stylesheet';
-    stylesheet.href = './assets/css/public/figma-main-final.css?v=1.0';
+    stylesheet.href = href;
     document.head.appendChild(stylesheet);
-  }
+  });
 
   const contentToggle = document.getElementById('contentMenuToggle');
   const contentPanel = document.getElementById('contentMenuPanel');
