@@ -1,15 +1,17 @@
 (() => {
-  const styleLayers = [
-    ['figmaMainFinalStyles', './assets/css/public/figma-main-final.css?v=1.0'],
-    ['adminFigmaFinalStyles', './assets/css/public/admin-figma-final.css?v=1.0']
+  const assets = [
+    ['style','figmaMainFinalStyles','./assets/css/public/figma-main-final.css?v=1.0'],
+    ['style','adminFigmaFinalStyles','./assets/css/public/admin-figma-final.css?v=1.0'],
+    ['style','proposalWindowsFigmaStyles','./assets/css/public/proposal-windows-figma.css?v=1.0'],
+    ['script','proposalWindowsFigmaScript','./assets/js/public/proposal-windows-figma.js?v=1.0']
   ];
-  styleLayers.forEach(([id, href]) => {
+  assets.forEach(([type,id,src]) => {
     if (document.getElementById(id)) return;
-    const stylesheet = document.createElement('link');
-    stylesheet.id = id;
-    stylesheet.rel = 'stylesheet';
-    stylesheet.href = href;
-    document.head.appendChild(stylesheet);
+    const node = document.createElement(type === 'style' ? 'link' : 'script');
+    node.id = id;
+    if (type === 'style') { node.rel = 'stylesheet'; node.href = src; }
+    else { node.src = src; node.defer = true; }
+    document.head.appendChild(node);
   });
 
   const contentToggle = document.getElementById('contentMenuToggle');
@@ -82,11 +84,8 @@
       const centeredTop = panelTop - Math.max(0,(window.innerHeight - panelRect.height) / 2);
       const maxScroll = Math.max(0,document.documentElement.scrollHeight - window.innerHeight);
       const target = Math.min(maxScroll,Math.max(0,centeredTop));
-      if (window.CR7_LENIS?.scrollTo) {
-        window.CR7_LENIS.scrollTo(target,{ duration: 1.1 });
-      } else {
-        window.scrollTo({ top: target, behavior: 'smooth' });
-      }
+      if (window.CR7_LENIS?.scrollTo) window.CR7_LENIS.scrollTo(target,{ duration: 1.1 });
+      else window.scrollTo({ top: target, behavior: 'smooth' });
     });
   }
 

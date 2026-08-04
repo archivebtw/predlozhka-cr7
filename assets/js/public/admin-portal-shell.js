@@ -11,7 +11,6 @@
   const portal = document.getElementById('adminPortal');
   const openButton = document.getElementById('adminPortalOpen');
   const closeButton = document.getElementById('adminPortalClose');
-  const proposalTriggers = [...document.querySelectorAll('.proposal-desk-trigger')];
   const proposalExitLinks = [...document.querySelectorAll('.site-header a[href="#top"], .site-header a[href="#catalog"]')];
   const adminSection = document.getElementById('adminSection');
   const viewButtons = [...document.querySelectorAll('[data-admin-view]')];
@@ -47,7 +46,6 @@
   }
 
   openButton.addEventListener('click',() => openPortal('games', true));
-  proposalTriggers.forEach(trigger => trigger.addEventListener('click',() => openPortal(trigger.dataset.proposalTab || 'games', true)));
   proposalExitLinks.forEach(link => link.addEventListener('click',() => {
     if (portal.dataset.portalMode === 'proposal' && !portal.hidden) closePortal();
   }));
