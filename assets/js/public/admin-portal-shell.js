@@ -1,4 +1,13 @@
 (() => {
+  const tabsFixId = 'adminFigmaTabsFixStyles';
+  if (!document.getElementById(tabsFixId)) {
+    const link = document.createElement('link');
+    link.id = tabsFixId;
+    link.rel = 'stylesheet';
+    link.href = './assets/css/public/admin-figma-tabs-fix.css?v=1.0';
+    document.head.appendChild(link);
+  }
+
   const portal = document.getElementById('adminPortal');
   const openButton = document.getElementById('adminPortalOpen');
   const closeButton = document.getElementById('adminPortalClose');
@@ -10,15 +19,15 @@
 
   let lastFocused = null;
 
-  function setView(view = 'catalog', proposalMode = false) {
-    const target = ['games', 'media', 'catalog'].includes(view) ? view : 'catalog';
+  function setView(view = 'games', proposalMode = true) {
+    const target = ['games', 'media', 'catalog'].includes(view) ? view : 'games';
     adminSection?.setAttribute('data-admin-view', target);
     portal.dataset.portalMode = proposalMode ? 'proposal' : 'catalog';
     document.body.classList.toggle('proposal-portal-open', proposalMode);
     viewButtons.forEach(button => button.classList.toggle('active', button.dataset.adminView === target));
   }
 
-  function openPortal(view = 'catalog', proposalMode = false) {
+  function openPortal(view = 'games', proposalMode = true) {
     setView(view, proposalMode);
     lastFocused = document.activeElement;
     portal.hidden = false;
@@ -37,12 +46,12 @@
     window.setTimeout(() => { portal.hidden = true; lastFocused?.focus(); },360);
   }
 
-  openButton.addEventListener('click',() => openPortal('catalog', false));
+  openButton.addEventListener('click',() => openPortal('games', true));
   proposalTriggers.forEach(trigger => trigger.addEventListener('click',() => openPortal(trigger.dataset.proposalTab || 'games', true)));
   proposalExitLinks.forEach(link => link.addEventListener('click',() => {
     if (portal.dataset.portalMode === 'proposal' && !portal.hidden) closePortal();
   }));
-  viewButtons.forEach(button => button.addEventListener('click',() => setView(button.dataset.adminView, button.dataset.adminView !== 'catalog')));
+  viewButtons.forEach(button => button.addEventListener('click',() => setView(button.dataset.adminView, true)));
   closeButton.addEventListener('click',closePortal);
   portal.addEventListener('click',event => { if (event.target.matches('[data-admin-portal-close]')) closePortal(); });
   document.addEventListener('keydown',event => {
@@ -57,5 +66,5 @@
   });
 
   window.CR7_ADMIN_PORTAL = { open: openPortal, close: closePortal, setView };
-  if (location.hash === '#admin') openPortal('catalog', false);
+  if (location.hash === '#admin') openPortal('games', true);
 })();
