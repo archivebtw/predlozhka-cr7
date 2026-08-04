@@ -1,4 +1,13 @@
 (() => {
+  const finalStyleId = 'figmaMainFinalStyles';
+  if (!document.getElementById(finalStyleId)) {
+    const stylesheet = document.createElement('link');
+    stylesheet.id = finalStyleId;
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = './assets/css/public/figma-main-final.css?v=1.0';
+    document.head.appendChild(stylesheet);
+  }
+
   const contentToggle = document.getElementById('contentMenuToggle');
   const contentPanel = document.getElementById('contentMenuPanel');
   const servicesToggle = document.getElementById('servicesToggle');
