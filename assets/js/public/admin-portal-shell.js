@@ -1,12 +1,17 @@
 (() => {
-  const tabsFixId = 'adminFigmaTabsFixStyles';
-  if (!document.getElementById(tabsFixId)) {
+  const styleLayers = [
+    ['adminFigmaTabsFixStyles', './assets/css/public/admin-figma-tabs-fix.css?v=1.0'],
+    ['adminFigmaTemplateV3Styles', './assets/css/public/admin-figma-template-v3.css?v=1.0']
+  ];
+
+  styleLayers.forEach(([id, href]) => {
+    if (document.getElementById(id)) return;
     const link = document.createElement('link');
-    link.id = tabsFixId;
+    link.id = id;
     link.rel = 'stylesheet';
-    link.href = './assets/css/public/admin-figma-tabs-fix.css?v=1.0';
+    link.href = href;
     document.head.appendChild(link);
-  }
+  });
 
   const portal = document.getElementById('adminPortal');
   const openButton = document.getElementById('adminPortalOpen');
