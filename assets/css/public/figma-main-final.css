@@ -1,0 +1,240 @@
+/* Final main-page pass based on the Figma "Главная страница" frames.
+   This file only overrides presentation. Existing Supabase/auth/CRUD/Realtime logic stays untouched. */
+
+:root {
+  --figma-page: #0b0b0b;
+  --figma-section: #121212;
+  --figma-surface: #202020;
+  --figma-text: #f0f0f0;
+  --figma-muted: rgba(240, 240, 240, .55);
+  --figma-red: #e63d3d;
+}
+
+html,
+body {
+  background: var(--figma-page) !important;
+}
+
+/* Main screen */
+main#top,
+.hero {
+  background: var(--figma-page) !important;
+}
+
+@media (min-width: 1101px) {
+  .hero {
+    min-height: 780rem;
+    height: 100svh;
+    max-height: 980rem;
+  }
+
+  .hero::after {
+    background:
+      radial-gradient(ellipse 46% 86% at 103% 12%, rgba(230, 61, 61, .92) 0, rgba(230, 61, 61, .42) 16%, rgba(230, 61, 61, .12) 32%, transparent 58%),
+      #0b0b0b !important;
+  }
+
+  .hero h1 {
+    top: 184rem;
+    font-size: clamp(112rem, 9.375vw, 180rem);
+    line-height: .8;
+  }
+
+  .hero-intro {
+    bottom: 40rem;
+  }
+}
+
+/* Proposal cards */
+.content-menu-panel {
+  background: var(--figma-section) !important;
+}
+
+.content-menu-card,
+.content-menu-card.content-menu-card-media {
+  border-radius: 6rem;
+  background: #050505 !important;
+}
+
+.content-menu-card::before,
+.content-menu-card.content-menu-card-media::before {
+  background:
+    radial-gradient(ellipse 52% 82% at 102% 102%, rgba(230, 61, 61, .95) 0, rgba(230, 61, 61, .42) 27%, rgba(230, 61, 61, .12) 48%, transparent 72%) !important;
+}
+
+/* Catalog */
+.catalog-section {
+  background: var(--figma-section) !important;
+}
+
+#catalog .controls,
+#catalog .catalog-toolbar.is-compact .controls {
+  background: #1c1c1c;
+}
+
+#catalog .search-wrap {
+  background: var(--figma-surface) !important;
+}
+
+#catalog .section-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20rem;
+}
+
+#catalog .game-card,
+#catalog .game-card.featured {
+  aspect-ratio: 560 / 262;
+  border-radius: 6rem;
+  background: #050505;
+}
+
+#catalog .card-visual {
+  inset: 0;
+}
+
+#catalog .card-bottom {
+  right: 20rem;
+  bottom: 20rem;
+  left: 20rem;
+  height: auto;
+  padding: 0;
+  background: transparent;
+}
+
+#catalog .card-title,
+#catalog .featured .card-title {
+  font-size: 32rem;
+}
+
+#catalog .card-top {
+  top: 16rem;
+  right: 16rem;
+  left: auto;
+}
+
+#catalog .card-shade {
+  background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.08) 42%, rgba(0,0,0,.9) 100%);
+}
+
+/* The Figma page does not need the large black frame below the catalog. */
+body > footer {
+  display: none !important;
+}
+
+/* Game window. The top block matches the green-marked Figma area,
+   while the remaining comments/content can be reached by normal scrolling. */
+.game-modal {
+  display: block;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding: clamp(24rem, 5vh, 72rem) 20rem 90rem !important;
+  overscroll-behavior: contain;
+}
+
+.game-modal .modal-backdrop {
+  position: fixed !important;
+  background: rgba(5, 5, 5, .84) !important;
+  backdrop-filter: blur(12rem) !important;
+}
+
+@media (min-width: 721px) {
+  .game-modal .modal-panel,
+  .game-modal.is-open .modal-panel {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: min(850rem, calc(100vw - 40rem)) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 auto !important;
+    overflow: visible !important;
+    opacity: 1;
+    transform: none !important;
+  }
+
+  .game-modal .modal-content {
+    height: auto !important;
+    min-height: 0 !important;
+    padding-bottom: 48rem;
+  }
+
+  .game-modal .modal-title {
+    display: block;
+    max-height: none;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+  }
+
+  .game-modal #modalDescription {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .game-modal .modal-footer,
+  .game-modal .modal-reaction-notice,
+  .game-modal .modal-comments {
+    position: static !important;
+    inset: auto !important;
+  }
+
+  .game-modal .modal-footer {
+    margin-top: 72rem !important;
+  }
+
+  .game-modal .modal-reaction-notice {
+    margin-top: 12rem !important;
+  }
+
+  .game-modal .modal-comments {
+    height: auto !important;
+    margin-top: 24rem !important;
+  }
+
+  .game-modal .modal-comments-list {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+.game-modal .modal-panel {
+  border: 0 !important;
+  border-radius: 6rem !important;
+  background: #121212 !important;
+  box-shadow: 0 30rem 100rem rgba(0, 0, 0, .55) !important;
+}
+
+.game-modal .modal-media {
+  border-radius: 6rem;
+}
+
+.game-modal .modal-close {
+  border: 0 !important;
+  background: #202020 !important;
+}
+
+.game-modal .modal-steam {
+  background: var(--figma-red) !important;
+}
+
+@media (max-width: 1100px) {
+  #catalog .section-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  #catalog .section-grid {
+    grid-template-columns: 1fr;
+    gap: 12rem;
+  }
+
+  .game-modal {
+    padding: 0 !important;
+  }
+
+  .game-modal .modal-panel {
+    min-height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+}
