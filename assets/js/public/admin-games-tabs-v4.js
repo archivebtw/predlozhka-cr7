@@ -8,6 +8,8 @@
   const publishedButton = statusButtons.find(button => button.dataset.suggestionStatus === 'approved');
   if (!portal || !adminSection || !list || !pendingButton || !publishedButton) return;
 
+  const LIBRARY_STATUSES = new Set(['', 'completed', 'dropped', 'ignored']);
+
   const state = {
     games: [],
     query: '',
@@ -102,7 +104,7 @@
     }
 
     list.innerHTML = games.map(game => {
-      const current = String(game.library_status || '');
+      const current = LIBRARY_STATUSES.has(String(game.library_status || '')) ? String(game.library_status || '') : '';
       const cover = game.cover_url || './assets/images/figma/game-placeholder.svg';
       const steam = String(game.steam_url || '');
       const likes = Number(game.like_count) || 0;
@@ -159,18 +161,28 @@
   async function saveStatus(card, button) {
     const supabase = client();
     if (!supabase) return;
-    const id = card.dataset.gameId;
-    const status = card.dataset.libraryStatus || '';
+    const id = String(card.dataset.gameId || '');
+    const requestedStatus = String(card.dataset.libraryStatus || '');
+    const status = LIBRARY_STATUSES.has(requestedStatus) ? requestedStatus : '';
     button.disabled = true;
     const defaultText = button.textContent;
     button.textContent = 'Сохраняем…';
+
     const { error } = await supabase.from('games').update({ library_status: status }).eq('id', id);
     button.disabled = false;
     button.textContent = error ? 'Ошибка' : 'Сохранено';
+
     if (!error) {
-      const game = state.games.find(item => String(item.id) === String(id));
+      const game = state.games.find(item => String(item.id) === id);
       if (game) game.library_status = status;
+
+      // Обновляем каталог на этой же странице немедленно. Realtime остаётся
+      // резервным способом синхронизации для других открытых устройств.
+      window.dispatchEvent(new CustomEvent('cr7:library-status-updated', {
+        detail: { gameId: id, libraryStatus: status }
+      }));
     }
+
     window.setTimeout(() => { button.textContent = defaultText; }, 1300);
   }
 
