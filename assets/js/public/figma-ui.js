@@ -3,7 +3,9 @@
     ['style','figmaMainFinalStyles','./assets/css/public/figma-main-final.css?v=1.0'],
     ['style','adminFigmaFinalStyles','./assets/css/public/admin-figma-final.css?v=1.0'],
     ['style','proposalWindowsFigmaStyles','./assets/css/public/proposal-windows-figma.css?v=1.0'],
-    ['script','proposalWindowsFigmaScript','./assets/js/public/proposal-windows-figma.js?v=1.0']
+    ['style','adminCardIconsStyles','./assets/css/public/admin-card-icons.css?v=1.0'],
+    ['script','proposalWindowsFigmaScript','./assets/js/public/proposal-windows-figma.js?v=1.0'],
+    ['script','adminCardIconsScript','./assets/js/public/admin-card-icons.js?v=1.0']
   ];
   assets.forEach(([type,id,src]) => {
     if (document.getElementById(id)) return;
