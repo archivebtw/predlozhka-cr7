@@ -2,7 +2,8 @@
   const styleLayers = [
     ['adminFigmaTabsFixStyles', './assets/css/public/admin-figma-tabs-fix.css?v=1.0'],
     ['adminFigmaTemplateV3Styles', './assets/css/public/admin-figma-template-v3.css?v=1.0'],
-    ['adminGamesTabsV4Styles', './assets/css/public/admin-games-tabs-v4.css?v=1.0']
+    ['adminGamesTabsV4Styles', './assets/css/public/admin-games-tabs-v4.css?v=1.1'],
+    ['adminPublishedIconsFixStyles', './assets/css/public/admin-published-icons-fix.css?v=1.0']
   ];
 
   styleLayers.forEach(([id, href]) => {
@@ -17,7 +18,15 @@
   if (!document.getElementById('adminGamesTabsV4Script')) {
     const script = document.createElement('script');
     script.id = 'adminGamesTabsV4Script';
-    script.src = './assets/js/public/admin-games-tabs-v4.js?v=1.0';
+    script.src = './assets/js/public/admin-games-tabs-v4.js?v=1.1';
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
+  if (!document.getElementById('adminPublishedIconsFixScript')) {
+    const script = document.createElement('script');
+    script.id = 'adminPublishedIconsFixScript';
+    script.src = './assets/js/public/admin-published-icons-fix.js?v=1.0';
     script.defer = true;
     document.head.appendChild(script);
   }

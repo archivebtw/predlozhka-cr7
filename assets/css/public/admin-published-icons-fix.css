@@ -1,0 +1,58 @@
+/* Иконки именно для Управление → Игры → Опубликованные. */
+
+.admin-portal .admin-catalog-facts {
+  display: grid !important;
+  gap: 10px !important;
+  margin-top: 12px !important;
+  color: rgba(240, 240, 240, .55) !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+}
+
+.admin-portal .admin-catalog-facts > span {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.admin-portal .admin-catalog-facts span::before {
+  content: none !important;
+  display: none !important;
+}
+
+.admin-portal .admin-catalog-fact-icon {
+  width: 22px !important;
+  height: auto !important;
+  flex: 0 0 22px !important;
+  display: block !important;
+  object-fit: contain !important;
+}
+
+.admin-portal .admin-catalog-reactions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 20px !important;
+  margin-top: 2px !important;
+}
+
+.admin-portal .admin-catalog-reactions > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: rgba(240, 240, 240, .42) !important;
+}
+
+.admin-portal .admin-catalog-reaction-icon {
+  width: 28px !important;
+  height: 28px !important;
+  flex: 0 0 28px !important;
+  display: block !important;
+  object-fit: contain !important;
+}
+
+.admin-portal .admin-catalog-reactions b {
+  color: rgba(240, 240, 240, .42) !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+}
