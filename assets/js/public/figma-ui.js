@@ -3,6 +3,7 @@
     ['style','figmaMainFinalStyles','./assets/css/public/figma-main-final.css?v=1.0'],
     ['style','adminFigmaFinalStyles','./assets/css/public/admin-figma-final.css?v=1.0'],
     ['style','proposalWindowsFigmaStyles','./assets/css/public/proposal-windows-figma.css?v=3.0'],
+    ['style','proposalMediaFigmaExactStyles','./assets/css/public/proposal-media-figma-exact.css?v=1.0'],
     ['style','adminCardIconsStyles','./assets/css/public/admin-card-icons.css?v=1.1'],
     ['script','proposalWindowsFigmaScript','./assets/js/public/proposal-windows-figma.js?v=3.0'],
     ['script','adminCardIconsScriptV2','./assets/js/public/admin-card-icons-v2.js?v=2.0']
