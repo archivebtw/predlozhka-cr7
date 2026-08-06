@@ -162,3 +162,30 @@
     subtree: true
   });
 })();
+
+(function loadExactMediaProposalWindow() {
+  const stylesheetId = 'proposalMediaFigmaExactStylesDirect';
+  if (!document.getElementById(stylesheetId)) {
+    const stylesheet = document.createElement('link');
+    stylesheet.id = stylesheetId;
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = './assets/css/public/proposal-media-figma-exact.css?v=20260806-1354';
+    document.head.appendChild(stylesheet);
+  }
+
+  function markMediaPanel() {
+    const mediaPanel = document.getElementById('mediaPanel');
+    if (mediaPanel) mediaPanel.classList.add('is-figma-proposal');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', markMediaPanel, { once: true });
+  } else {
+    markMediaPanel();
+  }
+
+  new MutationObserver(markMediaPanel).observe(document.documentElement, {
+    childList: true,
+    subtree: true
+  });
+})();
