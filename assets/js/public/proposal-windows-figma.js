@@ -7,30 +7,22 @@
   const previewButton = document.getElementById('suggestionPreviewButton');
   const mediaInput = document.getElementById('mediaFileInput');
   const mediaTitleInput = document.getElementById('mediaSubmissionTitle');
+  const dropzone = document.getElementById('mediaDropzone');
   if (!suggestionsPanel || !mediaPanel) return;
 
   suggestionsPanel.classList.add('is-figma-proposal');
   mediaPanel.classList.add('is-figma-proposal');
-
-  function moveCloseButton(panel, dialogSelector, buttonSelector) {
-    const dialog = panel.querySelector(dialogSelector);
-    const button = panel.querySelector(buttonSelector);
-    if (dialog && button && button.parentElement !== dialog) dialog.prepend(button);
-  }
-
-  moveCloseButton(suggestionsPanel, '.suggestions-dialog', '.suggestions-close');
-  moveCloseButton(mediaPanel, '.media-dialog', '.media-close');
 
   if (suggestionForm && !suggestionForm.querySelector('.figma-duration-field')) {
     const label = suggestionForm.querySelector('label[for="suggestionComment"]');
     const field = document.createElement('div');
     field.className = 'figma-duration-field';
     field.innerHTML = `
-      <span class="figma-field-label">Количество игроков (опционально)</span>
+      <span class="figma-field-label">Приблизительное время прохождения</span>
       <div class="figma-duration-row">
-        <input aria-label="Минимальное количество игроков" min="1" placeholder="Мин" type="number">
+        <input aria-label="Минимальное время прохождения" min="1" placeholder="Мин" type="number">
         <span>—</span>
-        <input aria-label="Максимальное количество игроков" min="1" placeholder="Макс" type="number">
+        <input aria-label="Максимальное время прохождения" min="1" placeholder="Макс" type="number">
       </div>`;
     label?.before(field);
   }
@@ -42,7 +34,13 @@
     mediaForm.prepend(title);
   }
 
-  const dropzone = document.getElementById('mediaDropzone');
+  if (dropzone) {
+    const strong = dropzone.querySelector('strong');
+    const hint = dropzone.querySelector('span');
+    if (strong) strong.textContent = 'Выбрать файл';
+    if (hint) hint.textContent = 'или выбери';
+  }
+
   if (dropzone && !mediaForm?.querySelector('.figma-file-label')) {
     const fileLabel = document.createElement('span');
     fileLabel.className = 'figma-field-label figma-file-label';
@@ -54,7 +52,7 @@
     const category = document.createElement('div');
     category.className = 'figma-media-category-field';
     category.innerHTML = `
-      <span class="figma-field-label">Выберите категорию</span>
+      <span class="figma-field-label">Категория</span>
       <div class="figma-media-categories" role="group" aria-label="Категория материала">
         <button class="active" data-category="personal" type="button">Личное</button>
         <button data-category="creative" type="button">Творчество</button>
