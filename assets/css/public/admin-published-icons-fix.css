@@ -20,12 +20,25 @@
   display: none !important;
 }
 
+.admin-portal .admin-catalog-fact-icon,
+.admin-portal .admin-catalog-reaction-icon {
+  display: block !important;
+  overflow: visible !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
 .admin-portal .admin-catalog-fact-icon {
   width: 22px !important;
-  height: auto !important;
+  height: 25px !important;
   flex: 0 0 22px !important;
-  display: block !important;
-  object-fit: contain !important;
+  color: #ef3d3f !important;
+}
+
+.admin-portal .admin-catalog-day-icon {
+  height: 24px !important;
 }
 
 .admin-portal .admin-catalog-reactions {
@@ -40,14 +53,14 @@
   align-items: center !important;
   gap: 8px !important;
   color: rgba(240, 240, 240, .42) !important;
+  background: transparent !important;
 }
 
 .admin-portal .admin-catalog-reaction-icon {
   width: 28px !important;
   height: 28px !important;
   flex: 0 0 28px !important;
-  display: block !important;
-  object-fit: contain !important;
+  color: #f0f0f0 !important;
 }
 
 .admin-portal .admin-catalog-reactions b {
@@ -55,4 +68,9 @@
   font-size: 16px !important;
   font-weight: 500 !important;
   line-height: 1 !important;
+}
+
+/* Обложка остаётся единственным изображением с фоном внутри левой колонки. */
+.admin-portal .admin-catalog-card-side > img {
+  background: #140606 !important;
 }
