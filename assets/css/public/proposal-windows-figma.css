@@ -1,5 +1,4 @@
-/* Окна «Предложить игру» и «Предложить фото/видео» — Frame 630 / Frame 629. */
-
+/* Окна «Предложить игру» и «Предложить фото/видео» — компактные пропорции Frame 630 / 629. */
 .suggestions-panel.is-figma-proposal,
 .media-panel.is-figma-proposal {
   position: fixed;
@@ -7,37 +6,33 @@
   z-index: 1800;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: 20px;
 }
-
 .suggestions-panel.is-figma-proposal[hidden],
 .media-panel.is-figma-proposal[hidden] { display: none !important; }
-
 .suggestions-panel.is-figma-proposal .suggestions-backdrop,
 .media-panel.is-figma-proposal .media-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, .82);
+  background: rgba(2,2,2,.84);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
-
 .suggestions-panel.is-figma-proposal .suggestions-dialog,
 .media-panel.is-figma-proposal .media-dialog {
   position: relative;
   z-index: 1;
-  width: min(850px, calc(100vw - 32px));
-  height: min(629px, calc(100dvh - 32px));
-  max-height: calc(100dvh - 32px);
-  overflow: auto;
+  width: min(520px, calc(100vw - 40px));
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  padding: 28px;
   border: 0;
-  border-radius: 0;
+  border-radius: 2px;
   color: #f0f0f0;
-  background: #151515;
-  box-shadow: none;
+  background: #121212;
+  box-shadow: 0 26px 90px rgba(0,0,0,.72);
   scrollbar-width: none;
 }
-
 .suggestions-panel.is-figma-proposal .suggestions-dialog::-webkit-scrollbar,
 .media-panel.is-figma-proposal .media-dialog::-webkit-scrollbar { display: none; }
 
@@ -47,48 +42,8 @@
 .media-panel.is-figma-proposal .media-head,
 .media-panel.is-figma-proposal .media-tabs,
 .media-panel.is-figma-proposal [data-media-view="published"],
-.suggestions-panel.is-figma-proposal .suggestions-notice:empty,
-.media-panel.is-figma-proposal .media-notice:empty { display: none !important; }
-
 .suggestions-panel.is-figma-proposal .suggestions-close,
-.media-panel.is-figma-proposal .media-close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 10;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  color: #777;
-  background: transparent;
-  font-size: 22px;
-  line-height: 1;
-}
-
-.suggestions-panel.is-figma-proposal .suggestions-close:hover,
-.media-panel.is-figma-proposal .media-close:hover { color: #fff; background: #242424; }
-
-.suggestions-panel.is-figma-proposal [data-suggestions-panel="submit"],
-.media-panel.is-figma-proposal .media-dialog { padding: 40px; }
-
-.suggestions-panel.is-figma-proposal .suggestion-submit-layout,
-.suggestions-panel.is-figma-proposal .suggestion-form,
-.media-panel.is-figma-proposal .media-workspace,
-.media-panel.is-figma-proposal .media-form,
-.media-panel.is-figma-proposal [data-media-view="upload"] {
-  display: block !important;
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
+.media-panel.is-figma-proposal .media-close,
 .suggestions-panel.is-figma-proposal .suggestion-step,
 .suggestions-panel.is-figma-proposal .suggestion-form > p,
 .suggestions-panel.is-figma-proposal .suggestion-rules,
@@ -97,143 +52,141 @@
 .suggestions-panel.is-figma-proposal .suggestion-form-actions small,
 .media-panel.is-figma-proposal .media-form-copy,
 .media-panel.is-figma-proposal .media-submit-row small,
-.media-panel.is-figma-proposal .media-fields > label:first-child { display: none !important; }
+.media-panel.is-figma-proposal .media-fields > label:first-child,
+.suggestions-panel.is-figma-proposal .suggestions-notice:empty,
+.media-panel.is-figma-proposal .media-notice:empty { display: none !important; }
+
+.suggestions-panel.is-figma-proposal [data-suggestions-panel="submit"],
+.suggestions-panel.is-figma-proposal .suggestion-submit-layout,
+.suggestions-panel.is-figma-proposal .suggestion-form,
+.media-panel.is-figma-proposal .media-workspace,
+.media-panel.is-figma-proposal .media-form,
+.media-panel.is-figma-proposal [data-media-view="upload"] {
+  display: block !important;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
 
 .suggestions-panel.is-figma-proposal .suggestion-form h3,
 .media-panel.is-figma-proposal .figma-proposal-title {
-  width: 100%;
-  min-height: 60px;
-  margin: 0 0 60px;
+  margin: 0 0 28px;
   font-family: var(--font-display);
-  font-size: 52px;
+  font-size: 31px;
   font-weight: 900;
-  line-height: 1;
-  letter-spacing: -.02em;
+  line-height: .94;
+  letter-spacing: -.025em;
   text-transform: uppercase;
 }
-
 .suggestions-panel.is-figma-proposal .suggestion-form label,
 .media-panel.is-figma-proposal .figma-field-label,
 .media-panel.is-figma-proposal .media-fields > label {
   display: block;
-  margin: 0 0 10px;
-  color: #777;
-  font-size: 13px;
+  margin: 0 0 6px;
+  color: rgba(240,240,240,.45);
+  font-size: 10px;
   font-weight: 500;
-  line-height: 19px;
+  line-height: 1.4;
 }
 
 .suggestions-panel.is-figma-proposal .suggestion-steam-row {
   position: relative;
   display: block;
-  margin: 0 0 20px;
+  margin: 0 0 14px;
 }
-
 .suggestions-panel.is-figma-proposal .suggestion-steam-row::before {
   content: '';
   position: absolute;
-  top: 17px;
-  left: 20px;
+  left: 12px;
+  top: 50%;
   z-index: 2;
-  width: 25px;
-  height: 23px;
-  border: 2px solid #ef3d3f;
-  border-radius: 50%;
-  box-sizing: border-box;
-  transform: scale(.44);
-  box-shadow: 0 0 0 4px #151515 inset;
+  width: 18px;
+  height: 18px;
+  background: url('../../images/figma/proposal-link.svg') center/contain no-repeat;
+  transform: translateY(-50%);
 }
-
 .suggestions-panel.is-figma-proposal .suggestion-form input,
 .suggestions-panel.is-figma-proposal .suggestion-form textarea,
 .media-panel.is-figma-proposal .media-fields input,
 .media-panel.is-figma-proposal .media-fields textarea {
   width: 100%;
-  min-height: 57px;
-  padding: 14px 20px;
+  min-height: 40px;
+  padding: 10px 12px;
   border: 0;
-  border-radius: 0;
+  border-radius: 1px;
   outline: 0;
   color: #f0f0f0;
   background: #202020;
   box-shadow: none;
-  font-size: 18px;
-  line-height: 29px;
+  font-size: 12px;
+  line-height: 1.5;
 }
-
 .suggestions-panel.is-figma-proposal #suggestionSteamUrl {
-  padding-left: 60px;
-  box-shadow: inset 0 0 0 1px #ef3d3f;
+  padding-left: 40px;
+  box-shadow: inset 0 0 0 1px #e63d3d;
 }
-
 .suggestions-panel.is-figma-proposal input:focus,
 .suggestions-panel.is-figma-proposal textarea:focus,
 .media-panel.is-figma-proposal input:focus,
-.media-panel.is-figma-proposal textarea:focus { box-shadow: inset 0 0 0 1px #ef3d3f; }
+.media-panel.is-figma-proposal textarea:focus { box-shadow: inset 0 0 0 1px #e63d3d; }
 
-.suggestions-panel.is-figma-proposal .figma-duration-field { margin: 0 0 20px; }
+.suggestions-panel.is-figma-proposal .figma-duration-field { margin: 0 0 14px; }
 .suggestions-panel.is-figma-proposal .figma-duration-field .figma-field-label {
   color: #f0f0f0;
-  font-size: 18px;
-  line-height: 27px;
+  font-size: 12px;
+  line-height: 1.3;
 }
 .suggestions-panel.is-figma-proposal .figma-duration-row {
   display: grid;
-  grid-template-columns: 154.5px 16px 154.5px;
+  grid-template-columns: 78px 12px 78px;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   width: max-content;
 }
-.suggestions-panel.is-figma-proposal .figma-duration-row input { width: 154.5px; }
-.suggestions-panel.is-figma-proposal .figma-duration-row span { color: #777; text-align: center; }
+.suggestions-panel.is-figma-proposal .figma-duration-row input { width: 78px; }
+.suggestions-panel.is-figma-proposal .figma-duration-row span { color: #666; text-align: center; }
 .suggestions-panel.is-figma-proposal label[for="suggestionComment"] small { display: none; }
-.suggestions-panel.is-figma-proposal #suggestionComment {
-  min-height: 57px;
-  max-height: 112px;
-  margin-bottom: 60px;
+.suggestions-panel.is-figma-proposal #suggestionComment,
+.media-panel.is-figma-proposal #mediaSubmissionComment {
+  min-height: 40px;
+  max-height: 90px;
+  margin-bottom: 28px;
   resize: vertical;
 }
 
 .suggestions-panel.is-figma-proposal .suggestion-form-actions,
 .media-panel.is-figma-proposal .media-submit-row { display: block; margin: 0; }
-
 .suggestions-panel.is-figma-proposal #suggestionSubmitButton,
 .media-panel.is-figma-proposal #mediaSubmitButton {
-  width: 379px;
-  max-width: 100%;
-  min-height: 73px;
+  width: 218px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 10px 0 14px;
   border: 0;
-  border-radius: 0;
+  border-radius: 1px;
   color: #fff;
-  background: #ef3d3f;
+  background: #e63d3d;
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: 14px;
   font-weight: 900;
   line-height: 1;
   text-transform: uppercase;
 }
-
 .suggestions-panel.is-figma-proposal #suggestionSubmitButton::after,
 .media-panel.is-figma-proposal #mediaSubmitButton::after {
-  content: '→';
-  display: grid;
-  width: 41px;
-  height: 41px;
-  place-items: center;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  font: 22px/1 Arial, sans-serif;
+  content: '';
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  background: url('../../images/figma/arrow-circle-white.svg') center/contain no-repeat;
 }
-
 .suggestions-panel.is-figma-proposal #suggestionSubmitButton:disabled,
-.media-panel.is-figma-proposal #mediaSubmitButton:disabled {
-  color: rgba(240,240,240,.38);
-  background: rgba(239,61,63,.5);
-}
+.media-panel.is-figma-proposal #mediaSubmitButton:disabled { opacity: .58; }
 
 .media-panel.is-figma-proposal .media-locked {
   width: auto;
@@ -246,90 +199,68 @@
 }
 .media-panel.is-figma-proposal .media-locked > span,
 .media-panel.is-figma-proposal .media-locked > p { display: none; }
-.media-panel.is-figma-proposal .media-locked h3 { margin: 0 0 24px; font-size: 24px; }
+.media-panel.is-figma-proposal .media-locked h3 { margin: 0 0 18px; font-size: 18px; }
 
-.media-panel.is-figma-proposal .figma-file-label { margin-bottom: 10px; }
+.media-panel.is-figma-proposal .figma-file-label { margin-bottom: 6px; }
 .media-panel.is-figma-proposal .media-dropzone {
   width: 100%;
-  min-height: 57px;
+  min-height: 40px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 15px;
-  margin: 0 0 20px;
-  padding: 0 20px;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 0 12px;
   border: 0;
-  border-radius: 0;
+  border-radius: 1px;
   background: #202020;
   text-align: left;
 }
 .media-panel.is-figma-proposal .media-dropzone i {
-  width: 23px;
-  height: 23px;
-  display: grid;
-  place-items: center;
-  color: #ef3d3f;
-  background: transparent;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  background: url('../../images/figma/proposal-file.svg') center/contain no-repeat;
   font-size: 0;
 }
-.media-panel.is-figma-proposal .media-dropzone i::before {
-  content: '';
-  width: 20px;
-  height: 12px;
-  border: 2px solid #ef3d3f;
-  transform: skew(-10deg);
-}
-.media-panel.is-figma-proposal .media-dropzone strong { font-size: 18px; line-height: 27px; }
+.media-panel.is-figma-proposal .media-dropzone i::before { content: none; }
+.media-panel.is-figma-proposal .media-dropzone strong { font-size: 11px; line-height: 1.2; }
 .media-panel.is-figma-proposal .media-dropzone span {
   min-width: 0;
   overflow: hidden;
   color: #666;
-  font-size: 16px;
+  font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-.media-panel.is-figma-proposal .figma-media-category-field { margin: 0 0 20px; }
-.media-panel.is-figma-proposal .figma-media-categories { display: flex; flex-wrap: wrap; gap: 10px; }
+.media-panel.is-figma-proposal .figma-media-category-field { margin: 0 0 14px; }
+.media-panel.is-figma-proposal .figma-media-categories { display: flex; flex-wrap: wrap; gap: 6px; }
 .media-panel.is-figma-proposal .figma-media-categories button {
-  min-height: 55px;
-  padding: 0 20px;
+  min-height: 32px;
+  padding: 0 12px;
   border: 0;
-  border-radius: 0;
+  border-radius: 1px;
   color: #aaa;
   background: #202020;
-  font-size: 18px;
-  line-height: 27px;
+  font-size: 10px;
 }
-.media-panel.is-figma-proposal .figma-media-categories button.active { color: #151515; background: #f0f0f0; }
-
+.media-panel.is-figma-proposal .figma-media-categories button.active { color: #121212; background: #f0f0f0; }
 .media-panel.is-figma-proposal .media-fields > label:last-child small { display: none; }
-.media-panel.is-figma-proposal #mediaSubmissionComment {
-  min-height: 57px;
-  max-height: 112px;
-  margin-bottom: 60px;
-  resize: vertical;
-}
-.media-panel.is-figma-proposal .media-selected { display: grid; gap: 6px; margin: -10px 0 16px; }
-.media-panel.is-figma-proposal .media-selected-item { grid-template-columns: 1fr auto; min-height: 36px; border: 0; border-radius: 0; background: #202020; }
+.media-panel.is-figma-proposal .media-selected { display: grid; gap: 4px; margin: -6px 0 10px; }
+.media-panel.is-figma-proposal .media-selected-item { grid-template-columns: 1fr auto; min-height: 30px; border: 0; border-radius: 1px; background: #202020; }
 .media-panel.is-figma-proposal .media-selected-preview { display: none; }
-.media-panel.is-figma-proposal .media-selected-copy { min-width: 0; padding: 8px 10px; }
-.media-panel.is-figma-proposal .media-selected-copy strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.media-panel.is-figma-proposal .media-selected-copy { min-width: 0; padding: 7px 8px; }
+.media-panel.is-figma-proposal .media-selected-copy strong { display: block; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .media-panel.is-figma-proposal .media-selected-copy small { display: none; }
-.media-panel.is-figma-proposal .media-selected-actions { display: flex; gap: 4px; padding: 4px; }
-.media-panel.is-figma-proposal .media-selected-actions button { min-height: 28px; padding: 0 8px; border: 0; border-radius: 0; color: #888; background: #292929; font-size: 10px; }
+.media-panel.is-figma-proposal .media-selected-actions { display: flex; gap: 3px; padding: 3px; }
+.media-panel.is-figma-proposal .media-selected-actions button { min-height: 24px; padding: 0 7px; border: 0; border-radius: 1px; color: #888; background: #292929; font-size: 9px; }
 
-@media (max-width: 700px) {
+@media (max-width: 600px) {
   .suggestions-panel.is-figma-proposal,
   .media-panel.is-figma-proposal { padding: 10px; }
   .suggestions-panel.is-figma-proposal .suggestions-dialog,
-  .media-panel.is-figma-proposal .media-dialog { width: calc(100vw - 20px); height: auto; max-height: calc(100dvh - 20px); }
-  .suggestions-panel.is-figma-proposal [data-suggestions-panel="submit"],
-  .media-panel.is-figma-proposal .media-dialog { padding: 28px 20px 22px; }
+  .media-panel.is-figma-proposal .media-dialog { width: calc(100vw - 20px); padding: 22px 18px; }
   .suggestions-panel.is-figma-proposal .suggestion-form h3,
-  .media-panel.is-figma-proposal .figma-proposal-title { min-height: 0; margin-bottom: 36px; font-size: 38px; }
-  .suggestions-panel.is-figma-proposal .figma-duration-row { grid-template-columns: 1fr 18px 1fr; width: 100%; }
-  .suggestions-panel.is-figma-proposal .figma-duration-row input { width: 100%; }
+  .media-panel.is-figma-proposal .figma-proposal-title { font-size: 27px; }
   .suggestions-panel.is-figma-proposal #suggestionSubmitButton,
-  .media-panel.is-figma-proposal #mediaSubmitButton { width: 100%; font-size: 22px; }
+  .media-panel.is-figma-proposal #mediaSubmitButton { width: 100%; }
 }
