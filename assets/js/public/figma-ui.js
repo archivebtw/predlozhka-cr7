@@ -6,7 +6,8 @@
     ['style','proposalMediaFigmaExactStyles','./assets/css/public/proposal-media-figma-exact.css?v=1.0'],
     ['style','adminCardIconsStyles','./assets/css/public/admin-card-icons.css?v=1.1'],
     ['script','proposalWindowsFigmaScript','./assets/js/public/proposal-windows-figma.js?v=3.0'],
-    ['script','adminCardIconsScriptV2','./assets/js/public/admin-card-icons-v2.js?v=2.0']
+    ['script','adminCardIconsScriptV2','./assets/js/public/admin-card-icons-v2.js?v=2.0'],
+    ['script','catalogLiveRefreshScript','./assets/js/public/catalog-live-refresh.js?v=1.0']
   ];
   assets.forEach(([type,id,src]) => {
     if (document.getElementById(id)) return;
