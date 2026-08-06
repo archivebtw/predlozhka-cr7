@@ -1,0 +1,194 @@
+/* Точный desktop-слой для Frame 629 «Предложить фото/видео».
+   Макет рассчитан на холст 1920 × 960 и масштабируется целиком,
+   чтобы пропорции не ломались на небольшом окне браузера. */
+
+.media-panel.is-figma-proposal {
+  --media-figma-scale: min(1, calc(100vw / 1920), calc(100dvh / 960));
+  overflow: hidden;
+  padding: 0;
+}
+
+.media-panel.is-figma-proposal .media-dialog {
+  width: 850px;
+  height: 629px;
+  max-width: none;
+  max-height: none;
+  overflow-y: auto;
+  padding: 40px;
+  border: 0;
+  border-radius: 0;
+  background: #121212;
+  box-shadow: none;
+  transform: scale(var(--media-figma-scale));
+  transform-origin: center;
+}
+
+.media-panel.is-figma-proposal .media-close {
+  display: none !important;
+}
+
+.media-panel.is-figma-proposal .figma-proposal-title {
+  min-height: 60px;
+  margin: 0 0 60px;
+  font-size: 52px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -.02em;
+}
+
+.media-panel.is-figma-proposal .figma-field-label,
+.media-panel.is-figma-proposal .media-fields > label {
+  margin: 0 0 10px;
+  color: rgba(240,240,240,.42);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 19px;
+}
+
+.media-panel.is-figma-proposal .figma-file-label {
+  margin-bottom: 10px;
+}
+
+.media-panel.is-figma-proposal .media-dropzone {
+  width: 100%;
+  min-height: 57px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.media-panel.is-figma-proposal .media-dropzone i {
+  width: 44px;
+  height: 57px;
+  flex: 0 0 44px;
+  display: block;
+  background: #202020 url('../../images/figma/proposal-file.svg') center/22px 22px no-repeat;
+}
+
+.media-panel.is-figma-proposal .media-dropzone strong {
+  min-height: 57px;
+  display: flex;
+  align-items: center;
+  padding: 0 22px 0 0;
+  color: #f0f0f0;
+  background: #202020;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 27px;
+  white-space: nowrap;
+}
+
+.media-panel.is-figma-proposal .media-dropzone span {
+  min-width: 0;
+  margin-left: 12px;
+  overflow: hidden;
+  color: rgba(240,240,240,.28);
+  font-size: 16px;
+  line-height: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-panel.is-figma-proposal .figma-media-category-field {
+  margin: 0 0 20px;
+}
+
+.media-panel.is-figma-proposal .figma-media-categories {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
+.media-panel.is-figma-proposal .figma-media-categories button {
+  min-height: 55px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 0;
+  color: rgba(240,240,240,.56);
+  background: #202020;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 27px;
+}
+
+.media-panel.is-figma-proposal .figma-media-categories button.active {
+  color: #121212;
+  background: #f0f0f0;
+}
+
+.media-panel.is-figma-proposal .media-fields > label:first-child {
+  display: none !important;
+}
+
+.media-panel.is-figma-proposal #mediaSubmissionComment {
+  width: 100%;
+  min-height: 57px;
+  max-height: 112px;
+  margin-bottom: 60px;
+  padding: 14px 20px;
+  border: 0;
+  border-radius: 0;
+  color: #f0f0f0;
+  background: #202020;
+  box-shadow: none;
+  font-size: 18px;
+  line-height: 29px;
+  resize: vertical;
+}
+
+.media-panel.is-figma-proposal #mediaSubmissionComment::placeholder {
+  color: rgba(240,240,240,.28);
+  opacity: 1;
+}
+
+.media-panel.is-figma-proposal .media-submit-row {
+  display: block;
+  margin: 0;
+}
+
+.media-panel.is-figma-proposal #mediaSubmitButton {
+  width: 379px;
+  max-width: none;
+  min-height: 73px;
+  padding: 0 18px 0 24px;
+  border: 0;
+  border-radius: 0;
+  color: #fff;
+  background: #e63d3d;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+  opacity: 1;
+}
+
+.media-panel.is-figma-proposal #mediaSubmitButton::after {
+  width: 41px;
+  height: 41px;
+  flex: 0 0 41px;
+  background: url('../../images/figma/arrow-circle-white.svg') center/contain no-repeat;
+}
+
+.media-panel.is-figma-proposal #mediaSubmitButton:disabled {
+  color: #fff;
+  background: #e63d3d;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.media-panel.is-figma-proposal .media-selected {
+  max-height: 72px;
+  overflow-y: auto;
+  margin: -10px 0 14px;
+}
+
+@media (max-width: 700px) {
+  .media-panel.is-figma-proposal {
+    --media-figma-scale: min(.9, calc((100vw - 12px) / 850), calc((100dvh - 12px) / 629));
+  }
+}
