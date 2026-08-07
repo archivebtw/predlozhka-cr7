@@ -554,8 +554,9 @@ function resetForm() {
     async function deleteGame(id) {
       const game = state.games.find(item => String(item.id) === String(id));
       if (!game || !confirm(`Удалить «${game.title}»?`)) return;
-      const { error } = await state.client.from('games').delete().eq('id', game.id);
-      if (error) throw error;
+      if (typeof window.CR7_INVOKE_STEAM_FUNCTION !== 'function') throw new Error('Сервис удаления ещё не готов. Обнови страницу.');
+      const result = await window.CR7_INVOKE_STEAM_FUNCTION({ action: 'delete-published-game', gameId: Number(game.id) });
+      if (!result?.deleted) throw new Error(result?.error || 'Сервер не подтвердил удаление игры.');
       if (String(state.editingId) === String(game.id)) resetForm();
       await loadGames();
       showNotice('Игра удалена.', 'success');

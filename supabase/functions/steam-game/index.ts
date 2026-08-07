@@ -484,57 +484,54 @@ async function publishSuggestion(
   };
 }
 
-async function syncApprovedSuggestions(
+async function deletePublishedGame(
   serviceClient: ReturnType<typeof createClient>,
+  gameId: number,
   moderatorId: string,
 ) {
-  const { data: suggestions, error } = await serviceClient
-    .from("game_suggestions")
-    .select("id,status,steam_app_id")
-    .in("status", ["approved", "selected"])
-    .order("created_at", { ascending: true })
-    .limit(50);
-  if (error) throw error;
+  if (!Number.isInteger(gameId) || gameId <= 0) throw new Error("Некорректный идентификатор игры.");
 
-  const appIds = [...new Set((suggestions ?? []).map((item) => Number(item.steam_app_id)).filter(Boolean))];
-  let existingAppIds = new Set<number>();
-  if (appIds.length) {
-    const { data: existingGames, error: gamesError } = await serviceClient
-      .from("games")
-      .select("steam_app_id")
-      .eq("published", true)
-      .in("steam_app_id", appIds);
-    if (gamesError) throw gamesError;
-    existingAppIds = new Set((existingGames ?? []).map((item) => Number(item.steam_app_id)));
+  const { data: game, error: gameError } = await serviceClient
+    .from("games")
+    .select("id,title,steam_app_id")
+    .eq("id", gameId)
+    .maybeSingle();
+  if (gameError) throw gameError;
+  if (!game) return { gameId, deleted: true, missing: true, archivedSuggestions: 0 };
+
+  const { error: deleteError } = await serviceClient.from("games").delete().eq("id", gameId);
+  if (deleteError) throw deleteError;
+
+  let archivedSuggestions = 0;
+  let warning = "";
+  if (game.steam_app_id) {
+    const { data: archived, error: archiveError } = await serviceClient
+      .from("game_suggestions")
+      .update({
+        status: "archived",
+        rejection_reason: "Удалено из каталога администратором",
+        moderated_by: moderatorId,
+        moderated_at: new Date().toISOString(),
+      })
+      .eq("steam_app_id", Number(game.steam_app_id))
+      .in("status", ["approved", "selected"])
+      .select("id");
+    archivedSuggestions = archived?.length ?? 0;
+    warning = archiveError ? readableError(archiveError) : "";
+    if (warning) console.warn("Game deleted, but linked suggestions were not archived:", warning);
   }
 
-  const missingSuggestions = (suggestions ?? []).filter(
-    (suggestion) => !existingAppIds.has(Number(suggestion.steam_app_id)),
-  );
-
-  const results = [];
-  for (const suggestion of missingSuggestions) {
-    try {
-      results.push(await publishSuggestion(
-        serviceClient,
-        Number(suggestion.id),
-        moderatorId,
-        suggestion.status === "selected" ? "selected" : "approved",
-      ));
-    } catch (error) {
-      results.push({
-        suggestionId: Number(suggestion.id),
-        published: false,
-        error: readableError(error),
-      });
-    }
-  }
   return {
-    checked: suggestions?.length ?? 0,
-    missing: missingSuggestions.length,
-    published: results.filter((item) => item.published).length,
-    results,
+    gameId,
+    title: game.title,
+    deleted: true,
+    archivedSuggestions,
+    warning: warning || undefined,
   };
+}
+
+function syncApprovedSuggestions() {
+  return { checked: 0, missing: 0, published: 0, results: [], automaticRecovery: false };
 }
 
 async function syncStaleGames(supabase: ReturnType<typeof createClient>) {
@@ -622,7 +619,7 @@ Deno.serve(async (req) => {
     const { data: isAdmin, error: adminError } = await supabase.rpc("is_site_admin");
     if (adminError || isAdmin !== true) return jsonResponse({ error: "У аккаунта нет прав администратора." }, 403);
 
-    if (body?.action === "publish-suggestion" || body?.action === "sync-approved-suggestions") {
+    if (["publish-suggestion", "sync-approved-suggestions", "delete-published-game"].includes(body?.action)) {
       const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       if (!serviceRoleKey) return jsonResponse({ error: "Сервисный ключ Supabase недоступен функции." }, 500);
       const serviceClient = createClient(supabaseUrl, serviceRoleKey, {
@@ -635,7 +632,14 @@ Deno.serve(async (req) => {
           userData.user.id,
         ));
       }
-      return jsonResponse(await syncApprovedSuggestions(serviceClient, userData.user.id));
+      if (body.action === "delete-published-game") {
+        return jsonResponse(await deletePublishedGame(
+          serviceClient,
+          Number(body?.gameId),
+          userData.user.id,
+        ));
+      }
+      return jsonResponse(syncApprovedSuggestions());
     }
 
     const appId = extractAppId(body?.steamUrl ?? body?.appId);

@@ -50,12 +50,33 @@
     let reputationRefreshTimer = 0;
     let reputationMonitorClient = null;
 
+    function reputationSnapshot() {
+      const ordered = value => Object.entries(value || {}).sort(([left],[right]) => left.localeCompare(right));
+      return JSON.stringify({
+        scores: ordered(state.reputationScores),
+        stats: ordered(state.reputationStats),
+        votes: ordered(state.currentVotes)
+      });
+    }
+
+    function updateReputationInPlace() {
+      document.querySelectorAll('.game-card[data-game-id]').forEach(card => {
+        const gameId = String(card.dataset.gameId || '');
+        const score = Number(state.reputationScores?.[gameId] || 0);
+        const element = card.querySelector('.game-reputation');
+        if (!element) return;
+        element.textContent = String(score);
+        element.setAttribute('aria-label', `Голосов за игру: ${score}`);
+      });
+    }
+
     async function loadReputation(client) {
+      const before = reputationSnapshot();
       const { data,error } = await runPublicRequest(client,() => client.rpc('get_game_vote_scores'));
       if (error) {
         if (!isMissingReputationRpc(error)) console.warn('Не удалось загрузить репутацию игр:',error.message || error);
         resetReputationState();
-        return;
+        return before !== reputationSnapshot();
       }
       state.reputationSchemaReady = true;
       state.reputationScores = Object.fromEntries((data || []).map(item => [String(item.game_id),Number(item.score) || 0]));
@@ -67,17 +88,20 @@
       const { data: sessionData } = await getUsableSession(client);
       if (!sessionData?.session?.user) {
         state.currentVotes = {};
-        return;
+        return before !== reputationSnapshot();
       }
       const { data: votes,error: votesError } = await runPublicRequest(client,() => client.rpc('get_my_game_votes'));
       state.currentVotes = votesError ? {} : Object.fromEntries((votes || []).map(item => [String(item.game_id),Number(item.vote) || 0]));
+      return before !== reputationSnapshot();
     }
 
     function refreshReputation(client = reputationMonitorClient) {
       if (!client || reputationRefreshPromise) return reputationRefreshPromise;
       reputationRefreshPromise = loadReputation(client)
-        .then(() => {
-          render();
+        .then(changed => {
+          if (!changed) return;
+          if (state.sort === 'rating-desc' || state.sort === 'rating-asc') render();
+          else updateReputationInPlace();
           if (state.activeGameId) renderModalReactionState(state.activeGameId);
           window.dispatchEvent(new CustomEvent('cr7:reputation-refreshed'));
         })
