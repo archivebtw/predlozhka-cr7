@@ -158,10 +158,19 @@ function categoryInfo(game: SteamGame | null | undefined) {
 }
 
 function collectDescriptionText(game: SteamGame | null | undefined): string {
+  const categoryLabels = Array.isArray(game?.categories)
+    ? game.categories.map((item: Record<string, unknown>) => cleanText(item?.description))
+    : [];
+  const genreLabels = Array.isArray(game?.genres)
+    ? game.genres.map((item: Record<string, unknown>) => cleanText(item?.description))
+    : [];
   return [
+    game?.name,
     game?.short_description,
     game?.detailed_description,
     game?.about_the_game,
+    ...categoryLabels,
+    ...genreLabels,
   ].map(cleanText).filter(Boolean).join(". ");
 }
 
@@ -170,8 +179,8 @@ function normalizePlayerRange(minValue: number, maxValue: number): { min: number
   let max = Math.trunc(maxValue);
   if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
   if (min > max) [min, max] = [max, min];
-  if (max < 2 || max > 64) return null;
-  min = Math.max(2, Math.min(min, max));
+  if (max < 1 || max > 256) return null;
+  min = Math.max(1, Math.min(min, max));
   return { min, max };
 }
 
@@ -192,8 +201,8 @@ function replacePlayerNumberWords(value: string): string {
   return value.replace(/[a-zа-яё]+/giu, word => String(words[word.toLocaleLowerCase('ru-RU')] ?? word));
 }
 
-function detectPlayerCount(text: string, isCoop: boolean): PlayerCandidate | null {
-  if (!isCoop || !text) return null;
+function detectPlayerCount(text: string, supportsMultiplayer: boolean): PlayerCandidate | null {
+  if (!supportsMultiplayer || !text) return null;
   const candidates: PlayerCandidate[] = [];
   const segments = replacePlayerNumberWords(text)
     .replace(/[•·|]/g, ".")
@@ -205,11 +214,18 @@ function detectPlayerCount(text: string, isCoop: boolean): PlayerCandidate | nul
   const playerWord = /players?|player|игрок(?:а|ов)?|человек/iu;
 
   for (const segment of segments) {
-    if (!playerWord.test(segment)) continue;
     const hasCoopContext = coopWord.test(segment);
+    const hasPlayerContext = playerWord.test(segment);
+
+    if (!hasPlayerContext) {
+      for (const match of segment.matchAll(/(?:with\s+up\s+to|с\s+до)\s*(\d{1,2})\s*(?:friends?|друз(?:ьями|ей))/giu)) {
+        addCandidate(candidates, 1, Number(match[1]) + 1, hasCoopContext ? 8 : 6, "steam_description_friends_plus_player");
+      }
+      continue;
+    }
 
     for (const match of segment.matchAll(/(\d{1,2})\s*(?:-|–|—|to|до)\s*(\d{1,2})\s*(?:players?|player|игрок(?:а|ов)?|человек)/giu)) {
-      addCandidate(candidates, Number(match[1]), Number(match[2]), hasCoopContext ? 7 : 3, "steam_description_range");
+      addCandidate(candidates, Number(match[1]), Number(match[2]), hasCoopContext ? 10 : 7, "steam_description_range");
     }
 
     for (const match of segment.matchAll(/(?:up\s+to|до)\s*(\d{1,2})\s*(?:players?|player|игрок(?:а|ов)?|человек)/giu)) {
@@ -217,7 +233,7 @@ function detectPlayerCount(text: string, isCoop: boolean): PlayerCandidate | nul
     }
 
     for (const match of segment.matchAll(/(?:with\s+up\s+to|с\s+до)\s*(\d{1,2})\s*(?:friends?|друз(?:ьями|ей))/giu)) {
-      addCandidate(candidates, 2, Number(match[1]) + 1, hasCoopContext ? 8 : 6, "steam_description_friends_plus_player");
+      addCandidate(candidates, 1, Number(match[1]) + 1, hasCoopContext ? 8 : 6, "steam_description_friends_plus_player");
     }
 
     for (const match of segment.matchAll(/(?:team|squad|команд(?:а|е|ой))[^.!?;]{0,24}?(?:up\s+to|до)\s*(\d{1,2})/giu)) {
@@ -250,10 +266,13 @@ function detectCoop(gameRu: SteamGame, gameEn: SteamGame) {
   const ids = new Set<number>([...ru.ids, ...en.ids]);
   const labels = [...ru.labels, ...en.labels].join(" | ");
 
+  const hasSinglePlayer = ids.has(2) || /single[- ]player|одиночн/iu.test(labels);
+  const hasMultiplayer = ids.has(1) || ids.has(36) || ids.has(37)
+    || /multi[- ]player|online\s+pvp|shared.*pvp|многопользователь/iu.test(labels);
   const hasGeneric = ids.has(9) || /\bco[ -]?op\b|cooperative|кооператив/iu.test(labels);
   const hasOnline = ids.has(38) || /online\s+co[ -]?op|онлайн[^|]{0,20}кооператив|кооператив[^|]{0,20}(?:по сети|онлайн)/iu.test(labels);
-  const hasLocal = ids.has(39) || ids.has(44) || ((ids.has(24) || /shared|split screen|раздел.*экран|общ.*экран/iu.test(labels)) && hasGeneric)
-    || /local\s+co[ -]?op|remote play together|локальн[^|]{0,20}кооператив/iu.test(labels);
+  const hasLocal = ids.has(39) || (ids.has(44) && (hasGeneric || hasMultiplayer)) || ((ids.has(24) || /shared|split screen|раздел.*экран|общ.*экран/iu.test(labels)) && hasGeneric)
+    || /local\s+co[ -]?op|локальн[^|]{0,20}кооператив/iu.test(labels);
 
   const isCoop = hasGeneric || hasOnline || hasLocal;
   let type: CoopType = "";
@@ -263,16 +282,21 @@ function detectCoop(gameRu: SteamGame, gameEn: SteamGame) {
   else if (isCoop) type = "generic";
 
   const text = `${collectDescriptionText(gameRu)}. ${collectDescriptionText(gameEn)}`;
-  const playerCount = detectPlayerCount(text, isCoop);
+  const playerCount = detectPlayerCount(text, isCoop || hasMultiplayer);
+  const playersMin = hasSinglePlayer ? 1 : (playerCount?.min ?? (isCoop || hasMultiplayer ? 2 : 1));
+  const playersMax = playerCount?.max ?? (isCoop || hasMultiplayer ? Math.max(playersMin, 2) : 1);
 
   return {
     isCoop,
     coopType: type,
-    coopMinPlayers: playerCount?.min ?? null,
-    coopMaxPlayers: playerCount?.max ?? null,
+    coopMinPlayers: isCoop && playerCount ? Math.max(2, playerCount.min) : null,
+    coopMaxPlayers: isCoop ? playerCount?.max ?? null : null,
     coopSource: isCoop
       ? (playerCount ? `${playerCount.source}+steam_categories` : "steam_categories")
       : "steam_categories",
+    playersMin,
+    playersMax,
+    playerCountSource: playerCount?.source ?? "steam_categories",
   };
 }
 

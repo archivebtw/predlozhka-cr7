@@ -187,6 +187,30 @@
     elements.comment.disabled = true;
     elements.submitButton.disabled = true;
     elements.previewImage.removeAttribute('src');
+    setSuggestionPlayerRange(null);
+  }
+
+  function setSuggestionPlayerRange(game) {
+    const minInput = document.getElementById('suggestionPlayersMin');
+    const maxInput = document.getElementById('suggestionPlayersMax');
+    if (!minInput || !maxInput) return;
+
+    if (!game) {
+      minInput.value = '';
+      maxInput.value = '';
+      return;
+    }
+
+    const detectedMin = Number(game.playersMin ?? game.playerMinPlayers);
+    const detectedMax = Number(game.playersMax ?? game.playerMaxPlayers ?? game.coopMaxPlayers);
+    const fallbackMax = Number(game.isCoop ? game.coopMaxPlayers : 1) || (game.isCoop ? 2 : 1);
+    const min = Number.isFinite(detectedMin) && detectedMin >= 1 ? detectedMin : 1;
+    const max = Number.isFinite(detectedMax) && detectedMax >= min ? detectedMax : Math.max(min, fallbackMax);
+
+    minInput.value = String(Math.min(256, Math.trunc(min)));
+    maxInput.value = String(Math.min(256, Math.trunc(max)));
+    minInput.dispatchEvent(new Event('input', { bubbles: true }));
+    maxInput.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
   function applyAdminAccess() {
@@ -223,6 +247,7 @@
       if (!data?.appId || !data?.title) throw new Error('Steam не вернул данные игры.');
 
       suggestionState.preview = data;
+      setSuggestionPlayerRange(data);
       elements.previewTitle.textContent = data.title;
       elements.previewText.textContent = data.description || 'Описание в Steam не указано.';
       const cover = safeUrl(data.coverUrl);
