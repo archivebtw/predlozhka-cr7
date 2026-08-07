@@ -124,11 +124,9 @@ body > footer {
 /* Keep the primary Figma frame in view and scroll the lower discussion area. */
 .game-modal {
   display: block;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
+  overflow: hidden !important;
   padding: 0 !important;
   overscroll-behavior: contain;
-  scrollbar-gutter: stable;
 }
 
 .game-modal .modal-backdrop {
@@ -138,26 +136,20 @@ body > footer {
 }
 
 @media (min-width: 721px) {
-  .game-modal::after {
-    position: relative;
-    display: block;
-    width: 1px;
-    height: calc(var(--game-modal-top, 40px) + var(--game-modal-rendered-height, 1338px) + 40px);
-    content: "";
-    pointer-events: none;
-  }
-
   .game-modal .modal-panel,
   .game-modal.is-open .modal-panel {
     position: absolute !important;
     top: var(--game-modal-top, 20rem) !important;
     left: 50% !important;
     width: 850rem !important;
-    height: 1338rem !important;
-    min-height: 1338rem !important;
-    max-height: 1338rem !important;
+    height: var(--game-modal-scroll-height, 950rem) !important;
+    min-height: var(--game-modal-scroll-height, 950rem) !important;
+    max-height: var(--game-modal-scroll-height, 950rem) !important;
     margin: 0 !important;
-    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
     opacity: 1 !important;
     transform: translateX(-50%) translateY(0) scale(var(--game-modal-scale, 1)) !important;
     transform-origin: top center !important;
@@ -168,8 +160,17 @@ body > footer {
     min-height: 1015rem !important;
   }
 
+  .game-modal .modal-footer {
+    align-items: center !important;
+    flex-direction: row !important;
+  }
+
   .game-modal .modal-close {
     display: none !important;
+  }
+
+  .game-modal .modal-panel::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -225,11 +226,6 @@ body > footer {
   .game-modal {
     overflow-y: auto !important;
     padding: 0 !important;
-    scrollbar-gutter: auto;
-  }
-
-  .game-modal::after {
-    display: none;
   }
 
   .game-modal .modal-panel {
