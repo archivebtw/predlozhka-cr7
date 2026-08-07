@@ -64,7 +64,17 @@ main#top,
 
 /* Catalog */
 .catalog-section {
-  background: var(--figma-section) !important;
+  background: var(--figma-page) !important;
+  box-shadow: none !important;
+}
+
+#catalog .catalog-shell,
+#catalog .catalog-stream,
+#catalog .catalog-group,
+#catalog .section-grid {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 #catalog .controls,
