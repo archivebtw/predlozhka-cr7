@@ -17,12 +17,29 @@
     active: false,
     reactionLoading: false,
     reactionTimer: 0,
-    catalogChannel: null
+    catalogChannel: null,
+    filters: {
+      releases: [],
+      statuses: [],
+      minPlayers: 0,
+      maxPlayers: Number.MAX_SAFE_INTEGER
+    }
   };
 
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
   })[char]);
+
+  const CATALOG_ICONS = {
+    player: '<svg class="admin-catalog-fact-icon admin-catalog-player-icon" viewBox="0 0 22 25" fill="none" aria-hidden="true"><circle cx="11" cy="6" r="4" stroke="currentColor" stroke-width="3"/><path d="M3 23c.35-5.1 3.55-8 8-8s7.65 2.9 8 8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>',
+    day: '<svg class="admin-catalog-fact-icon admin-catalog-day-icon" viewBox="0 0 22 24" fill="none" aria-hidden="true"><rect x="2" y="4" width="18" height="18" rx="3" stroke="currentColor" stroke-width="3"/><path d="M6 2v4M16 2v4M2 9h18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>',
+    like: '<svg class="admin-catalog-reaction-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M9.5 11.5 13.1 3.4c.55-1.25 2.43-.95 2.56.41l.34 3.5a2 2 0 0 0 1.99 1.81h3.88c1.82 0 3.16 1.69 2.75 3.46l-2.07 8.92A3.5 3.5 0 0 1 19.14 24H9.5V11.5Z" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round"/><rect x="2.5" y="10.5" width="7" height="14" rx="2" stroke="currentColor" stroke-width="2.8"/></svg>',
+    dislike: '<svg class="admin-catalog-reaction-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true"><g transform="translate(0 28) scale(1 -1)"><path d="M9.5 11.5 13.1 3.4c.55-1.25 2.43-.95 2.56.41l.34 3.5a2 2 0 0 0 1.99 1.81h3.88c1.82 0 3.16 1.69 2.75 3.46l-2.07 8.92A3.5 3.5 0 0 1 19.14 24H9.5V11.5Z" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round"/><rect x="2.5" y="10.5" width="7" height="14" rx="2" stroke="currentColor" stroke-width="2.8"/></g></svg>'
+  };
+
+  function reactionMarkup(likes = 0, dislikes = 0) {
+    return `<span>${CATALOG_ICONS.like}<b data-reaction-count="like">${Number(likes) || 0}</b></span><span>${CATALOG_ICONS.dislike}<b data-reaction-count="dislike">${Number(dislikes) || 0}</b></span>`;
+  }
 
   function client() {
     if (window.CR7_SUPABASE_CLIENT) return window.CR7_SUPABASE_CLIENT;
@@ -59,19 +76,92 @@
     return ({ completed: 'Пройдено', dropped: 'Дропнуто', ignored: 'Неинтересно' })[value] || '';
   }
 
-  function ensureSort() {
-    let wrap = document.getElementById('adminCatalogSortWrap');
-    if (wrap) return wrap;
-    wrap = document.createElement('label');
-    wrap.id = 'adminCatalogSortWrap';
-    wrap.className = 'admin-catalog-sort-wrap';
-    wrap.innerHTML = '<select id="adminCatalogSort"><option value="newest">Сначала новые</option><option value="oldest">Сначала старые</option><option value="title">По названию</option></select>';
-    document.querySelector('.suggestion-moderation')?.appendChild(wrap);
-    wrap.querySelector('select').addEventListener('change', event => {
+  function releaseGroup(game) {
+    if (!game.release_date) return game.coming_soon ? 'upcoming' : 'unknown';
+    const date = new Date(`${game.release_date}T12:00:00`);
+    if (Number.isNaN(date.getTime())) return 'unknown';
+    return date > new Date() ? 'upcoming' : 'released';
+  }
+
+  function ensureFilters() {
+    let box = document.getElementById('adminCatalogFilters');
+    if (box) return box;
+    box = document.createElement('details');
+    box.id = 'adminCatalogFilters';
+    box.className = 'proposal-filter-box admin-catalog-filter-box';
+    box.open = true;
+    box.innerHTML = `
+      <summary>Фильтры</summary>
+      <fieldset>
+        <legend>Статус выхода</legend>
+        <label><input data-admin-release-filter="released" type="checkbox"> Вышла</label>
+        <label><input data-admin-release-filter="upcoming" type="checkbox"> Скоро</label>
+        <label><input data-admin-release-filter="unknown" type="checkbox"> Без даты</label>
+      </fieldset>
+      <fieldset>
+        <legend>Количество игроков</legend>
+        <div class="admin-catalog-player-range">
+          <input aria-label="Минимальное количество игроков" data-admin-players-min inputmode="numeric" min="1" placeholder="Мин" type="number">
+          <span aria-hidden="true">–</span>
+          <input aria-label="Максимальное количество игроков" data-admin-players-max inputmode="numeric" min="1" placeholder="Макс" type="number">
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Отмечено как</legend>
+        <div class="admin-catalog-status-filter-grid">
+          <label><input data-admin-status-filter="completed" type="checkbox"> Пройдено</label>
+          <label><input data-admin-status-filter="dropped" type="checkbox"> Дропнуто</label>
+          <label><input data-admin-status-filter="ignored" type="checkbox"> Неинтересно</label>
+        </div>
+      </fieldset>
+      <label class="admin-catalog-filter-sort">
+        <span>Сортировка</span>
+        <select data-admin-catalog-sort>
+          <option value="newest">Сначала новые</option>
+          <option value="oldest">Сначала старые</option>
+          <option value="title">По названию</option>
+        </select>
+      </label>
+      <div class="admin-catalog-filter-actions">
+        <button data-admin-filter-action="clear" type="button">Очистить <span aria-hidden="true">↗</span></button>
+        <button data-admin-filter-action="apply" type="button">Применить <span aria-hidden="true">↗</span></button>
+      </div>`;
+    document.querySelector('.proposal-game-tools')?.appendChild(box);
+
+    const apply = () => {
+      state.filters.releases = [...box.querySelectorAll('[data-admin-release-filter]:checked')].map(input => input.dataset.adminReleaseFilter);
+      state.filters.statuses = [...box.querySelectorAll('[data-admin-status-filter]:checked')].map(input => input.dataset.adminStatusFilter);
+      state.filters.minPlayers = Math.max(0, Number(box.querySelector('[data-admin-players-min]')?.value) || 0);
+      state.filters.maxPlayers = Math.max(state.filters.minPlayers || 0, Number(box.querySelector('[data-admin-players-max]')?.value) || Number.MAX_SAFE_INTEGER);
+      render();
+    };
+    box.addEventListener('click', event => {
+      const action = event.target.closest('[data-admin-filter-action]')?.dataset.adminFilterAction;
+      if (action === 'apply') apply();
+      if (action === 'clear') {
+        box.querySelectorAll('input').forEach(input => {
+          if (input.type === 'checkbox') input.checked = false;
+          else input.value = '';
+        });
+        state.filters = { releases: [], statuses: [], minPlayers: 0, maxPlayers: Number.MAX_SAFE_INTEGER };
+        render();
+      }
+    });
+    box.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && event.target.matches('input[type="number"]')) {
+        event.preventDefault();
+        apply();
+      }
+    });
+    box.querySelector('[data-admin-catalog-sort]')?.addEventListener('change', event => {
       state.sort = event.target.value;
       render();
     });
-    return wrap;
+    return box;
+  }
+
+  function ensureSort() {
+    return ensureFilters().querySelector('.admin-catalog-filter-sort');
   }
 
   function setCatalogMode(active) {
@@ -79,16 +169,27 @@
     adminSection.dataset.catalogTab = active ? 'true' : 'false';
     list.classList.toggle('is-catalog-list', active);
     const sort = ensureSort();
+    const filters = ensureFilters();
     sort.hidden = !active;
+    filters.hidden = !active;
+    if (active) filters.open = true;
     if (active) startCatalogMonitoring();
     else stopCatalogMonitoring();
   }
 
   function filteredGames() {
     const query = state.query.trim().toLocaleLowerCase('ru-RU');
+    const releaseFilters = new Set(state.filters.releases);
+    const statusFilters = new Set(state.filters.statuses);
     const games = state.games.filter(game => game.published !== false)
       .filter(game => !query || [game.title, game.description, game.release_date_text]
-        .some(value => String(value || '').toLocaleLowerCase('ru-RU').includes(query)));
+        .some(value => String(value || '').toLocaleLowerCase('ru-RU').includes(query)))
+      .filter(game => !releaseFilters.size || releaseFilters.has(releaseGroup(game)))
+      .filter(game => {
+        const players = Number(game.coop_max_players) || (game.is_coop ? 2 : 1);
+        return players >= state.filters.minPlayers && players <= state.filters.maxPlayers;
+      })
+      .filter(game => !statusFilters.size || statusFilters.has(String(game.library_status || '')));
     games.sort((a, b) => {
       if (state.sort === 'title') return String(a.title || '').localeCompare(String(b.title || ''), 'ru-RU');
       const direction = state.sort === 'oldest' ? 1 : -1;
@@ -113,13 +214,13 @@
       const likes = Number(game.like_count) || 0;
       const dislikes = Number(game.dislike_count) || 0;
       return `
-        <article class="admin-catalog-card" data-game-id="${escapeHtml(game.id)}" data-library-status="${escapeHtml(current)}">
+        <article class="admin-catalog-card" data-game-id="${escapeHtml(game.id)}" data-library-status="${escapeHtml(current)}" data-published-icons-ready="2">
           <div class="admin-catalog-card-side">
             <img src="${escapeHtml(cover)}" alt="Обложка ${escapeHtml(game.title)}" onerror="this.src='./assets/images/figma/game-placeholder.svg'">
             <div class="admin-catalog-facts">
-              <span class="admin-catalog-players">${escapeHtml(playersLabel(game))}</span>
-              <span class="admin-catalog-release">${escapeHtml(releaseLabel(game))}</span>
-              <span class="admin-catalog-reactions">${likes} / ${dislikes}</span>
+              <span class="admin-catalog-players">${CATALOG_ICONS.player}<span>${escapeHtml(playersLabel(game))}</span></span>
+              <span class="admin-catalog-release">${CATALOG_ICONS.day}<span>${escapeHtml(releaseLabel(game))}</span></span>
+              <span class="admin-catalog-reactions">${reactionMarkup(likes, dislikes)}</span>
             </div>
           </div>
           <div class="admin-catalog-card-copy">
@@ -161,7 +262,15 @@
         list.querySelectorAll('.admin-catalog-card[data-game-id]').forEach(card => {
           const game = state.games.find(item => String(item.id) === String(card.dataset.gameId));
           const element = card.querySelector('.admin-catalog-reactions');
-          if (game && element) element.textContent = `${Number(game.like_count) || 0} / ${Number(game.dislike_count) || 0}`;
+          if (!game || !element) return;
+          const likeCount = element.querySelector('[data-reaction-count="like"]');
+          const dislikeCount = element.querySelector('[data-reaction-count="dislike"]');
+          if (likeCount && dislikeCount) {
+            likeCount.textContent = String(Number(game.like_count) || 0);
+            dislikeCount.textContent = String(Number(game.dislike_count) || 0);
+          } else {
+            element.innerHTML = reactionMarkup(game.like_count, game.dislike_count);
+          }
         });
       }
     } catch (error) {
@@ -266,16 +375,14 @@
   publishedButton.dataset.catalogCount = '0';
 
   publishedButton.addEventListener('click', () => {
-    window.setTimeout(() => {
-      setCatalogMode(true);
-      loadGames(true);
-    }, 0);
-  });
+    setCatalogMode(true);
+    loadGames(true);
+  }, true);
 
   pendingButton.addEventListener('click', () => {
     setCatalogMode(false);
     window.setTimeout(() => document.getElementById('suggestionModerationRefresh')?.click(), 0);
-  });
+  }, true);
 
   search?.addEventListener('input', event => {
     state.query = event.target.value;

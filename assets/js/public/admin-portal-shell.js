@@ -2,7 +2,7 @@
   const styleLayers = [
     ['adminFigmaTabsFixStyles', './assets/css/public/admin-figma-tabs-fix.css?v=1.0'],
     ['adminFigmaTemplateV3Styles', './assets/css/public/admin-figma-template-v3.css?v=1.0'],
-    ['adminGamesTabsV4Styles', './assets/css/public/admin-games-tabs-v4.css?v=1.1'],
+    ['adminGamesTabsV4Styles', './assets/css/public/admin-games-tabs-v4.css?v=1.2'],
     ['adminPublishedIconsFixStyles', './assets/css/public/admin-published-icons-fix.css?v=1.1']
   ];
 
@@ -18,7 +18,7 @@
   if (!document.getElementById('adminGamesTabsV4Script')) {
     const script = document.createElement('script');
     script.id = 'adminGamesTabsV4Script';
-    script.src = './assets/js/public/admin-games-tabs-v4.js?v=1.4';
+    script.src = './assets/js/public/admin-games-tabs-v4.js?v=1.6';
     script.defer = true;
     document.head.appendChild(script);
   }
