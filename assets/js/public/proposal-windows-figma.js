@@ -43,6 +43,23 @@
   if (suggestionComment) suggestionComment.placeholder = 'Добавить комментарий';
   if (suggestionSubmitButton) suggestionSubmitButton.textContent = 'Отправить';
 
+  function keepSuggestionSubmitLabel() {
+    if (!suggestionSubmitButton) return;
+    if (
+      suggestionSubmitButton.childElementCount === 1
+      && suggestionSubmitButton.firstElementChild?.classList.contains('figma-submit-label')
+    ) return;
+    const label = document.createElement('span');
+    label.className = 'figma-submit-label';
+    label.textContent = (suggestionSubmitButton.textContent || '').trim();
+    suggestionSubmitButton.replaceChildren(label);
+  }
+
+  keepSuggestionSubmitLabel();
+  if (suggestionSubmitButton) {
+    new MutationObserver(keepSuggestionSubmitLabel).observe(suggestionSubmitButton, { childList: true });
+  }
+
   if (mediaForm && !mediaForm.querySelector('.figma-proposal-title')) {
     const title = document.createElement('h3');
     title.className = 'figma-proposal-title';
