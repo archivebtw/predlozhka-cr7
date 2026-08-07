@@ -121,91 +121,60 @@ body > footer {
   display: none !important;
 }
 
-/* Game window. The top block matches the green-marked Figma area,
-   while the remaining comments/content can be reached by normal scrolling. */
+/* Game window — preserve the 850×1338 Figma frame and scale it as one unit. */
 .game-modal {
   display: block;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  padding: clamp(24rem, 5vh, 72rem) 20rem 90rem !important;
+  overflow: hidden !important;
+  padding: 0 !important;
   overscroll-behavior: contain;
 }
 
 .game-modal .modal-backdrop {
   position: fixed !important;
-  background: rgba(5, 5, 5, .84) !important;
-  backdrop-filter: blur(12rem) !important;
+  background: rgba(11, 11, 11, .9) !important;
+  backdrop-filter: blur(7rem) !important;
 }
 
 @media (min-width: 721px) {
   .game-modal .modal-panel,
   .game-modal.is-open .modal-panel {
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    width: min(850rem, calc(100vw - 40rem)) !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    margin: 0 auto !important;
-    overflow: visible !important;
-    opacity: 1;
-    transform: none !important;
+    position: absolute !important;
+    top: var(--game-modal-top, 20rem) !important;
+    left: 50% !important;
+    width: 850rem !important;
+    height: 1338rem !important;
+    min-height: 1338rem !important;
+    max-height: 1338rem !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    opacity: 1 !important;
+    transform: translateX(-50%) translateY(0) scale(var(--game-modal-scale, 1)) !important;
+    transform-origin: top center !important;
   }
 
   .game-modal .modal-content {
-    height: auto !important;
-    min-height: 0 !important;
-    padding-bottom: 48rem;
+    height: 1015rem !important;
+    min-height: 1015rem !important;
   }
 
-  .game-modal .modal-title {
-    display: block;
-    max-height: none;
-    overflow: visible;
-    -webkit-line-clamp: unset;
-  }
-
-  .game-modal #modalDescription {
-    max-height: none;
-    overflow: visible;
-  }
-
-  .game-modal .modal-footer,
-  .game-modal .modal-reaction-notice,
-  .game-modal .modal-comments {
-    position: static !important;
-    inset: auto !important;
-  }
-
-  .game-modal .modal-footer {
-    margin-top: 72rem !important;
-  }
-
-  .game-modal .modal-reaction-notice {
-    margin-top: 12rem !important;
-  }
-
-  .game-modal .modal-comments {
-    height: auto !important;
-    margin-top: 24rem !important;
-  }
-
-  .game-modal .modal-comments-list {
-    max-height: none;
-    overflow: visible;
+  .game-modal .modal-close {
+    display: none !important;
   }
 }
 
 .game-modal .modal-panel {
   border: 0 !important;
-  border-radius: 6rem !important;
+  border-radius: 12rem !important;
   background: #121212 !important;
-  box-shadow: 0 30rem 100rem rgba(0, 0, 0, .55) !important;
+  box-shadow: none !important;
 }
 
 .game-modal .modal-media {
   border-radius: 6rem;
+}
+
+.game-modal .modal-media::after {
+  display: none !important;
 }
 
 .game-modal .modal-close {
@@ -230,11 +199,15 @@ body > footer {
   }
 
   .game-modal {
+    overflow-y: auto !important;
     padding: 0 !important;
   }
 
   .game-modal .modal-panel {
+    height: auto !important;
     min-height: 100dvh !important;
+    max-height: none !important;
+    overflow: visible !important;
     border-radius: 0 !important;
   }
 }

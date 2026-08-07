@@ -23,12 +23,12 @@ function catalogReleaseLabel(game, meta) {
     }
 
     function updateCatalogCounts() {
-      const activeGames = state.games.filter(game => !String(game.library_status || ''));
+      const catalogGames = state.games;
       const counts = {
-        all: activeGames.length,
-        upcoming: activeGames.filter(game => getReleaseMeta(game).group === 'upcoming').length,
-        released: activeGames.filter(game => getReleaseMeta(game).group === 'released').length,
-        unknown: activeGames.filter(game => getReleaseMeta(game).group === 'unknown').length
+        all: catalogGames.length,
+        upcoming: catalogGames.filter(game => getReleaseMeta(game).group === 'upcoming').length,
+        released: catalogGames.filter(game => getReleaseMeta(game).group === 'released').length,
+        unknown: catalogGames.filter(game => getReleaseMeta(game).group === 'unknown').length
       };
       document.querySelectorAll('[data-filter-count]').forEach(element => {
         element.textContent = String(counts[element.dataset.filterCount] || 0);
@@ -84,7 +84,6 @@ function catalogReleaseLabel(game, meta) {
         const progressFilters = ['completed', 'dropped', 'ignored'].filter(value => selected.has(value));
         if (selected.has('favorite') && !game.is_favorite) return false;
         if (progressFilters.length && !progressFilters.includes(libraryStatus)) return false;
-        if (!selected.size && libraryStatus) return false;
         if (!query) return true;
         return [game.title, game.description, game.author_comment, game.release_date_text, coopLabel(game)]
           .some(value => String(value || '').toLocaleLowerCase('ru').includes(query));
