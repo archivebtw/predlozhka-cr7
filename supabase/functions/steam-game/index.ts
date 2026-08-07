@@ -346,6 +346,153 @@ async function getSteamData(appId: string) {
   };
 }
 
+async function publishSuggestion(
+  serviceClient: ReturnType<typeof createClient>,
+  suggestionId: number,
+  moderatorId: string,
+  requestedStatus = "approved",
+) {
+  if (!Number.isInteger(suggestionId) || suggestionId <= 0) {
+    throw new Error("Некорректный идентификатор заявки.");
+  }
+
+  const { data: suggestion, error: suggestionError } = await serviceClient
+    .from("game_suggestions")
+    .select("id,steam_app_id,steam_url,title,cover_url,description,status")
+    .eq("id", suggestionId)
+    .maybeSingle();
+  if (suggestionError) throw suggestionError;
+  if (!suggestion) throw new Error("Заявка не найдена.");
+
+  const steam = await getSteamData(String(suggestion.steam_app_id));
+  const { data: existingGame, error: existingError } = await serviceClient
+    .from("games")
+    .select("id,title,cover_url,description,coop_source,is_coop,coop_type,coop_min_players,coop_max_players")
+    .eq("steam_app_id", Number(suggestion.steam_app_id))
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (existingError) throw existingError;
+
+  const manualCoop = existingGame?.coop_source === "manual_admin";
+  const gamePayload = {
+    steam_app_id: Number(suggestion.steam_app_id),
+    steam_url: String(steam.steamUrl || suggestion.steam_url).slice(0, 500),
+    title: cleanText(steam.title || suggestion.title).slice(0, 120),
+    cover_url: String(steam.coverUrl || suggestion.cover_url || "").slice(0, 1000),
+    description: cleanText(steam.description || suggestion.description || "Описание не указано.").slice(0, 2000),
+    published: true,
+    release_date: steam.releaseDate || null,
+    release_date_text: String(steam.releaseDateText || "").slice(0, 120),
+    coming_soon: steam.comingSoon,
+    is_coop: manualCoop ? existingGame.is_coop : steam.isCoop,
+    coop_type: manualCoop ? existingGame.coop_type : steam.isCoop ? (steam.coopType || "generic") : "",
+    coop_min_players: manualCoop ? existingGame.coop_min_players : steam.coopMinPlayers,
+    coop_max_players: manualCoop ? existingGame.coop_max_players : steam.coopMaxPlayers,
+    coop_source: manualCoop ? existingGame.coop_source : steam.coopSource,
+    steam_synced_at: new Date().toISOString(),
+  };
+
+  let gameId: number;
+  if (existingGame) {
+    const { data: updated, error: updateError } = await serviceClient
+      .from("games")
+      .update(gamePayload)
+      .eq("id", existingGame.id)
+      .select("id")
+      .single();
+    if (updateError) throw updateError;
+    gameId = Number(updated.id);
+  } else {
+    const { data: inserted, error: insertError } = await serviceClient
+      .from("games")
+      .insert({
+        ...gamePayload,
+        author_comment: "",
+        display_order: 0,
+        created_by: moderatorId,
+      })
+      .select("id")
+      .single();
+    if (insertError) throw insertError;
+    gameId = Number(inserted.id);
+  }
+
+  const nextStatus = requestedStatus === "selected" ? "selected" : "approved";
+  const { error: moderationError } = await serviceClient
+    .from("game_suggestions")
+    .update({
+      status: nextStatus,
+      rejection_reason: "",
+      moderated_by: moderatorId,
+      moderated_at: new Date().toISOString(),
+    })
+    .eq("id", suggestionId);
+  if (moderationError) throw moderationError;
+
+  return {
+    suggestionId,
+    gameId,
+    title: gamePayload.title,
+    status: nextStatus,
+    created: !existingGame,
+    published: true,
+  };
+}
+
+async function syncApprovedSuggestions(
+  serviceClient: ReturnType<typeof createClient>,
+  moderatorId: string,
+) {
+  const { data: suggestions, error } = await serviceClient
+    .from("game_suggestions")
+    .select("id,status,steam_app_id")
+    .in("status", ["approved", "selected"])
+    .order("created_at", { ascending: true })
+    .limit(50);
+  if (error) throw error;
+
+  const appIds = [...new Set((suggestions ?? []).map((item) => Number(item.steam_app_id)).filter(Boolean))];
+  let existingAppIds = new Set<number>();
+  if (appIds.length) {
+    const { data: existingGames, error: gamesError } = await serviceClient
+      .from("games")
+      .select("steam_app_id")
+      .eq("published", true)
+      .in("steam_app_id", appIds);
+    if (gamesError) throw gamesError;
+    existingAppIds = new Set((existingGames ?? []).map((item) => Number(item.steam_app_id)));
+  }
+
+  const missingSuggestions = (suggestions ?? []).filter(
+    (suggestion) => !existingAppIds.has(Number(suggestion.steam_app_id)),
+  );
+
+  const results = [];
+  for (const suggestion of missingSuggestions) {
+    try {
+      results.push(await publishSuggestion(
+        serviceClient,
+        Number(suggestion.id),
+        moderatorId,
+        suggestion.status === "selected" ? "selected" : "approved",
+      ));
+    } catch (error) {
+      results.push({
+        suggestionId: Number(suggestion.id),
+        published: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+  return {
+    checked: suggestions?.length ?? 0,
+    missing: missingSuggestions.length,
+    published: results.filter((item) => item.published).length,
+    results,
+  };
+}
+
 async function syncStaleGames(supabase: ReturnType<typeof createClient>) {
   const { data: games, error } = await supabase
     .from("games")
@@ -431,6 +578,22 @@ Deno.serve(async (req) => {
     const { data: isAdmin, error: adminError } = await supabase.rpc("is_site_admin");
     if (adminError || isAdmin !== true) return jsonResponse({ error: "У аккаунта нет прав администратора." }, 403);
 
+    if (body?.action === "publish-suggestion" || body?.action === "sync-approved-suggestions") {
+      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (!serviceRoleKey) return jsonResponse({ error: "Сервисный ключ Supabase недоступен функции." }, 500);
+      const serviceClient = createClient(supabaseUrl, serviceRoleKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      if (body.action === "publish-suggestion") {
+        return jsonResponse(await publishSuggestion(
+          serviceClient,
+          Number(body?.suggestionId),
+          userData.user.id,
+        ));
+      }
+      return jsonResponse(await syncApprovedSuggestions(serviceClient, userData.user.id));
+    }
+
     const appId = extractAppId(body?.steamUrl ?? body?.appId);
     if (!appId) return jsonResponse({ error: "Не удалось определить Steam App ID из ссылки." }, 400);
 
@@ -442,6 +605,6 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error(error);
     const message = error instanceof Error ? error.message : "Неизвестная ошибка.";
-    return jsonResponse({ error: `Не удалось получить данные Steam: ${message}` }, 500);
+    return jsonResponse({ error: `Не удалось выполнить операцию: ${message}` }, 500);
   }
 });

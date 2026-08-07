@@ -46,6 +46,10 @@
       state.currentVotes = {};
     }
 
+    let reputationRefreshPromise = null;
+    let reputationRefreshTimer = 0;
+    let reputationMonitorClient = null;
+
     async function loadReputation(client) {
       const { data,error } = await runPublicRequest(client,() => client.rpc('get_game_vote_scores'));
       if (error) {
@@ -67,6 +71,30 @@
       }
       const { data: votes,error: votesError } = await runPublicRequest(client,() => client.rpc('get_my_game_votes'));
       state.currentVotes = votesError ? {} : Object.fromEntries((votes || []).map(item => [String(item.game_id),Number(item.vote) || 0]));
+    }
+
+    function refreshReputation(client = reputationMonitorClient) {
+      if (!client || reputationRefreshPromise) return reputationRefreshPromise;
+      reputationRefreshPromise = loadReputation(client)
+        .then(() => {
+          render();
+          if (state.activeGameId) renderModalReactionState(state.activeGameId);
+          window.dispatchEvent(new CustomEvent('cr7:reputation-refreshed'));
+        })
+        .catch(error => {
+          console.warn('Репутация временно недоступна:', error?.message || error);
+          resetReputationState();
+        })
+        .finally(() => { reputationRefreshPromise = null; });
+      return reputationRefreshPromise;
+    }
+
+    function startReputationMonitor(client) {
+      reputationMonitorClient = client;
+      window.clearInterval(reputationRefreshTimer);
+      reputationRefreshTimer = window.setInterval(() => {
+        if (!document.hidden) refreshReputation(client);
+      }, 4000);
     }
 
     async function loadGames(client) {
@@ -102,12 +130,7 @@
       // Каталог не должен ждать необязательную RPC репутации: сначала показываем игры,
       // затем безопасно дорисовываем рейтинг отдельным запросом.
       render();
-      loadReputation(client)
-        .then(() => render())
-        .catch(error => {
-          console.warn('Репутация временно недоступна:',error?.message || error);
-          resetReputationState();
-        });
+      refreshReputation(client);
     }
 
     async function start() {
@@ -130,6 +153,7 @@
             if (status === 'SUBSCRIBED') setConnection('online', 'Обновляется онлайн');
             if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') setConnection('error', 'Связь потеряна');
           });
+        startReputationMonitor(client);
       } catch (error) {
         console.error(error);
         showFatal('Не удалось загрузить игры', error.message || 'Проверь обновление таблицы и настройки Supabase.');
@@ -195,6 +219,11 @@
 
     window.addEventListener('beforeunload', () => {
       if (state.channel) state.channel.unsubscribe();
+      window.clearInterval(reputationRefreshTimer);
+    });
+    window.addEventListener('focus', () => refreshReputation());
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) refreshReputation();
     });
 
     const cursorGlow = document.getElementById('cursorGlow');

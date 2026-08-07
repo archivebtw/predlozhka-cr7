@@ -673,7 +673,7 @@
       reason = window.prompt('Почему предложение отклонено? Причина сохранится в архиве.', '') ?? '';
       if (!reason.trim()) return;
     }
-    setBusy(button, true, 'Сохраняем…');
+    setBusy(button, true, action === 'approve' ? 'Публикуем…' : 'Сохраняем…');
     try {
       if (action === 'delete' && !window.confirm('Удалить предложение игры без возможности восстановления?')) {
         setBusy(button, false);
@@ -681,14 +681,26 @@
       }
       const request = action === 'delete'
         ? suggestionState.client.rpc('delete_game_suggestion', { p_suggestion_id: Number(id) })
-        : suggestionState.client.rpc('moderate_game_suggestion', {
+        : action === 'approve'
+          ? suggestionState.client.functions.invoke('steam-game', {
+            body: { action: 'publish-suggestion', suggestionId: Number(id) }
+          })
+          : suggestionState.client.rpc('moderate_game_suggestion', {
           p_suggestion_id: Number(id),
           p_action: action,
           p_reason: reason
         });
-      const { error } = await request;
+      const { data, error } = await request;
       if (error) throw error;
-      showNotice('Статус предложения обновлён.', 'success');
+      if (action === 'approve' && !data?.published) {
+        throw new Error(data?.error || 'Сервер не подтвердил публикацию игры в каталоге.');
+      }
+      showNotice(action === 'approve' ? 'Игра опубликована в каталоге.' : 'Статус предложения обновлён.', 'success');
+      if (action === 'approve') {
+        window.dispatchEvent(new CustomEvent('cr7:game-published', {
+          detail: { suggestionId: Number(id), gameId: Number(data.gameId) || null }
+        }));
+      }
       await Promise.all([loadModeration(), loadPublicSuggestions()]);
     } catch (error) {
       showNotice(errorMessage(error), 'error');

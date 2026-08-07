@@ -14,7 +14,11 @@
     sort: 'newest',
     loaded: false,
     loading: false,
-    active: false
+    active: false,
+    syncAttempted: false,
+    reactionLoading: false,
+    reactionTimer: 0,
+    catalogChannel: null
   };
 
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
@@ -77,6 +81,8 @@
     list.classList.toggle('is-catalog-list', active);
     const sort = ensureSort();
     sort.hidden = !active;
+    if (active) startCatalogMonitoring();
+    else stopCatalogMonitoring();
   }
 
   function filteredGames() {
@@ -134,7 +140,76 @@
     }).join('');
   }
 
-  async function loadGames(force = false) {
+  async function syncApprovedSuggestions(supabase) {
+    if (state.syncAttempted) return;
+    state.syncAttempted = true;
+    try {
+      const { data, error } = await supabase.functions.invoke('steam-game', {
+        body: { action: 'sync-approved-suggestions' }
+      });
+      if (error) throw error;
+      if (Number(data?.published) > 0) {
+        window.dispatchEvent(new CustomEvent('cr7:catalog-repaired', { detail: data }));
+      }
+    } catch (error) {
+      console.warn('Не удалось проверить ранее принятые заявки:', error?.message || error);
+    }
+  }
+
+  async function loadReactionCounts(supabase, renderAfter = true) {
+    if (!supabase || state.reactionLoading) return;
+    state.reactionLoading = true;
+    try {
+      const { data, error } = await supabase.rpc('get_game_vote_scores');
+      if (error) throw error;
+      const totals = new Map((data || []).map(item => [String(item.game_id), {
+        like_count: Number(item.like_count) || 0,
+        dislike_count: Number(item.dislike_count) || 0,
+        reaction_score: Number(item.score) || 0
+      }]));
+      state.games = state.games.map(game => ({
+        ...game,
+        like_count: 0,
+        dislike_count: 0,
+        reaction_score: 0,
+        ...(totals.get(String(game.id)) || {})
+      }));
+      if (renderAfter) render();
+    } catch (error) {
+      console.warn('Не удалось обновить реакции каталога:', error?.message || error);
+    } finally {
+      state.reactionLoading = false;
+    }
+  }
+
+  function stopCatalogMonitoring() {
+    window.clearInterval(state.reactionTimer);
+    state.reactionTimer = 0;
+    if (state.catalogChannel) {
+      try { state.catalogChannel.unsubscribe(); } catch {}
+      state.catalogChannel = null;
+    }
+  }
+
+  function startCatalogMonitoring() {
+    const supabase = client();
+    if (!supabase) return;
+    if (!state.reactionTimer) {
+      state.reactionTimer = window.setInterval(() => {
+        if (state.active && !document.hidden) loadReactionCounts(supabase);
+      }, 4000);
+    }
+    if (!state.catalogChannel) {
+      state.catalogChannel = supabase
+        .channel('cr7-admin-published-games-v1')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'games' }, () => {
+          if (state.active) loadGames(true, true);
+        })
+        .subscribe();
+    }
+  }
+
+  async function loadGames(force = false, silent = false) {
     if (state.loading || (state.loaded && !force)) return;
     const supabase = client();
     if (!supabase) {
@@ -142,11 +217,13 @@
       return;
     }
     state.loading = true;
-    list.innerHTML = '<div class="suggestions-empty">Загружаем опубликованные игры…</div>';
+    if (!silent) list.innerHTML = '<div class="suggestions-empty">Загружаем опубликованные игры…</div>';
     try {
+      await syncApprovedSuggestions(supabase);
       const { data, error } = await supabase.from('games').select('id,title,steam_url,cover_url,description,created_at,published,release_date,release_date_text,coming_soon,is_coop,coop_min_players,coop_max_players,library_status');
       if (error) throw error;
       state.games = Array.isArray(data) ? data : [];
+      await loadReactionCounts(supabase, false);
       state.loaded = true;
       render();
     } catch (error) {
@@ -231,4 +308,11 @@
   window.addEventListener('cr7:supabase-ready', () => {
     if (state.active) loadGames(true);
   });
+  window.addEventListener('cr7:game-published', () => {
+    if (state.active) loadGames(true, true);
+  });
+  window.addEventListener('focus', () => {
+    if (state.active) Promise.all([loadGames(true, true), loadReactionCounts(client())]);
+  });
+  window.addEventListener('beforeunload', stopCatalogMonitoring);
 })();
