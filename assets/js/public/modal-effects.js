@@ -16,23 +16,26 @@ function fitGameModalToViewport() {
   if (window.matchMedia('(max-width: 720px)').matches) {
     elements.modal.style.removeProperty('--game-modal-scale');
     elements.modal.style.removeProperty('--game-modal-top');
+    elements.modal.style.removeProperty('--game-modal-rendered-height');
     return;
   }
 
   const rootSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 1;
   const frameWidth = 850 * rootSize;
   const frameHeight = 1338 * rootSize;
+  const visibleFrameHeight = 970 * rootSize;
   const edgeGap = 40 * rootSize;
   const scale = Math.min(
     1,
     Math.max(0.1, (window.innerWidth - edgeGap) / frameWidth),
-    Math.max(0.1, (window.innerHeight - edgeGap) / frameHeight)
+    Math.max(0.1, (window.innerHeight - edgeGap) / visibleFrameHeight)
   );
   const renderedHeight = frameHeight * scale;
-  const top = Math.max(20 * rootSize, Math.min(92 * rootSize, (window.innerHeight - renderedHeight) / 2));
+  const top = Math.max(20 * rootSize, Math.min(40 * rootSize, window.innerHeight * 0.05));
 
   elements.modal.style.setProperty('--game-modal-scale', scale.toFixed(5));
   elements.modal.style.setProperty('--game-modal-top', `${top.toFixed(2)}px`);
+  elements.modal.style.setProperty('--game-modal-rendered-height', `${renderedHeight.toFixed(2)}px`);
 }
 
 let gameModalFitFrame = 0;
@@ -138,6 +141,7 @@ function openGameModal(gameId) {
   renderModalReactionState(game.id);
   fitGameModalToViewport();
   elements.modal.hidden = false;
+  elements.modal.scrollTop = 0;
   elements.modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-open');
   requestAnimationFrame(() => {

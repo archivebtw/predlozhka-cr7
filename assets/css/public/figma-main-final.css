@@ -121,12 +121,14 @@ body > footer {
   display: none !important;
 }
 
-/* Game window — preserve the 850×1338 Figma frame and scale it as one unit. */
+/* Keep the primary Figma frame in view and scroll the lower discussion area. */
 .game-modal {
   display: block;
-  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
   padding: 0 !important;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .game-modal .modal-backdrop {
@@ -136,6 +138,15 @@ body > footer {
 }
 
 @media (min-width: 721px) {
+  .game-modal::after {
+    position: relative;
+    display: block;
+    width: 1px;
+    height: calc(var(--game-modal-top, 40px) + var(--game-modal-rendered-height, 1338px) + 40px);
+    content: "";
+    pointer-events: none;
+  }
+
   .game-modal .modal-panel,
   .game-modal.is-open .modal-panel {
     position: absolute !important;
@@ -183,7 +194,20 @@ body > footer {
 }
 
 .game-modal .modal-steam {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 41rem;
+  gap: 16rem;
+  justify-content: stretch;
+  justify-items: start;
+  padding-inline: 24rem !important;
   background: var(--figma-red) !important;
+  font-size: 24rem !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+}
+
+.game-modal .modal-steam img {
+  justify-self: end;
 }
 
 @media (max-width: 1100px) {
@@ -201,6 +225,11 @@ body > footer {
   .game-modal {
     overflow-y: auto !important;
     padding: 0 !important;
+    scrollbar-gutter: auto;
+  }
+
+  .game-modal::after {
+    display: none;
   }
 
   .game-modal .modal-panel {
@@ -209,5 +238,17 @@ body > footer {
     max-height: none !important;
     overflow: visible !important;
     border-radius: 0 !important;
+  }
+
+  .game-modal .modal-steam {
+    grid-template-columns: minmax(0, 1fr) 34rem;
+    gap: 12rem;
+    padding-inline: 18rem !important;
+    font-size: clamp(18rem, 6vw, 24rem) !important;
+  }
+
+  .game-modal .modal-steam img {
+    width: 34rem;
+    height: 34rem;
   }
 }
