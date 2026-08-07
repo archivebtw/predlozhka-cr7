@@ -116,7 +116,7 @@ body:not(.has-druk-cyr) .media-panel.is-figma-proposal .figma-proposal-title {
   z-index: 2;
   width: 18px;
   height: 18px;
-  background: url('../../images/figma/proposal-link.svg?v=3') center/contain no-repeat;
+  background: url('../../images/figma/proposal-link.svg?v=4') center/contain no-repeat;
   transform: translateY(-50%);
 }
 .suggestions-panel.is-figma-proposal .suggestion-form input,
