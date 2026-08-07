@@ -87,6 +87,65 @@
     return window.CR7_SUPABASE_CLIENT;
   }
 
+  async function invokeSteamFunction(body, timeoutMs = 30000) {
+    const config = window.CR7_CONFIG || {};
+    const supabaseUrl = String(config.supabaseUrl || '').replace(/\/$/, '');
+    const publishableKey = String(config.supabasePublishableKey || '');
+    let accessToken = window.CR7_AUTH?.getCachedAccessToken?.() || '';
+    if (!accessToken) {
+      const sessionResult = await Promise.race([
+        window.CR7_AUTH?.getUsableSession
+          ? window.CR7_AUTH.getUsableSession(suggestionState.client)
+          : suggestionState.client.auth.getSession(),
+        new Promise((_, reject) => window.setTimeout(
+          () => reject(new Error('Не удалось проверить сессию. Обнови страницу и войди заново.')),
+          5000
+        ))
+      ]);
+      if (sessionResult?.error) throw sessionResult.error;
+      accessToken = sessionResult?.data?.session?.access_token || '';
+      window.CR7_AUTH?.cacheSession?.(sessionResult?.data?.session || null);
+    }
+    if (!accessToken) throw new Error('Сессия истекла. Войди в аккаунт заново.');
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(`${supabaseUrl}/functions/v1/steam-game`, {
+        method: 'POST',
+        headers: {
+          apikey: publishableKey,
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      const responseText = await response.text();
+      let data = null;
+      try {
+        data = responseText ? JSON.parse(responseText) : null;
+      } catch {
+        data = null;
+      }
+      if (!response.ok) {
+        const error = new Error(data?.error || `Сервер публикации ответил с кодом ${response.status}.`);
+        error.status = response.status;
+        throw error;
+      }
+      return data;
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        throw new Error('Сервер публикации не ответил за 30 секунд. Попробуй ещё раз.');
+      }
+      throw error;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
+  window.CR7_INVOKE_STEAM_FUNCTION = invokeSteamFunction;
+
   function errorMessage(error, fallback = 'Не удалось выполнить действие.') {
     const message = String(error?.message || error?.error_description || fallback);
     if (/anonymous sign-?ins?.*(disabled|not enabled)|anonymous provider.*disabled/i.test(message)) {
@@ -239,10 +298,7 @@
     setBusy(elements.previewButton, true, 'Ищем…');
     try {
       await requireAdminSession();
-      const { data, error } = await suggestionState.client.functions.invoke('steam-game', {
-        body: { action: 'suggestion-preview', steamUrl }
-      });
-      if (error) throw error;
+      const data = await invokeSteamFunction({ action: 'suggestion-preview', steamUrl });
       if (data?.error) throw new Error(data.error);
       if (!data?.appId || !data?.title) throw new Error('Steam не вернул данные игры.');
 
@@ -679,18 +735,16 @@
         setBusy(button, false);
         return;
       }
-      const request = action === 'delete'
-        ? suggestionState.client.rpc('delete_game_suggestion', { p_suggestion_id: Number(id) })
+      const result = action === 'delete'
+        ? await suggestionState.client.rpc('delete_game_suggestion', { p_suggestion_id: Number(id) })
         : action === 'approve'
-          ? suggestionState.client.functions.invoke('steam-game', {
-            body: { action: 'publish-suggestion', suggestionId: Number(id) }
-          })
-          : suggestionState.client.rpc('moderate_game_suggestion', {
-          p_suggestion_id: Number(id),
-          p_action: action,
-          p_reason: reason
-        });
-      const { data, error } = await request;
+          ? { data: await invokeSteamFunction({ action: 'publish-suggestion', suggestionId: Number(id) }), error: null }
+          : await suggestionState.client.rpc('moderate_game_suggestion', {
+            p_suggestion_id: Number(id),
+            p_action: action,
+            p_reason: reason
+          });
+      const { data, error } = result;
       if (error) throw error;
       if (action === 'approve' && !data?.published) {
         throw new Error(data?.error || 'Сервер не подтвердил публикацию игры в каталоге.');
@@ -704,6 +758,7 @@
       await Promise.all([loadModeration(), loadPublicSuggestions()]);
     } catch (error) {
       showNotice(errorMessage(error), 'error');
+    } finally {
       setBusy(button, false);
     }
   }

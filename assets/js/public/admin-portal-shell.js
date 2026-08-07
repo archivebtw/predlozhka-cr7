@@ -18,7 +18,7 @@
   if (!document.getElementById('adminGamesTabsV4Script')) {
     const script = document.createElement('script');
     script.id = 'adminGamesTabsV4Script';
-    script.src = './assets/js/public/admin-games-tabs-v4.js?v=1.2';
+    script.src = './assets/js/public/admin-games-tabs-v4.js?v=1.3';
     script.defer = true;
     document.head.appendChild(script);
   }

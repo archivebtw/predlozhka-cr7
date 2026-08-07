@@ -144,10 +144,10 @@
     if (state.syncAttempted) return;
     state.syncAttempted = true;
     try {
-      const { data, error } = await supabase.functions.invoke('steam-game', {
-        body: { action: 'sync-approved-suggestions' }
-      });
-      if (error) throw error;
+      if (typeof window.CR7_INVOKE_STEAM_FUNCTION !== 'function') {
+        throw new Error('Сервис публикации ещё не готов. Обнови страницу.');
+      }
+      const data = await window.CR7_INVOKE_STEAM_FUNCTION({ action: 'sync-approved-suggestions' });
       if (Number(data?.published) > 0) {
         window.dispatchEvent(new CustomEvent('cr7:catalog-repaired', { detail: data }));
       }
