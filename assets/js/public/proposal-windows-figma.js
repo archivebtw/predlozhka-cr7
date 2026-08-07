@@ -7,8 +7,17 @@
   const previewButton = document.getElementById('suggestionPreviewButton');
   const mediaInput = document.getElementById('mediaFileInput');
   const mediaTitleInput = document.getElementById('mediaSubmissionTitle');
+  const suggestionSubmitButton = document.getElementById('suggestionSubmitButton');
+  const mediaSubmitButton = document.getElementById('mediaSubmitButton');
   const dropzone = document.getElementById('mediaDropzone');
   if (!suggestionsPanel || !mediaPanel) return;
+
+  function setLabelText(label, text) {
+    if (!label) return;
+    const textNode = [...label.childNodes].find(node => node.nodeType === Node.TEXT_NODE);
+    if (textNode) textNode.nodeValue = text;
+    else label.prepend(document.createTextNode(text));
+  }
 
   suggestionsPanel.classList.add('is-figma-proposal');
   mediaPanel.classList.add('is-figma-proposal');
@@ -18,14 +27,21 @@
     const field = document.createElement('div');
     field.className = 'figma-duration-field';
     field.innerHTML = `
-      <span class="figma-field-label">Приблизительное время прохождения</span>
+      <span class="figma-field-label">Количество игроков (опционально)</span>
       <div class="figma-duration-row">
-        <input aria-label="Минимальное время прохождения" min="1" placeholder="Мин" type="number">
+        <input aria-label="Минимальное количество игроков" id="suggestionPlayersMin" min="1" placeholder="Мин" type="number">
         <span>—</span>
-        <input aria-label="Максимальное время прохождения" min="1" placeholder="Макс" type="number">
+        <input aria-label="Максимальное количество игроков" id="suggestionPlayersMax" min="1" placeholder="Макс" type="number">
       </div>`;
     label?.before(field);
   }
+
+  setLabelText(suggestionForm?.querySelector('label[for="suggestionSteamUrl"]'), 'Ссылка на игру в Steam');
+  setLabelText(suggestionForm?.querySelector('label[for="suggestionComment"]'), 'Комментарий');
+  if (steamInput) steamInput.placeholder = 'Вставить ссылку';
+  const suggestionComment = document.getElementById('suggestionComment');
+  if (suggestionComment) suggestionComment.placeholder = 'Добавить комментарий';
+  if (suggestionSubmitButton) suggestionSubmitButton.textContent = 'Отправить';
 
   if (mediaForm && !mediaForm.querySelector('.figma-proposal-title')) {
     const title = document.createElement('h3');
@@ -37,8 +53,13 @@
   if (dropzone) {
     const strong = dropzone.querySelector('strong');
     const hint = dropzone.querySelector('span');
-    if (strong) strong.textContent = 'Выбрать файл';
-    if (hint) hint.textContent = 'или выбери';
+    if (strong) {
+      const actionLabel = document.createElement('span');
+      actionLabel.className = 'figma-file-action-label';
+      actionLabel.textContent = 'Выбрать файл';
+      strong.replaceChildren(actionLabel);
+    }
+    if (hint) hint.textContent = 'Не выбрано';
   }
 
   if (dropzone && !mediaForm?.querySelector('.figma-file-label')) {
@@ -52,7 +73,7 @@
     const category = document.createElement('div');
     category.className = 'figma-media-category-field';
     category.innerHTML = `
-      <span class="figma-field-label">Категория</span>
+      <span class="figma-field-label">Выберите категорию</span>
       <div class="figma-media-categories" role="group" aria-label="Категория материала">
         <button class="active" data-category="personal" type="button">Личное</button>
         <button data-category="creative" type="button">Творчество</button>
@@ -66,6 +87,28 @@
       mediaForm.dataset.category = button.dataset.category || 'personal';
     });
     mediaForm.dataset.category = 'personal';
+  }
+
+  const mediaComment = document.getElementById('mediaSubmissionComment');
+  setLabelText(mediaForm?.querySelector('label[for="mediaSubmissionComment"]'), 'Комментарий');
+  if (mediaComment) mediaComment.placeholder = 'Добавить комментарий';
+  if (mediaSubmitButton) mediaSubmitButton.textContent = 'Отправить';
+
+  function keepMediaSubmitLabel() {
+    if (!mediaSubmitButton) return;
+    if (
+      mediaSubmitButton.childElementCount === 1
+      && mediaSubmitButton.firstElementChild?.classList.contains('figma-submit-label')
+    ) return;
+    const label = document.createElement('span');
+    label.className = 'figma-submit-label';
+    label.textContent = (mediaSubmitButton.textContent || '').trim();
+    mediaSubmitButton.replaceChildren(label);
+  }
+
+  keepMediaSubmitLabel();
+  if (mediaSubmitButton) {
+    new MutationObserver(keepMediaSubmitLabel).observe(mediaSubmitButton, { childList: true });
   }
 
   function fillMediaTitleFromFile() {
@@ -85,7 +128,12 @@
     suggestionsPanel.querySelector('[data-suggestions-panel="rating"]')?.setAttribute('hidden', '');
     suggestionsPanel.querySelector('[data-suggestions-panel="submit"]')?.removeAttribute('hidden');
     document.documentElement.classList.add('suggestions-open');
-    window.setTimeout(() => steamInput?.focus(), 30);
+  }
+
+  function closeSuggestions() {
+    suggestionsPanel.hidden = true;
+    suggestionsPanel.setAttribute('aria-hidden', 'true');
+    document.documentElement.classList.remove('suggestions-open');
   }
 
   function openMedia() {
@@ -96,12 +144,27 @@
     document.documentElement.classList.add('media-open');
   }
 
+  function closeMedia() {
+    mediaPanel.hidden = true;
+    mediaPanel.setAttribute('aria-hidden', 'true');
+    document.documentElement.classList.remove('media-open');
+  }
+
   document.querySelectorAll('.proposal-desk-trigger').forEach(trigger => {
     trigger.addEventListener('click', event => {
       event.preventDefault();
       if (trigger.dataset.proposalTab === 'media') openMedia();
       else openSuggestions();
     });
+  });
+
+  suggestionsPanel.querySelector('[data-suggestions-close]')?.addEventListener('click', closeSuggestions);
+  mediaPanel.querySelector('[data-media-close]')?.addEventListener('click', closeMedia);
+
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    if (!mediaPanel.hidden) closeMedia();
+    else if (!suggestionsPanel.hidden) closeSuggestions();
   });
 
   let timer = 0;
