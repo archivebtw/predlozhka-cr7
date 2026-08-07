@@ -1,6 +1,6 @@
 (() => {
   const assets = [
-    ['style','figmaMainFinalStyles','./assets/css/public/figma-main-final.css?v=1.3'],
+    ['style','figmaMainFinalStyles','./assets/css/public/figma-main-final.css?v=1.4'],
     ['style','adminFigmaFinalStyles','./assets/css/public/admin-figma-final.css?v=1.0'],
     ['style','proposalWindowsFigmaStyles','./assets/css/public/proposal-windows-figma.css?v=4.5'],
     ['style','proposalMediaFigmaExactStyles','./assets/css/public/proposal-media-figma-exact.css?v=2.1'],
