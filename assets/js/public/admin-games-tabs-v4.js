@@ -15,7 +15,6 @@
     loaded: false,
     loading: false,
     active: false,
-    syncAttempted: false,
     reactionLoading: false,
     reactionTimer: 0,
     catalogChannel: null
@@ -140,22 +139,6 @@
     }).join('');
   }
 
-  async function syncApprovedSuggestions(supabase) {
-    if (state.syncAttempted) return;
-    state.syncAttempted = true;
-    try {
-      const { data, error } = await supabase.functions.invoke('steam-game', {
-        body: { action: 'sync-approved-suggestions' }
-      });
-      if (error) throw error;
-      if (Number(data?.published) > 0) {
-        window.dispatchEvent(new CustomEvent('cr7:catalog-repaired', { detail: data }));
-      }
-    } catch (error) {
-      console.warn('Не удалось проверить ранее принятые заявки:', error?.message || error);
-    }
-  }
-
   async function loadReactionCounts(supabase, renderAfter = true) {
     if (!supabase || state.reactionLoading) return;
     state.reactionLoading = true;
@@ -174,7 +157,13 @@
         reaction_score: 0,
         ...(totals.get(String(game.id)) || {})
       }));
-      if (renderAfter) render();
+      if (renderAfter) {
+        list.querySelectorAll('.admin-catalog-card[data-game-id]').forEach(card => {
+          const game = state.games.find(item => String(item.id) === String(card.dataset.gameId));
+          const element = card.querySelector('.admin-catalog-reactions');
+          if (game && element) element.textContent = `${Number(game.like_count) || 0} / ${Number(game.dislike_count) || 0}`;
+        });
+      }
     } catch (error) {
       console.warn('Не удалось обновить реакции каталога:', error?.message || error);
     } finally {
@@ -219,8 +208,7 @@
     state.loading = true;
     if (!silent) list.innerHTML = '<div class="suggestions-empty">Загружаем опубликованные игры…</div>';
     try {
-      await syncApprovedSuggestions(supabase);
-      const { data, error } = await supabase.from('games').select('id,title,steam_url,cover_url,description,created_at,published,release_date,release_date_text,coming_soon,is_coop,coop_min_players,coop_max_players,library_status');
+      const { data, error } = await supabase.from('games').select('id,title,steam_url,steam_app_id,cover_url,description,created_at,published,release_date,release_date_text,coming_soon,is_coop,coop_min_players,coop_max_players,library_status');
       if (error) throw error;
       state.games = Array.isArray(data) ? data : [];
       await loadReactionCounts(supabase, false);
@@ -257,7 +245,14 @@
     const supabase = client();
     if (!supabase) return;
     button.disabled = true;
-    const { error } = await supabase.from('games').delete().eq('id', game.id);
+    let error = null;
+    try {
+      if (typeof window.CR7_INVOKE_STEAM_FUNCTION !== 'function') throw new Error('Сервис удаления ещё не готов. Обнови страницу.');
+      const result = await window.CR7_INVOKE_STEAM_FUNCTION({ action: 'delete-published-game', gameId: Number(game.id) });
+      if (!result?.deleted) throw new Error(result?.error || 'Сервер не подтвердил удаление игры.');
+    } catch (requestError) {
+      error = requestError;
+    }
     if (error) {
       button.disabled = false;
       window.alert(error.message || 'Не удалось удалить игру.');

@@ -3,6 +3,17 @@
 
   const expiredAuthPattern = /(?:jwt|token|session).*(?:expired|invalid|missing)|(?:expired|invalid).*(?:jwt|token|session)|refresh[_ ]token/i;
 
+  function cacheSession(session) {
+    window.CR7_AUTH_ACCESS_TOKEN = String(session?.access_token || '');
+    window.CR7_AUTH_ACCESS_TOKEN_EXPIRES_AT = Number(session?.expires_at || 0) * 1000;
+  }
+
+  function getCachedAccessToken() {
+    const token = String(window.CR7_AUTH_ACCESS_TOKEN || '');
+    const expiresAt = Number(window.CR7_AUTH_ACCESS_TOKEN_EXPIRES_AT || 0);
+    return token && (!expiresAt || expiresAt > Date.now() + 30000) ? token : '';
+  }
+
   function isExpiredAuthError(error) {
     if (!error) return false;
     const details = [
@@ -18,6 +29,7 @@
 
   async function clearStaleSession(client) {
     if (!client?.auth) return;
+    cacheSession(null);
     try {
       const { error } = await client.auth.signOut({ scope: 'local' });
       if (error && !isExpiredAuthError(error)) {
@@ -51,12 +63,14 @@
     const session = current.data?.session || null;
     const expiresAt = Number(session?.expires_at || 0) * 1000;
     if (!session || !expiresAt || expiresAt > Date.now() + 30000) {
+      cacheSession(session);
       return { data: { session }, error: null, recovered: false };
     }
 
     try {
       const refreshed = await client.auth.refreshSession();
       if (!refreshed.error && refreshed.data?.session) {
+        cacheSession(refreshed.data.session);
         return { data: { session: refreshed.data.session }, error: null, recovered: false };
       }
       if (!isExpiredAuthError(refreshed.error)) return { ...refreshed, recovered: false };
@@ -77,7 +91,9 @@
   }
 
   window.CR7_AUTH = Object.freeze({
+    cacheSession,
     clearStaleSession,
+    getCachedAccessToken,
     getUsableSession,
     isExpiredAuthError,
     runPublicRequest

@@ -178,10 +178,12 @@
     if (sessionResult.error) {
       setNotice(`Не удалось проверить сеанс: ${sessionResult.error.message}`,'error');
     }
+    window.CR7_AUTH?.cacheSession?.(sessionResult.data?.session || null);
     renderSession(sessionResult.data?.session || null);
 
     const { data } = client.auth.onAuthStateChange((_event,session) => {
       window.setTimeout(() => {
+        window.CR7_AUTH?.cacheSession?.(session);
         renderSession(session);
         setBusy(false);
       },0);

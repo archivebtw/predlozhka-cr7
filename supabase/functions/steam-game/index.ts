@@ -346,6 +346,15 @@ async function getSteamData(appId: string) {
   };
 }
 
+function readableError(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object") {
+    const details = error as Record<string, unknown>;
+    return String(details.message || details.details || details.hint || JSON.stringify(details));
+  }
+  return String(error);
+}
+
 async function publishSuggestion(
   serviceClient: ReturnType<typeof createClient>,
   suggestionId: number,
@@ -364,7 +373,32 @@ async function publishSuggestion(
   if (suggestionError) throw suggestionError;
   if (!suggestion) throw new Error("Заявка не найдена.");
 
-  const steam = await getSteamData(String(suggestion.steam_app_id));
+  let steam;
+  try {
+    steam = await getSteamData(String(suggestion.steam_app_id));
+  } catch (error) {
+    console.warn("Steam enrichment failed during publication:", readableError(error));
+    steam = {
+      appId: Number(suggestion.steam_app_id),
+      title: cleanText(suggestion.title),
+      description: cleanText(suggestion.description),
+      coverUrl: String(suggestion.cover_url || ""),
+      comingSoon: false,
+      releaseDate: null,
+      releaseDateText: "",
+      releaseDatePrecision: "unknown",
+      releaseDateApproximate: false,
+      steamUrl: String(suggestion.steam_url),
+      isCoop: false,
+      coopType: "",
+      coopMinPlayers: null,
+      coopMaxPlayers: null,
+      coopSource: "suggestion_snapshot",
+      playersMin: 1,
+      playersMax: 1,
+      playerCountSource: "suggestion_snapshot",
+    };
+  }
   const { data: existingGame, error: existingError } = await serviceClient
     .from("games")
     .select("id,title,cover_url,description,coop_source,is_coop,coop_type,coop_min_players,coop_max_players")
@@ -375,13 +409,15 @@ async function publishSuggestion(
   if (existingError) throw existingError;
 
   const manualCoop = existingGame?.coop_source === "manual_admin";
-  const gamePayload = {
+  const corePayload = {
     steam_app_id: Number(suggestion.steam_app_id),
     steam_url: String(steam.steamUrl || suggestion.steam_url).slice(0, 500),
     title: cleanText(steam.title || suggestion.title).slice(0, 120),
     cover_url: String(steam.coverUrl || suggestion.cover_url || "").slice(0, 1000),
     description: cleanText(steam.description || suggestion.description || "Описание не указано.").slice(0, 2000),
     published: true,
+  };
+  const enrichmentPayload = {
     release_date: steam.releaseDate || null,
     release_date_text: String(steam.releaseDateText || "").slice(0, 120),
     coming_soon: steam.comingSoon,
@@ -397,7 +433,7 @@ async function publishSuggestion(
   if (existingGame) {
     const { data: updated, error: updateError } = await serviceClient
       .from("games")
-      .update(gamePayload)
+      .update(corePayload)
       .eq("id", existingGame.id)
       .select("id")
       .single();
@@ -407,8 +443,8 @@ async function publishSuggestion(
     const { data: inserted, error: insertError } = await serviceClient
       .from("games")
       .insert({
-        ...gamePayload,
-        author_comment: "",
+        ...corePayload,
+        author_comment: "Предложено пользователями",
         display_order: 0,
         created_by: moderatorId,
       })
@@ -417,6 +453,13 @@ async function publishSuggestion(
     if (insertError) throw insertError;
     gameId = Number(inserted.id);
   }
+
+  const { error: enrichmentError } = await serviceClient
+    .from("games")
+    .update(enrichmentPayload)
+    .eq("id", gameId);
+  const enrichmentWarning = enrichmentError ? readableError(enrichmentError) : "";
+  if (enrichmentWarning) console.warn("Game published without optional Steam enrichment:", enrichmentWarning);
 
   const nextStatus = requestedStatus === "selected" ? "selected" : "approved";
   const { error: moderationError } = await serviceClient
@@ -433,64 +476,62 @@ async function publishSuggestion(
   return {
     suggestionId,
     gameId,
-    title: gamePayload.title,
+    title: corePayload.title,
     status: nextStatus,
     created: !existingGame,
     published: true,
+    warning: enrichmentWarning || undefined,
   };
 }
 
-async function syncApprovedSuggestions(
+async function deletePublishedGame(
   serviceClient: ReturnType<typeof createClient>,
+  gameId: number,
   moderatorId: string,
 ) {
-  const { data: suggestions, error } = await serviceClient
-    .from("game_suggestions")
-    .select("id,status,steam_app_id")
-    .in("status", ["approved", "selected"])
-    .order("created_at", { ascending: true })
-    .limit(50);
-  if (error) throw error;
+  if (!Number.isInteger(gameId) || gameId <= 0) throw new Error("Некорректный идентификатор игры.");
 
-  const appIds = [...new Set((suggestions ?? []).map((item) => Number(item.steam_app_id)).filter(Boolean))];
-  let existingAppIds = new Set<number>();
-  if (appIds.length) {
-    const { data: existingGames, error: gamesError } = await serviceClient
-      .from("games")
-      .select("steam_app_id")
-      .eq("published", true)
-      .in("steam_app_id", appIds);
-    if (gamesError) throw gamesError;
-    existingAppIds = new Set((existingGames ?? []).map((item) => Number(item.steam_app_id)));
+  const { data: game, error: gameError } = await serviceClient
+    .from("games")
+    .select("id,title,steam_app_id")
+    .eq("id", gameId)
+    .maybeSingle();
+  if (gameError) throw gameError;
+  if (!game) return { gameId, deleted: true, missing: true, archivedSuggestions: 0 };
+
+  const { error: deleteError } = await serviceClient.from("games").delete().eq("id", gameId);
+  if (deleteError) throw deleteError;
+
+  let archivedSuggestions = 0;
+  let warning = "";
+  if (game.steam_app_id) {
+    const { data: archived, error: archiveError } = await serviceClient
+      .from("game_suggestions")
+      .update({
+        status: "archived",
+        rejection_reason: "Удалено из каталога администратором",
+        moderated_by: moderatorId,
+        moderated_at: new Date().toISOString(),
+      })
+      .eq("steam_app_id", Number(game.steam_app_id))
+      .in("status", ["approved", "selected"])
+      .select("id");
+    archivedSuggestions = archived?.length ?? 0;
+    warning = archiveError ? readableError(archiveError) : "";
+    if (warning) console.warn("Game deleted, but linked suggestions were not archived:", warning);
   }
 
-  const missingSuggestions = (suggestions ?? []).filter(
-    (suggestion) => !existingAppIds.has(Number(suggestion.steam_app_id)),
-  );
-
-  const results = [];
-  for (const suggestion of missingSuggestions) {
-    try {
-      results.push(await publishSuggestion(
-        serviceClient,
-        Number(suggestion.id),
-        moderatorId,
-        suggestion.status === "selected" ? "selected" : "approved",
-      ));
-    } catch (error) {
-      results.push({
-        suggestionId: Number(suggestion.id),
-        published: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-  }
   return {
-    checked: suggestions?.length ?? 0,
-    missing: missingSuggestions.length,
-    published: results.filter((item) => item.published).length,
-    results,
+    gameId,
+    title: game.title,
+    deleted: true,
+    archivedSuggestions,
+    warning: warning || undefined,
   };
+}
+
+function syncApprovedSuggestions() {
+  return { checked: 0, missing: 0, published: 0, results: [], automaticRecovery: false };
 }
 
 async function syncStaleGames(supabase: ReturnType<typeof createClient>) {
@@ -578,7 +619,7 @@ Deno.serve(async (req) => {
     const { data: isAdmin, error: adminError } = await supabase.rpc("is_site_admin");
     if (adminError || isAdmin !== true) return jsonResponse({ error: "У аккаунта нет прав администратора." }, 403);
 
-    if (body?.action === "publish-suggestion" || body?.action === "sync-approved-suggestions") {
+    if (["publish-suggestion", "sync-approved-suggestions", "delete-published-game"].includes(body?.action)) {
       const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       if (!serviceRoleKey) return jsonResponse({ error: "Сервисный ключ Supabase недоступен функции." }, 500);
       const serviceClient = createClient(supabaseUrl, serviceRoleKey, {
@@ -591,7 +632,14 @@ Deno.serve(async (req) => {
           userData.user.id,
         ));
       }
-      return jsonResponse(await syncApprovedSuggestions(serviceClient, userData.user.id));
+      if (body.action === "delete-published-game") {
+        return jsonResponse(await deletePublishedGame(
+          serviceClient,
+          Number(body?.gameId),
+          userData.user.id,
+        ));
+      }
+      return jsonResponse(syncApprovedSuggestions());
     }
 
     const appId = extractAppId(body?.steamUrl ?? body?.appId);
@@ -604,7 +652,7 @@ Deno.serve(async (req) => {
     return jsonResponse(await getSteamData(appId));
   } catch (error) {
     console.error(error);
-    const message = error instanceof Error ? error.message : "Неизвестная ошибка.";
+    const message = readableError(error) || "Неизвестная ошибка.";
     return jsonResponse({ error: `Не удалось выполнить операцию: ${message}` }, 500);
   }
 });
