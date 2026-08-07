@@ -23,9 +23,7 @@ main#top,
 
 @media (min-width: 1101px) {
   .hero {
-    min-height: 780rem;
     height: 100svh;
-    max-height: 980rem;
   }
 
   .hero::after {
