@@ -1,1 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Oxanium:wght@500;600;700;800&family=Rubik+Dirt&family=Russo+One&display=swap');
+
+@font-face {
+  font-family: 'DrukCyr-Heavy';
+  src:
+    url('../../fonts/drukcyr-heavy.woff2') format('woff2'),
+    url('../../fonts/drukcyr-heavy.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+}
