@@ -1,0 +1,85 @@
+/* Final typography mapping for the Figma screens.
+   Druk is reserved for display copy; controls and long copy use the UI face. */
+:root {
+  --font-ui: Arial, 'Helvetica Neue', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'DrukCyr-Heavy', 'Druk Cyr', 'Druk Text Wide Cyr', 'Russo One', 'Arial Black', system-ui, sans-serif;
+  --font-body: var(--font-ui);
+  --font-accent: var(--font-ui);
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-ui);
+}
+
+/* The bundled Druk face is the intended display font. Never apply the old
+   fallback compression while it is loading or after it has loaded. */
+body:not(.has-druk-cyr) .hero h1 {
+  transform: none;
+}
+
+body:not(.has-druk-cyr) #catalog .toolbar-title h2 span {
+  transform: translateX(-50%);
+}
+
+body:not(.has-druk-cyr) .content-menu-card > span,
+body:not(.has-druk-cyr) .content-menu-toggle > span {
+  transform: none;
+}
+
+:is(
+  .hero h1,
+  #catalog .toolbar-title h2,
+  .content-menu-card > span,
+  .content-menu-toggle > span,
+  #catalog .card-title,
+  .game-modal .modal-title,
+  .game-modal .modal-steam,
+  .admin-portal .proposal-filter-actions button,
+  .admin-portal .admin-catalog-filter-actions button,
+  .admin-portal .moderation-actions button,
+  .admin-portal .moderation-actions .moderation-steam
+) {
+  font-family: var(--font-display) !important;
+  font-weight: 900;
+  font-style: normal;
+}
+
+/* Small Druk labels need a little more air than the large headings. */
+.admin-portal .proposal-filter-actions button,
+.admin-portal .admin-catalog-filter-actions button {
+  font-size: 18rem !important;
+  letter-spacing: .025em;
+}
+
+.admin-portal :is(.proposal-filter-actions, .admin-catalog-filter-actions) .filter-action-label {
+  display: inline-block;
+  transform: scaleX(1.14);
+  transform-origin: left center;
+}
+
+.game-modal .modal-steam {
+  letter-spacing: .015em;
+}
+
+:is(
+  .site-header .nav-link,
+  .site-header .nav-menu-toggle,
+  .site-header .twitch-login-trigger,
+  .hero-intro,
+  #catalog .filter-btn,
+  #catalog .catalog-menu-toggle,
+  #catalog .catalog-menu,
+  .game-modal .modal-release,
+  .game-modal #modalDescription,
+  .game-modal .modal-reactions,
+  .admin-portal .proposal-game-tabs,
+  .admin-portal .proposal-game-tools,
+  .admin-portal .proposal-filter-box,
+  .admin-portal .admin-media-filter-box
+) {
+  font-family: var(--font-ui) !important;
+}

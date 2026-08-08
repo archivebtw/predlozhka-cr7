@@ -123,8 +123,8 @@
         </select>
       </label>
       <div class="admin-catalog-filter-actions">
-        <button data-admin-filter-action="clear" type="button">Очистить <span aria-hidden="true">↗</span></button>
-        <button data-admin-filter-action="apply" type="button">Применить <span aria-hidden="true">↗</span></button>
+        <button data-admin-filter-action="clear" type="button"><span class="filter-action-label">Очистить</span><span class="filter-action-icon" aria-hidden="true">↗</span></button>
+        <button data-admin-filter-action="apply" type="button"><span class="filter-action-label">Применить</span><span class="filter-action-icon" aria-hidden="true">↗</span></button>
       </div>`;
     document.querySelector('.proposal-game-tools')?.appendChild(box);
 

@@ -107,8 +107,8 @@
   background: #ef3d3f !important;
 }
 
-.admin-portal .proposal-filter-actions button span,
-.admin-portal .admin-catalog-filter-actions button span {
+.admin-portal .proposal-filter-actions button .filter-action-icon,
+.admin-portal .admin-catalog-filter-actions button .filter-action-icon {
   width: 22rem;
   height: 22rem;
   display: grid;

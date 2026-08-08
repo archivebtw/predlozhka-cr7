@@ -4,7 +4,7 @@
     ['adminFigmaTemplateV3Styles', './assets/css/public/admin-figma-template-v3.css?v=1.0'],
     ['adminGamesTabsV4Styles', './assets/css/public/admin-games-tabs-v4.css?v=1.3'],
     ['adminPublishedIconsFixStyles', './assets/css/public/admin-published-icons-fix.css?v=1.1'],
-    ['adminModeratorLayoutV5Styles', './assets/css/public/admin-moderator-layout-v5.css?v=1.0']
+    ['adminModeratorLayoutV5Styles', './assets/css/public/admin-moderator-layout-v5.css?v=1.1']
   ];
 
   styleLayers.forEach(([id, href]) => {
@@ -19,7 +19,7 @@
   if (!document.getElementById('adminGamesTabsV4Script')) {
     const script = document.createElement('script');
     script.id = 'adminGamesTabsV4Script';
-    script.src = './assets/js/public/admin-games-tabs-v4.js?v=1.7';
+    script.src = './assets/js/public/admin-games-tabs-v4.js?v=1.8';
     script.defer = true;
     document.head.appendChild(script);
   }
@@ -66,11 +66,11 @@
     const actions = document.createElement('div');
     actions.className = 'proposal-filter-actions';
     proposalReset.textContent = '';
-    proposalReset.innerHTML = 'Очистить <span aria-hidden="true">↗</span>';
+    proposalReset.innerHTML = '<span class="filter-action-label">Очистить</span><span class="filter-action-icon" aria-hidden="true">↗</span>';
     const apply = document.createElement('button');
     apply.id = 'proposalFiltersApply';
     apply.type = 'button';
-    apply.innerHTML = 'Применить <span aria-hidden="true">↗</span>';
+    apply.innerHTML = '<span class="filter-action-label">Применить</span><span class="filter-action-icon" aria-hidden="true">↗</span>';
     apply.addEventListener('click', () => {
       document.getElementById('proposalPlayersMin')?.dispatchEvent(new Event('input', { bubbles: true }));
     });
@@ -92,8 +92,8 @@
         <div class="admin-media-format-slot"></div>
       </fieldset>
       <div class="proposal-filter-actions admin-media-filter-actions">
-        <button data-admin-media-filter-action="clear" type="button">Очистить <span aria-hidden="true">↗</span></button>
-        <button data-admin-media-filter-action="apply" type="button">Применить <span aria-hidden="true">↗</span></button>
+        <button data-admin-media-filter-action="clear" type="button"><span class="filter-action-label">Очистить</span><span class="filter-action-icon" aria-hidden="true">↗</span></button>
+        <button data-admin-media-filter-action="apply" type="button"><span class="filter-action-label">Применить</span><span class="filter-action-icon" aria-hidden="true">↗</span></button>
       </div>`;
     mediaFilters.querySelector('.admin-media-format-slot')?.appendChild(mediaTypeTabs);
     mediaFilters.addEventListener('click', event => {
