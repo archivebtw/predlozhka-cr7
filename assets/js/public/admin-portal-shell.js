@@ -2,9 +2,10 @@
   const styleLayers = [
     ['adminFigmaTabsFixStyles', './assets/css/public/admin-figma-tabs-fix.css?v=1.0'],
     ['adminFigmaTemplateV3Styles', './assets/css/public/admin-figma-template-v3.css?v=1.0'],
-    ['adminGamesTabsV4Styles', './assets/css/public/admin-games-tabs-v4.css?v=1.3'],
+    ['adminGamesTabsV4Styles', './assets/css/public/admin-games-tabs-v4.css?v=1.4'],
     ['adminPublishedIconsFixStyles', './assets/css/public/admin-published-icons-fix.css?v=1.1'],
-    ['adminModeratorLayoutV5Styles', './assets/css/public/admin-moderator-layout-v5.css?v=1.0']
+    ['adminModeratorLayoutV5Styles', './assets/css/public/admin-moderator-layout-v5.css?v=1.1'],
+    ['adminInterfaceRefinementV8Styles', './assets/css/public/admin-interface-refinement-v8.css?v=1.0']
   ];
 
   styleLayers.forEach(([id, href]) => {

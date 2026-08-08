@@ -326,7 +326,7 @@
   background: #e63d3d;
 }
 
-.admin-portal .admin-catalog-filter-actions button span {
+.admin-portal .admin-catalog-filter-actions button .filter-action-icon {
   width: 22rem;
   height: 22rem;
   display: grid;
