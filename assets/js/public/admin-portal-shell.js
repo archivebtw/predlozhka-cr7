@@ -20,7 +20,7 @@
   if (!document.getElementById('adminGamesTabsV4Script')) {
     const script = document.createElement('script');
     script.id = 'adminGamesTabsV4Script';
-    script.src = './assets/js/public/admin-games-tabs-v4.js?v=1.8';
+    script.src = './assets/js/public/admin-games-tabs-v4.js?v=1.7';
     script.defer = true;
     document.head.appendChild(script);
   }
@@ -67,11 +67,11 @@
     const actions = document.createElement('div');
     actions.className = 'proposal-filter-actions';
     proposalReset.textContent = '';
-    proposalReset.innerHTML = '<span class="filter-action-label">Очистить</span><span class="filter-action-icon" aria-hidden="true">↗</span>';
+    proposalReset.innerHTML = 'Очистить <span aria-hidden="true">↗</span>';
     const apply = document.createElement('button');
     apply.id = 'proposalFiltersApply';
     apply.type = 'button';
-    apply.innerHTML = '<span class="filter-action-label">Применить</span><span class="filter-action-icon" aria-hidden="true">↗</span>';
+    apply.innerHTML = 'Применить <span aria-hidden="true">↗</span>';
     apply.addEventListener('click', () => {
       document.getElementById('proposalPlayersMin')?.dispatchEvent(new Event('input', { bubbles: true }));
     });
@@ -93,8 +93,8 @@
         <div class="admin-media-format-slot"></div>
       </fieldset>
       <div class="proposal-filter-actions admin-media-filter-actions">
-        <button data-admin-media-filter-action="clear" type="button"><span class="filter-action-label">Очистить</span><span class="filter-action-icon" aria-hidden="true">↗</span></button>
-        <button data-admin-media-filter-action="apply" type="button"><span class="filter-action-label">Применить</span><span class="filter-action-icon" aria-hidden="true">↗</span></button>
+        <button data-admin-media-filter-action="clear" type="button">Очистить <span aria-hidden="true">↗</span></button>
+        <button data-admin-media-filter-action="apply" type="button">Применить <span aria-hidden="true">↗</span></button>
       </div>`;
     mediaFilters.querySelector('.admin-media-format-slot')?.appendChild(mediaTypeTabs);
     mediaFilters.addEventListener('click', event => {
